@@ -1,14 +1,20 @@
 // All static content lives here so copy can be edited without touching components.
+//
+// To enable the CV download button, drop a PDF into `public/` and set
+// `cv` below to its path (e.g. '/Namit_Singh_Sarna_CV.pdf'). Until then
+// leave it as `null` and the Hero will hide the button automatically.
 
 export const profile = {
   name: 'Namit Singh Sarna',
   shortName: 'Namit',
   role: 'Final-year BSc Computer Science · University of Leicester',
-  email: 'hello@namitsarna.com',
+  // Replace with your preferred contact address.
+  email: 'namitmec@gmail.com',
   links: {
-    github: 'https://github.com/namitsinghsarna',
-    linkedin: 'https://linkedin.com/in/namitsinghsarna',
-    cv: '/Namit_Singh_Sarna_CV.pdf',
+    github: 'https://github.com/namitzz',
+    linkedin: 'https://www.linkedin.com/in/namit-singh-sarna-55a021323',
+    // Set to a real path once the CV PDF is added to /public.
+    cv: null,
   },
   headline: 'I build AI systems that are practical, explainable, and human-centred.',
   subheadline:
@@ -26,7 +32,8 @@ export const projects = [
     themeKey: 'uniwise',
     index: '01',
     title: 'UniWise',
-    tagline: 'A source-grounded RAG assistant for higher education.',
+    tagline:
+      'A source-grounded RAG assistant for higher education — final-year dissertation prototype.',
     problem:
       'University students rely on lecture material that is fragmented across PDFs, slides, and notes. General-purpose LLMs answer confidently from training data — including for things the lecturer never taught — which actively damages how students learn.',
     solution:
@@ -42,38 +49,55 @@ export const projects = [
     ],
     features: [
       'Ingestion for PDF, DOCX, PPTX, TXT, MD with chunk-level metadata.',
-      'Hybrid retrieval with cross-encoder reranking for citation precision.',
+      'Dense vector retrieval with cross-encoder reranking for citation precision.',
       'Refusal thresholds and confidence indicators to reduce hallucinations.',
-      'Inline citations linked back to slide / page / paragraph.',
+      'Source citations showing file, page, and chunk-level metadata.',
       'Telemetry and analytics for module-level question patterns.',
-      'Pluggable LLM backend — OpenAI in production, Ollama for offline marking.',
+      'Pluggable LLM backend with OpenAI and Ollama adapters.',
     ],
     impact:
-      'Designed as my final-year dissertation. The harder problem turned out not to be retrieval — it was building a UI that makes refusal feel like trust rather than failure.',
-    cta: { caseStudy: '#', github: 'https://github.com/namitsinghsarna/uniwise', demo: null },
+      'Built as my final-year dissertation project. The harder problem turned out not to be retrieval — it was building a UI that makes refusal feel like trust rather than failure.',
+    cta: {
+      caseStudy: null,
+      github: null,
+      demo: null,
+    },
   },
   {
     id: 'vision',
     themeKey: 'vision',
     index: '02',
-    title: 'Vision AI — Posture & Gesture',
-    tagline: 'Real-time webcam computer vision for posture, gesture, face and emotion.',
+    title: 'Posture AI — Real-Time Gym Form Correction',
+    tagline:
+      'A real-time computer vision prototype for gym posture correction, rep tracking, and AI coaching feedback.',
     problem:
-      'Off-the-shelf fitness and accessibility tools either ship as a closed black box or run at single-digit FPS once you stack face, pose, and emotion models. Neither is useful for live feedback.',
+      'Form mistakes in the gym are the main source of injury and stalled progress, but personal trainers are expensive and most form-check apps are static, post-hoc, or vague. There is no cheap way to get live, specific feedback on a rep while it is happening.',
     solution:
-      'A modular pipeline that runs face, gesture, posture, and emotion detection concurrently from a single webcam frame. Frame skipping, model warm-up, and a configurable processing graph keep it usable at interactive frame rates.',
-    stack: ['Python', 'OpenCV', 'MediaPipe', 'face_recognition', 'DeepFace', 'NumPy'],
+      'A modular MediaPipe-based pose pipeline that tracks squat depth, knee tracking, and torso angle in real time, counts reps, scores form against reference landmarks, and produces a short AI-written coaching summary at the end of a set.',
+    stack: [
+      'Python',
+      'OpenCV',
+      'MediaPipe',
+      'NumPy',
+      'Pose landmark math',
+      'Audio cues',
+      'LLM summary',
+    ],
     features: [
-      'Live pose landmark tracking with confidence overlay.',
-      'Gesture classification (open palm, fist, point, peace, thumbs up/down).',
-      'Posture scoring against a reference skeleton.',
-      'Emotion + identity from face crops via DeepFace.',
-      'Frame-skipping scheduler with per-module FPS budget.',
-      'Modular config so individual detectors can be swapped or disabled.',
+      'Live pose landmark tracking with per-joint confidence.',
+      'Squat depth, knee tracking, and torso-angle scoring against a reference skeleton.',
+      'Rep counting with state-machine logic for clean reps vs. partials.',
+      'Form-feedback overlay and audio cues during the set.',
+      'Frame-skipping and per-stage budgets to keep the pipeline at interactive FPS.',
+      'End-of-set AI coaching summary describing what to fix next.',
     ],
     impact:
-      'Taught me where the cost actually lives in a vision pipeline — it is rarely the model, almost always the per-frame Python glue.',
-    cta: { caseStudy: '#', github: 'https://github.com/namitsinghsarna/vision-ai', demo: null },
+      'Taught me where the cost actually lives in a vision pipeline — it is rarely the model, almost always the per-frame Python glue around it.',
+    cta: {
+      caseStudy: null,
+      github: 'https://github.com/namitzz/posture',
+      demo: null,
+    },
   },
   {
     id: 'cloud',
@@ -81,25 +105,34 @@ export const projects = [
     index: '03',
     title: 'Cloud Seven Realty',
     tagline:
-      'A premium digital identity for a Srinagar-based real estate brand operating across Jammu & Kashmir.',
+      'A frontend/brand website for a Srinagar-based real estate brand, powered by Google Sheets and Drive so listings can be updated without redeploying.',
     problem:
-      'A property brand built on local knowledge — verified titles, on-ground support, neighbourhood-level relationships in J&K — had no online presence that signalled any of that. Generic listing templates would have flattened the exact things that make the business trustworthy.',
+      'A property brand built on local knowledge — verified titles, on-ground support, neighbourhood-level relationships in J&K — had no online presence that signalled any of that. Generic listing templates would have flattened the exact things that make the business trustworthy, and the team needed to update listings themselves without touching code.',
     solution:
-      'A calm, premium site built around three signals buyers actually care about in this market: verified titles, local presence, and curated listings. Restrained typography, warm neutral palette, real Srinagar neighbourhoods front-and-centre, and a contact strip that does not hide the phone numbers.',
-    stack: ['React', 'Tailwind CSS', 'Framer Motion', 'Responsive design', 'Brand system'],
+      'A calm, premium site built around three signals buyers actually care about in this market: verified titles, local presence, and curated listings. Properties, project pages, and images live in Google Sheets and Google Drive, fetched via API and revalidated on a short ISR cache so the team can update listings without a deploy.',
+    stack: [
+      'Next.js 14',
+      'React',
+      'Tailwind CSS',
+      'Google Sheets API',
+      'Google Drive API',
+      'ISR / 5-minute cache',
+      'Responsive design',
+    ],
     features: [
       'Hero framed around the brand promise: verified titles + on-ground support.',
-      'Featured listings — Karanagar (rent), Bemina (buy), Nishaat (land).',
+      'Featured listings sourced live from a Google Sheet — no redeploy needed.',
+      'Property images pulled from a connected Google Drive folder.',
       'Trust strip dedicated to local credibility, not generic certifications.',
-      'Contact ribbon with phone, email, and Srinagar location always visible.',
       'Property pages structured by area and listing type (Rent / Buy / Land).',
       'Fully responsive — most traffic for this market is on mobile.',
     ],
     impact:
       'Design is a research discipline first. The brief was J&K property buyer psychology, not page templates — and the brand promise had to survive being scrolled past in three seconds.',
     cta: {
-      caseStudy: '#',
-      github: 'https://github.com/namitsinghsarna/cloud-seven',
+      caseStudy: null,
+      // Repository is private — omit the GitHub button.
+      github: null,
       demo: 'https://www.cloudsevenrealty.com/',
     },
   },
@@ -108,23 +141,28 @@ export const projects = [
     themeKey: 'crime',
     index: '04',
     title: 'Crime Prediction Dashboard',
-    tagline: 'Big-data modelling and clustering on Metropolitan Police records.',
+    tagline:
+      'Coursework project on Metropolitan Police records — modelling and clustering at the LSOA level.',
     problem:
       'Raw police open data is large, messy, and area-imbalanced. Most public dashboards stop at counts and pie charts — useful for headlines, useless for decisions.',
     solution:
-      'Cleaned and aggregated around 1M crime records into area-month panels, trained regression models to predict volume, and used K-Means to surface area profiles that group neighbourhoods by crime shape rather than postcode.',
+      'Cleaned and aggregated around 1M+ Met Police records into LSOA-month panels, trained regression models to predict volume, and used K-Means to surface area profiles that group neighbourhoods by crime shape rather than postcode.',
     stack: ['Python', 'Pandas', 'scikit-learn', 'NumPy', 'Matplotlib', 'Jupyter'],
     features: [
-      'Pipeline for ~1M Met Police records → area-month panels.',
-      'Linear Regression, Decision Tree, and Random Forest predictors.',
-      'K-Means clustering for area-profile segmentation.',
-      'Evaluation with R², RMSE, MAE, cross-validation.',
-      'Cluster diagnostics: silhouette, inertia elbow.',
-      'Dashboard view of KPIs, trends, heatmap, and model performance.',
+      'Pipeline for ~1M+ Met Police records → LSOA-month panels.',
+      'Linear Regression, Decision Tree (with overfit diagnostics), and Random Forest predictors.',
+      'K-Means clustering for area-profile segmentation (K=4 selected via elbow + silhouette).',
+      'Evaluation with R², RMSE, MAE, and 10-fold cross-validation.',
+      'Cluster diagnostics: silhouette score, inertia elbow.',
+      'Stylised dashboard view of KPIs, trends, heatmap, and model performance.',
     ],
     impact:
       'Convinced me that the cleaning step is where the actual modelling decisions are made — the model is just the part that gets graded.',
-    cta: { caseStudy: '#', github: 'https://github.com/namitsinghsarna/crime-dashboard', demo: null },
+    cta: {
+      caseStudy: null,
+      github: null,
+      demo: null,
+    },
   },
 ]
 
@@ -150,7 +188,7 @@ export const skills = [
   },
   {
     group: 'Frontend / UI',
-    items: ['React', 'Tailwind CSS', 'Framer Motion', 'Streamlit', 'Responsive design'],
+    items: ['React', 'Next.js', 'Tailwind CSS', 'Framer Motion', 'Streamlit', 'Responsive design'],
   },
   {
     group: 'Data Science',
@@ -158,7 +196,7 @@ export const skills = [
   },
   {
     group: 'Computer Vision',
-    items: ['OpenCV', 'MediaPipe', 'face_recognition', 'DeepFace', 'Real-time pipelines'],
+    items: ['OpenCV', 'MediaPipe', 'Pose landmarks', 'Real-time pipelines'],
   },
   {
     group: 'Tools & Deployment',
@@ -190,6 +228,6 @@ export const timeline = [
     title: 'Independent projects',
     org: 'Self-directed',
     body:
-      'Built Vision AI, Cloud Seven Reality, and the Crime Prediction Dashboard as deliberate practice across CV, frontend, and applied data science.',
+      'Built Posture AI, Cloud Seven Realty, and the Crime Prediction Dashboard as deliberate practice across computer vision, frontend/brand work, and applied data science.',
   },
 ]

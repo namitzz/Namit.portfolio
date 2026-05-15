@@ -24,7 +24,7 @@ export default function HeroBackdrop() {
       'tailwind.config.js',
       'np.array([...])',
       'verify(title)',
-      'R² = 0.81',
+      'R² = 0.83',
       'RAG · grounded',
       'pipeline.run()',
       'lecture_only=True',

@@ -132,7 +132,7 @@ function VisionBanner() {
       </defs>
 
       <text x="32" y="142" fontFamily="JetBrains Mono, monospace" fontSize="10" fill="rgba(255,255,255,0.4)">
-        webcam · pose · gesture · emotion
+        webcam · pose · squat · rep count
       </text>
     </svg>
   )
@@ -268,7 +268,7 @@ function CrimeBanner() {
       </g>
 
       <text x="32" y="142" fontFamily="JetBrains Mono, monospace" fontSize="10" fill="rgba(255,255,255,0.4)">
-        ~1M records · k-means · R² 0.81
+        ~1M+ records · k-means k=4 · R² 0.83
       </text>
     </svg>
   )

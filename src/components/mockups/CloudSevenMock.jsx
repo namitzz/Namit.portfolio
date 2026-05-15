@@ -83,7 +83,7 @@ export default function CloudSevenMock() {
                 View all properties
               </button>
               <button className="rounded-full border border-black/15 px-4 py-2 text-[12px] text-black/75">
-                Call 9906599038
+                Contact via website
               </button>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function CloudSevenMock() {
                 stripe: 'linear-gradient(135deg,#5d6e57 0%,#2b362a 100%)',
               },
               {
-                t: 'Nishaat',
+                t: 'Nishat',
                 sub: 'Foothills · Srinagar',
                 tag: 'Land',
                 kind: 'Plot for sale',
@@ -156,14 +156,14 @@ export default function CloudSevenMock() {
             ))}
           </div>
 
-          {/* Contact ribbon */}
+          {/* Contact ribbon — public-safe labels, real details live on the site */}
           <div
             className="flex items-center justify-between px-6 py-3 text-[11px]"
             style={{ background: '#1a1814', color: '#e8dfcc' }}
           >
-            <span className="font-mono">aarshkhan@cloudsevenrealty.com</span>
+            <span className="font-mono">Contact via website</span>
             <span className="hidden sm:inline opacity-60">Srinagar, J&amp;K</span>
-            <span className="font-mono">+91 9906599038 · 7977125458</span>
+            <span className="font-mono">WhatsApp contact available on site</span>
           </div>
         </div>
       </div>
@@ -171,8 +171,8 @@ export default function CloudSevenMock() {
       {/* Notes strip — under the browser frame, lives in dark portfolio */}
       <div className="mt-4 grid grid-cols-3 gap-3 text-[11px]">
         {[
-          { l: 'Stack', v: 'React · Tailwind · Motion' },
-          { l: 'Focus', v: 'Brand · Conversion · Trust' },
+          { l: 'Stack', v: 'Next.js · Tailwind · Sheets API' },
+          { l: 'CMS', v: 'Google Sheets + Drive · ISR' },
           { l: 'Role', v: 'Design + frontend' },
         ].map((n) => (
           <div key={n.l} className="glass rounded-xl px-3.5 py-3">

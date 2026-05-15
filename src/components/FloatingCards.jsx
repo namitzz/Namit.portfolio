@@ -22,7 +22,7 @@ export default function FloatingCards() {
         className="absolute right-[20%] top-[58%]"
         rotate={5}
         delay={0.4}
-        tag="Vision AI"
+        tag="Posture AI"
         accent="#34F5C5"
       >
         <VisionThumb />

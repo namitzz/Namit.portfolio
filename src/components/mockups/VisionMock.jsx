@@ -9,13 +9,13 @@ export default function VisionMock() {
   return (
     <div className="relative">
       <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-white/40">
-        <span>Vision AI · Operator console</span>
+        <span>Posture AI · Set in progress</span>
         <span className="flex items-center gap-3">
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 animate-pulseDot rounded-full bg-red-400" />
-            REC · 00:04:12
+            REC · set 2 · 00:00:18
           </span>
-          <span style={{ color: 'var(--accent)' }}>v0.3.1</span>
+          <span style={{ color: 'var(--accent)' }}>squat</span>
         </span>
       </div>
 
@@ -72,12 +72,12 @@ export default function VisionMock() {
                 <circle key={i} cx={x} cy={y} r="3.2" fill="var(--accent)" stroke="none" />
               ))}
 
-              {/* Face bounding box */}
-              <rect
-                x="180"
-                y="42"
-                width="40"
-                height="36"
+              {/* Reference depth line — squat target */}
+              <line
+                x1="120"
+                y1="170"
+                x2="280"
+                y2="170"
                 stroke="var(--accent-2)"
                 strokeDasharray="3 3"
               />
@@ -98,18 +98,18 @@ export default function VisionMock() {
 
             {/* Top-right chips */}
             <div className="absolute right-3 top-3 flex flex-col items-end gap-1">
-              <HudChip label="pipeline" value="pose · face · emo" />
+              <HudChip label="exercise" value="squat" />
+              <HudChip label="reps" value="6 / 10" />
               <HudChip label="frame skip" value="2" />
-              <HudChip label="thread" value="2" />
             </div>
 
             {/* Bottom telemetry */}
             <div className="absolute inset-x-3 bottom-3 grid grid-cols-3 items-center gap-2 rounded-md border border-white/10 bg-black/40 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-white/55 backdrop-blur">
-              <span>subject · 1 detected</span>
+              <span>squat depth · good</span>
               <span className="text-center" style={{ color: 'var(--accent)' }}>
-                conf 0.91
+                form 0.87
               </span>
-              <span className="text-right">posture · upright</span>
+              <span className="text-right">knees · tracking ok</span>
             </div>
           </div>
         </div>
@@ -145,12 +145,12 @@ export default function VisionMock() {
 
             <ul className="mt-3 space-y-1.5 font-mono text-[11px]">
               {[
-                { t: '00:04:12', m: 'pose · upright', tone: 'ok' },
-                { t: '00:04:11', m: 'gesture · open_palm 0.94', tone: 'accent' },
-                { t: '00:04:10', m: 'emotion · focused 0.78', tone: 'muted' },
-                { t: '00:04:09', m: 'face · unknown identity', tone: 'warn' },
-                { t: '00:04:07', m: 'frame skip applied', tone: 'muted' },
-                { t: '00:04:05', m: 'pipeline init OK', tone: 'ok' },
+                { t: '00:00:18', m: 'rep 6 · clean · depth ok', tone: 'ok' },
+                { t: '00:00:15', m: 'audio cue · "drive heels"', tone: 'accent' },
+                { t: '00:00:13', m: 'rep 5 · partial · -depth', tone: 'warn' },
+                { t: '00:00:10', m: 'knees tracking · ok', tone: 'ok' },
+                { t: '00:00:07', m: 'torso angle · 38°', tone: 'muted' },
+                { t: '00:00:02', m: 'set 2 started · squat', tone: 'ok' },
               ].map((e, i) => (
                 <motion.li
                   key={i}
@@ -182,13 +182,13 @@ export default function VisionMock() {
         </div>
       </div>
 
-      {/* Detection cards under the console */}
+      {/* Set telemetry cards under the console */}
       <div className="mt-3 grid grid-cols-4 gap-3">
         {[
-          { l: 'Gesture', v: 'Open palm', d: '0.94' },
-          { l: 'Emotion', v: 'Focused', d: '0.78' },
-          { l: 'Identity', v: 'Unknown', d: 'no match' },
-          { l: 'Posture', v: 'Upright', d: '0.86' },
+          { l: 'Rep count', v: '6 / 10', d: 'set 2' },
+          { l: 'Squat depth', v: 'Good', d: '0.87' },
+          { l: 'Knee tracking', v: 'Ok', d: 'within line' },
+          { l: 'Posture score', v: '0.86', d: 'torso 38°' },
         ].map((c, i) => (
           <motion.div
             key={c.l}
@@ -208,6 +208,32 @@ export default function VisionMock() {
           </motion.div>
         ))}
       </div>
+
+      {/* AI coaching summary — end-of-set */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mt-3 rounded-2xl border p-4"
+        style={{
+          background: 'rgba(52,245,197,0.06)',
+          borderColor: 'rgba(52,245,197,0.22)',
+          borderLeft: '3px solid var(--accent)',
+        }}
+      >
+        <p
+          className="text-[10px] font-semibold uppercase tracking-[0.18em]"
+          style={{ color: 'var(--accent)' }}
+        >
+          AI coaching summary
+        </p>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/85">
+          Good depth on 5 of 6 reps. Rep 5 was a partial — slow the descent and
+          aim hips below the knee crease. Knee tracking is staying inside the
+          toe line, keep that. Try the next set at the same tempo.
+        </p>
+      </motion.div>
     </div>
   )
 }

@@ -13,7 +13,7 @@ export default function UniWiseMock() {
   return (
     <div className="relative">
       <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-white/40">
-        <span>UniWise · Live app</span>
+        <span>UniWise · Dissertation prototype</span>
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 animate-pulseDot rounded-full bg-emerald-400" />
           grounded · lecture-only

@@ -9,10 +9,10 @@ export default function CrimeMock() {
   return (
     <div className="relative">
       <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-white/40">
-        <span>Met Police · Crime panel</span>
+        <span>Met Police · Crime panel · stylised view</span>
         <span className="flex items-center gap-3">
-          <span style={{ color: 'var(--accent-2)' }}>k-means · k=5</span>
-          <span className="font-mono text-white/55">1.04M rows</span>
+          <span style={{ color: 'var(--accent-2)' }}>k-means · k=4</span>
+          <span className="font-mono text-white/55">~1M+ rows</span>
         </span>
       </div>
 
@@ -20,14 +20,13 @@ export default function CrimeMock() {
       <div className="glass-strong overflow-hidden rounded-2xl shadow-card">
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
           <p className="text-[10px] uppercase tracking-[0.18em] text-white/55">
-            London · ward heatmap
+            London · LSOA heatmap (stylised)
           </p>
           <div className="flex items-center gap-2 text-[10px] text-white/55">
             <Legend label="C1" color="#7CF5B8" />
             <Legend label="C2" color="#FF4FA2" />
             <Legend label="C3" color="#F5C36B" />
             <Legend label="C4" color="#6BA8FF" />
-            <Legend label="C5" color="#C58CFF" />
           </div>
         </div>
 
@@ -37,10 +36,10 @@ export default function CrimeMock() {
       {/* KPI ribbon */}
       <div className="mt-3 grid grid-cols-4 gap-2">
         {[
-          { l: 'records', v: '1.04M' },
-          { l: 'wards', v: '624' },
-          { l: 'R² (RF)', v: '0.81' },
-          { l: 'clusters', v: '5' },
+          { l: 'records', v: '~1M+' },
+          { l: 'areas (LSOA)', v: 'panel' },
+          { l: 'R² (RF)', v: '0.83' },
+          { l: 'clusters', v: '4' },
         ].map((k) => (
           <div
             key={k.l}
@@ -78,7 +77,7 @@ export default function CrimeMock() {
             <p className="text-[10px] uppercase tracking-[0.18em] text-white/45">
               Model performance
             </p>
-            <span className="text-[10px] text-white/35">CV · 5 folds</span>
+            <span className="text-[10px] text-white/35">CV · 10 folds</span>
           </div>
           <table className="mt-2 w-full text-left text-[11px] text-white/75">
             <thead className="text-white/40">
@@ -91,9 +90,9 @@ export default function CrimeMock() {
             </thead>
             <tbody>
               {[
-                ['Linear', '0.62', '14.1', '9.8'],
-                ['Tree', '0.74', '11.0', '8.2'],
-                ['Random F.', '0.81', '9.4', '7.1'],
+                ['Linear', '0.83', '11.20', '3.92'],
+                ['Tree*', '0.83', '11.05', '3.78'],
+                ['Random F.', '0.83', '10.85', '3.67'],
               ].map(([m, r, e, a], i) => (
                 <motion.tr
                   key={m}
@@ -113,17 +112,19 @@ export default function CrimeMock() {
               ))}
             </tbody>
           </table>
+          <p className="mt-2 text-[10px] text-white/35">
+            *Decision Tree: similar test R² but overfit-prone on training folds.
+          </p>
         </div>
       </div>
 
       {/* Cluster cards */}
-      <div className="mt-3 grid grid-cols-5 gap-2">
+      <div className="mt-3 grid grid-cols-4 gap-2">
         {[
-          { c: 'C1', l: 'Low / residential', n: '142 wards', color: '#7CF5B8' },
-          { c: 'C2', l: 'High / night-economy', n: '38 wards', color: '#FF4FA2' },
-          { c: 'C3', l: 'Mixed urban', n: '186 wards', color: '#F5C36B' },
-          { c: 'C4', l: 'Transit-hub', n: '94 wards', color: '#6BA8FF' },
-          { c: 'C5', l: 'Outer / quiet', n: '164 wards', color: '#C58CFF' },
+          { c: 'C1', l: 'Low / residential', n: 'profile cluster', color: '#7CF5B8' },
+          { c: 'C2', l: 'High / night-economy', n: 'profile cluster', color: '#FF4FA2' },
+          { c: 'C3', l: 'Mixed urban', n: 'profile cluster', color: '#F5C36B' },
+          { c: 'C4', l: 'Transit-hub', n: 'profile cluster', color: '#6BA8FF' },
         ].map((c, i) => (
           <motion.div
             key={c.c}
@@ -159,26 +160,27 @@ function Legend({ label, color }) {
 }
 
 /**
- * Stylised London ward map. Hand-tuned SVG polygons — not geographic
- * truth, just enough to read as "London". Each ward is coloured by cluster.
+ * Stylised London LSOA map. Hand-tuned SVG polygons — not geographic
+ * truth, just enough to read as "London". Each area is coloured by
+ * one of the K=4 K-Means cluster profiles.
  */
 function LondonMap() {
-  // Pseudo-wards: { points, cluster }
-  const clusters = ['#7CF5B8', '#FF4FA2', '#F5C36B', '#6BA8FF', '#C58CFF']
-  const wards = [
-    // Inner ring — high activity (mostly C2 / C3)
+  // Cluster index 0..3 → C1..C4 (matches the legend above)
+  const clusters = ['#7CF5B8', '#FF4FA2', '#F5C36B', '#6BA8FF']
+  const areas = [
+    // Inner ring — higher activity (mostly C2 / C3)
     { p: '180,90 220,80 245,100 240,130 200,140 175,120', c: 1 },
     { p: '240,130 280,115 305,140 295,170 250,170', c: 2 },
     { p: '295,170 330,160 355,185 340,215 295,210', c: 1 },
     { p: '200,140 240,130 250,170 220,200 185,180', c: 2 },
-    { p: '185,180 220,200 215,235 175,240 155,210', c: 4 },
+    { p: '185,180 220,200 215,235 175,240 155,210', c: 0 },
     { p: '220,200 250,170 295,210 280,240 240,250 215,235', c: 2 },
     { p: '280,240 295,210 340,215 335,250 300,260', c: 3 },
-    // Outer ring — quieter (mostly C0 / C4)
+    // Outer ring — quieter (mostly C1 / C4)
     { p: '120,100 180,90 175,120 145,130 110,120', c: 0 },
     { p: '110,120 145,130 155,170 130,190 90,170', c: 0 },
-    { p: '90,170 130,190 155,210 135,240 95,230', c: 4 },
-    { p: '95,230 135,240 175,240 165,275 110,275', c: 4 },
+    { p: '90,170 130,190 155,210 135,240 95,230', c: 0 },
+    { p: '95,230 135,240 175,240 165,275 110,275', c: 0 },
     { p: '335,250 340,215 380,210 395,250 370,280', c: 3 },
     { p: '395,250 380,210 410,180 450,200 440,250', c: 3 },
     { p: '410,180 355,185 340,215', c: 2 },
@@ -192,9 +194,9 @@ function LondonMap() {
     // Bottom
     { p: '290,300 340,310 370,280 395,330 320,340', c: 3 },
     { p: '200,290 250,320 290,300 320,340 250,360 195,340', c: 1 },
-    { p: '120,330 175,330 195,340 170,375 115,365', c: 4 },
+    { p: '120,330 175,330 195,340 170,375 115,365', c: 0 },
     // Far west / east trims
-    { p: '60,140 90,170 95,230 60,220', c: 4 },
+    { p: '60,140 90,170 95,230 60,220', c: 0 },
     { p: '440,250 395,250 395,330 445,310', c: 3 },
   ]
 
@@ -229,7 +231,7 @@ function LondonMap() {
           />
         ))}
 
-        {wards.map((w, i) => (
+        {areas.map((w, i) => (
           <motion.polygon
             key={i}
             points={w.p}

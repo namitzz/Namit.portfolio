@@ -88,14 +88,16 @@ export default function Hero() {
             >
               LinkedIn
             </a>
-            <a
-              href={profile.links.cv}
-              className="btn-ghost"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Download CV
-            </a>
+            {profile.links.cv && (
+              <a
+                href={profile.links.cv}
+                className="btn-ghost"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Download CV
+              </a>
+            )}
           </motion.div>
 
           {/* Stat strip with count-up */}
@@ -105,8 +107,8 @@ export default function Hero() {
             transition={{ duration: 0.7, delay: 0.7 }}
             className="mt-12 grid max-w-2xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] sm:grid-cols-4"
           >
-            <Stat to={4} suffix="" label="shipped projects" />
-            <Stat to={1.04} decimals={2} suffix="M" label="records modelled" />
+            <Stat to={4} suffix="" label="featured projects" />
+            <Stat to={1} suffix="M+" label="records analysed" />
             <Stat to={5} suffix="+" label="doc formats" />
             <Stat to={2026} label="grad year" />
           </motion.div>
