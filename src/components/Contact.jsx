@@ -33,8 +33,8 @@ export default function Contact() {
             transformation, and research opportunities.
           </h2>
           <p className="mt-5 max-w-xl text-white/65">
-            If any of the work above resonates — or you’re building something
-            adjacent — the inbox is the fastest way to start a conversation.
+            If any of the work above resonates, or you’re building something
+            adjacent, the inbox is the fastest way to start a conversation.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">

@@ -229,9 +229,9 @@ export default function VisionMock() {
           AI coaching summary
         </p>
         <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/85">
-          Good depth on 5 of 6 reps. Rep 5 was a partial — slow the descent and
-          aim hips below the knee crease. Knee tracking is staying inside the
-          toe line, keep that. Try the next set at the same tempo.
+          Good depth on 5 of 6 reps. Rep 5 was a partial, so slow the descent
+          and aim hips below the knee crease. Knee tracking is staying inside
+          the toe line, keep that. Try the next set at the same tempo.
         </p>
       </motion.div>
     </div>

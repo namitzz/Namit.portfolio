@@ -71,7 +71,7 @@ export default function CloudSevenMock() {
               trusted on-ground support across J&amp;K.
             </h4>
             <p className="mt-2 max-w-sm text-[12px] text-black/55">
-              Curated rentals, homes, and land — sourced and vetted locally in
+              Curated rentals, homes, and land, sourced and vetted locally in
               Srinagar.
             </p>
 

@@ -164,7 +164,7 @@ export default function UniWiseMock() {
             <ScaffoldBlock
               label="Example"
               accent="rgba(16,185,129,0.75)"
-              body="An e-commerce platform splits into Catalog, Cart, Checkout, Payments and Notifications — each deployed, scaled and on-called independently."
+              body="An e-commerce platform splits into Catalog, Cart, Checkout, Payments and Notifications, each deployed, scaled and on-called independently."
             />
             <ScaffoldBlock
               label="Self-check"
@@ -189,7 +189,7 @@ export default function UniWiseMock() {
           >
             <span className="font-semibold text-[#a8f0c2]">Hint · </span>
             Trace one of these services from request to response. Where does the
-            cost actually live — in the model, the network, or the contract?
+            cost actually live: in the model, the network, or the contract?
           </div>
         </div>
 
@@ -338,7 +338,7 @@ function Misconception() {
         Common misconception
       </p>
       <p className="mt-1.5 text-[12.5px] leading-relaxed text-[rgba(255,228,228,0.92)]">
-        “Microservices automatically scale better.” They don’t — they shift the
+        “Microservices automatically scale better.” They don’t. They shift the
         scaling problem from process boundaries to the network.
       </p>
     </motion.div>

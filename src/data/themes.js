@@ -33,7 +33,7 @@ export const themes = {
   },
   cloud: {
     id: 'cloud',
-    name: 'Cloud Seven Reality',
+    name: 'Cloud Seven Realty',
     bgFrom: '#0F121A',
     bgTo: '#1A1F2A',
     accent: '#C9A86A',
@@ -50,5 +50,15 @@ export const themes = {
     accent2: '#7CF5B8',
     glow: 'rgba(255,79,162,0.22)',
     muted: 'rgba(240,220,255,0.6)',
+  },
+  course: {
+    id: 'course',
+    name: 'Course Companion',
+    bgFrom: '#07111F',
+    bgTo: '#0B1728',
+    accent: '#F5B84B',
+    accent2: '#5AC8FF',
+    glow: 'rgba(245,184,75,0.18)',
+    muted: 'rgba(220,235,255,0.65)',
   },
 }

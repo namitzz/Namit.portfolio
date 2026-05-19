@@ -14,11 +14,11 @@ export default function WorkIntro() {
           <div>
             <p className="eyebrow">Featured work</p>
             <h2 className="section-title mt-3 max-w-3xl text-3xl font-semibold leading-tight md:text-5xl">
-              Four projects. Each one takes over the page.
+              Five projects. Each one takes over the page.
             </h2>
           </div>
           <p className="max-w-md text-sm text-white/55">
-            Scroll through — the background, accents, and mockups shift to match
+            Scroll through. The background, accents, and mockups shift to match
             the project you’re looking at.
           </p>
         </motion.div>

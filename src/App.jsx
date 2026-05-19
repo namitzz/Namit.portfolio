@@ -18,6 +18,7 @@ import UniWiseMock from './components/mockups/UniWiseMock'
 import VisionMock from './components/mockups/VisionMock'
 import CloudSevenMock from './components/mockups/CloudSevenMock'
 import CrimeMock from './components/mockups/CrimeMock'
+import CourseCompanionMock from './components/mockups/CourseCompanionMock'
 
 import { projects } from './data/content'
 
@@ -27,6 +28,7 @@ const mockups = {
   vision: <VisionMock />,
   cloud: <CloudSevenMock />,
   crime: <CrimeMock />,
+  course: <CourseCompanionMock />,
 }
 
 const accentLabels = {
@@ -34,11 +36,15 @@ const accentLabels = {
   vision: 'Computer Vision',
   cloud: 'Brand · Frontend',
   crime: 'Data Science',
+  course: 'Spring Boot · MySQL',
 }
 
 const marqueeItems = [
   'Python',
   'FastAPI',
+  'Java',
+  'Spring Boot',
+  'MySQL',
   'React',
   'Tailwind',
   'Framer Motion',

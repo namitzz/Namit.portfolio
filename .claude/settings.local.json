@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:www.cloudsevenrealty.com)"
+      "WebFetch(domain:www.cloudsevenrealty.com)",
+      "Bash(npm run *)"
     ]
   }
 }
