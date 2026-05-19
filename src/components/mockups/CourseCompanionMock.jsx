@@ -52,7 +52,7 @@ export default function CourseCompanionMock() {
                   Course Companion
                 </p>
                 <p className="text-[10px] text-white/75">
-                  Dashboard · Welcome back
+                  Sample dashboard preview · local test data
                 </p>
               </div>
             </div>
@@ -61,14 +61,6 @@ export default function CourseCompanionMock() {
               <ChipDark>MySQL</ChipDark>
               <ChipDark>Thymeleaf</ChipDark>
             </div>
-          </div>
-
-          {/* Stat ribbon */}
-          <div className="mt-4 grid grid-cols-4 gap-2">
-            <StatTile label="XP" value="1,240" sub="Level 6" />
-            <StatTile label="Streak" value="12 d" sub="🔥 keep going" />
-            <StatTile label="Badges" value="7" sub="of 14" />
-            <StatTile label="Rank" value="#3" sub="this week" />
           </div>
 
           {/* Main grid */}
@@ -158,16 +150,16 @@ export default function CourseCompanionMock() {
             <div className="col-span-12 space-y-3 md:col-span-5">
               {/* Badges (template: badges.html) */}
               <Card>
-                <CardHeader title="Badges" hint="7 / 14" />
+                <CardHeader title="Badges" hint="sample" />
                 <div className="mt-2 grid grid-cols-4 gap-2">
                   {[
-                    { c: '#f59e0b', l: 'Starter' },
-                    { c: '#2575fc', l: 'Quiz x5' },
-                    { c: '#a78bfa', l: 'Streak 7' },
-                    { c: '#10b981', l: 'Top 10' },
-                    { c: '#ef4444', l: 'Goal' },
-                    { c: '#06b6d4', l: 'Card x20' },
-                    { c: '#ec4899', l: 'Mystery', locked: false },
+                    { c: '#f59e0b', l: 'Sample' },
+                    { c: '#2575fc', l: 'Sample' },
+                    { c: '#a78bfa', l: 'Sample' },
+                    { c: '#10b981', l: 'Sample' },
+                    { c: '#ef4444', l: 'Sample' },
+                    { c: '#06b6d4', l: 'Sample' },
+                    { c: '#ec4899', l: 'Sample' },
                     { c: '#94a3b8', l: 'Locked', locked: true },
                   ].map((b, i) => (
                     <motion.div
@@ -199,24 +191,19 @@ export default function CourseCompanionMock() {
                 </div>
               </Card>
 
-              {/* Leaderboard (template: all-users-xp.html) */}
+              {/* Leaderboard (template: all-users-xp.html) — generic sample rows */}
               <Card>
-                <CardHeader title="Leaderboard" hint="weekly XP" />
+                <CardHeader title="Leaderboard" hint="sample" />
                 <ol className="mt-2 space-y-1.5 text-[11.5px]">
                   {[
-                    { r: 1, n: 'as1456', pts: 1480 },
-                    { r: 2, n: 'dg311', pts: 1310 },
-                    { r: 3, n: 'you', pts: 1240, me: true },
-                    { r: 4, n: 'hs543', pts: 1095 },
+                    { r: 1, n: 'Student A' },
+                    { r: 2, n: 'Student B' },
+                    { r: 3, n: 'Student C' },
                   ].map((u) => (
                     <li
                       key={u.r}
                       className="flex items-center justify-between rounded-md border border-black/10 px-2 py-1.5"
-                      style={{
-                        background: u.me
-                          ? 'rgba(37,117,252,0.18)'
-                          : 'rgba(255,255,255,0.85)',
-                      }}
+                      style={{ background: 'rgba(255,255,255,0.85)' }}
                     >
                       <span className="flex items-center gap-2">
                         <span
@@ -227,9 +214,7 @@ export default function CourseCompanionMock() {
                                 ? '#f59e0b'
                                 : u.r === 2
                                   ? '#cbd5e1'
-                                  : u.r === 3
-                                    ? '#b45309'
-                                    : 'rgba(0,0,0,0.15)',
+                                  : '#b45309',
                             color: '#1a1730',
                           }}
                         >
@@ -237,22 +222,16 @@ export default function CourseCompanionMock() {
                         </span>
                         <span
                           className="font-semibold"
-                          style={{
-                            color: u.me ? '#ffffff' : '#1a1730',
-                          }}
+                          style={{ color: '#1a1730' }}
                         >
                           {u.n}
                         </span>
                       </span>
                       <span
                         className="font-mono"
-                        style={{
-                          color: u.me
-                            ? 'rgba(255,255,255,0.95)'
-                            : 'rgba(26,23,48,0.65)',
-                        }}
+                        style={{ color: 'rgba(26,23,48,0.55)' }}
                       >
-                        {u.pts} XP
+                        sample
                       </span>
                     </li>
                   ))}
@@ -261,18 +240,18 @@ export default function CourseCompanionMock() {
             </div>
           </div>
 
-          {/* Bottom row: deadlines + flashcards + grades */}
+          {/* Bottom row: generic sample views from the templates folder */}
           <div className="mt-3 grid grid-cols-12 gap-3">
             <Card className="col-span-12 md:col-span-4">
-              <CardHeader title="Deadlines" hint="next 14 days" />
+              <CardHeader title="Sample list view" hint="local test data" />
               <ul className="mt-2 space-y-1.5 text-[11px] text-[#1a1730]">
                 {[
-                  { d: 'Tue', t: 'CO2302 · Sprint 2 demo', tone: '#ef4444' },
-                  { d: 'Fri', t: 'CO2103 · Architecture report', tone: '#f59e0b' },
-                  { d: 'Mon', t: 'CO3093 · Coursework 1', tone: '#2575fc' },
+                  { d: 'A', tone: '#ef4444' },
+                  { d: 'B', tone: '#f59e0b' },
+                  { d: 'C', tone: '#2575fc' },
                 ].map((d) => (
                   <li
-                    key={d.t}
+                    key={d.d}
                     className="flex items-center gap-2 rounded-md border border-black/10 bg-white px-2 py-1.5"
                   >
                     <span
@@ -281,32 +260,30 @@ export default function CourseCompanionMock() {
                     >
                       {d.d}
                     </span>
-                    <span className="truncate">{d.t}</span>
+                    <span className="truncate">Sample item {d.d}</span>
                   </li>
                 ))}
               </ul>
             </Card>
 
             <Card className="col-span-12 md:col-span-4">
-              <CardHeader title="Flashcards" hint="due today" />
+              <CardHeader title="Sample card view" hint="local test data" />
               <div className="mt-2 rounded-lg border border-black/10 bg-white p-3 text-[11.5px] text-[#1a1730]">
                 <p className="text-[10px] uppercase tracking-wider text-black/45">
-                  Software Engineering
+                  Module label
                 </p>
-                <p className="mt-1 font-semibold">
-                  What does a microservice own?
-                </p>
+                <p className="mt-1 font-semibold">Sample card content</p>
                 <div className="mt-2 flex items-center justify-between text-[10px] text-black/55">
-                  <span>3 of 12 reviewed</span>
-                  <span className="font-mono">+10 XP</span>
+                  <span>Sample preview</span>
+                  <span className="font-mono">local data</span>
                 </div>
               </div>
             </Card>
 
             <Card className="col-span-12 md:col-span-4">
-              <CardHeader title="Grade tracker" hint="Year 2 avg" />
+              <CardHeader title="Sample progress view" hint="local test data" />
               <div className="mt-2 flex items-end gap-1.5 px-1">
-                {[58, 64, 71, 67, 75, 72, 80].map((v, i) => (
+                {[40, 55, 50, 60, 55, 65, 60].map((v, i) => (
                   <motion.div
                     key={i}
                     initial={{ height: 0 }}
@@ -323,7 +300,7 @@ export default function CourseCompanionMock() {
                 ))}
               </div>
               <p className="mt-2 text-[10px] text-white/85">
-                Target: 70 · Current: 68
+                Sample progress view, local test data only.
               </p>
             </Card>
           </div>
@@ -334,7 +311,7 @@ export default function CourseCompanionMock() {
               [INFO] CourseService :: search("software") → 3 results
             </span>
             <span className="hidden font-mono text-white/55 sm:inline">
-              JUnit · 14 / 14 passing
+              JUnit tests · local build
             </span>
           </div>
         </div>
@@ -384,24 +361,6 @@ function CardHeader({ title, hint }) {
       {hint && (
         <span className="font-mono text-[10px] text-black/45">{hint}</span>
       )}
-    </div>
-  )
-}
-
-function StatTile({ label, value, sub }) {
-  return (
-    <div
-      className="rounded-[12px] px-3 py-2"
-      style={{
-        background: 'rgba(255,255,255,0.15)',
-        border: '1px solid rgba(255,255,255,0.22)',
-      }}
-    >
-      <p className="text-[9.5px] uppercase tracking-[0.18em] text-white/80">
-        {label}
-      </p>
-      <p className="mt-0.5 text-[18px] font-bold text-white">{value}</p>
-      <p className="text-[10px] text-white/75">{sub}</p>
     </div>
   )
 }

@@ -14,12 +14,12 @@ export default function WorkIntro() {
           <div>
             <p className="eyebrow">Featured work</p>
             <h2 className="section-title mt-3 max-w-3xl text-3xl font-semibold leading-tight md:text-5xl">
-              Five projects. Each one takes over the page.
+              Selected projects across AI, backend systems, data, and product design.
             </h2>
           </div>
           <p className="max-w-md text-sm text-white/55">
-            Scroll through. The background, accents, and mockups shift to match
-            the project you’re looking at.
+            Each section has its own visual style, but the focus is on what I
+            built, why it mattered, and what I learned.
           </p>
         </motion.div>
       </div>

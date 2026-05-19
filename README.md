@@ -2,7 +2,7 @@
 
 Scroll-based personal portfolio where each project changes the visual theme
 as it enters view. The background, accent colours, and mockup UIs transition
-smoothly between projects so each one briefly takes over the page.
+smoothly between projects so each project has a distinct visual style.
 
 Live: <https://namitportfolio-rosy.vercel.app/>
 

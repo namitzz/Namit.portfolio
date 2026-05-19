@@ -36,7 +36,7 @@ const accentLabels = {
   vision: 'Computer Vision',
   cloud: 'Brand · Frontend',
   crime: 'Data Science',
-  course: 'Spring Boot · Gamified',
+  course: 'Spring Boot · MySQL',
 }
 
 const marqueeItems = [

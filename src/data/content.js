@@ -19,11 +19,11 @@ export const profile = {
   headline:
     'I build practical AI and software systems that help people learn, decide, and work better.',
   subheadline:
-    'Working across applied AI, retrieval-augmented generation, education technology, computer vision, data science, UX, and digital transformation.',
+    'Final-year Computer Science student at the University of Leicester, focused on source-grounded RAG, applied ML, backend systems, computer vision, and human-centred software.',
   about: [
-    "I'm a final-year Computer Science student at the University of Leicester, graduating in July 2026.",
-    'I like building systems that are useful, explainable, and grounded in real data. My main interest is AI for learning and decision support, especially systems that help people understand things better instead of just giving quick answers.',
-    'Most of what I build follows the same idea: lean on real evidence, show your working, and refuse to pretend when the data is not there. The projects below are the clearest examples.',
+    "I'm Namit, a final-year Computer Science student at the University of Leicester, graduating in July 2026.",
+    'I like building practical systems across AI, backend development, data, and user-facing software. I care about whether the thing works, whether people can understand it, and whether it solves a real problem.',
+    'My main interest is AI for learning and decision support. UniWise is the clearest example: a source-grounded RAG assistant that answers from course material, shows evidence, and refuses when the support is weak.',
   ],
 }
 
@@ -36,9 +36,9 @@ export const projects = [
     tagline:
       'A source-grounded RAG assistant for higher education, built as my final-year dissertation prototype.',
     problem:
-      'University students rely on lecture material that is fragmented across PDFs, slides, and notes. General-purpose LLMs can answer confidently from training data, even when the answer is not based on what the lecturer taught, which actively damages how students learn.',
+      'University students rely on lecture material that is fragmented across PDFs, slides, and notes. General-purpose LLMs can answer confidently from training data, even when the answer is not based on what the lecturer taught, which can make it harder for students to judge whether an answer is actually grounded in their module material.',
     solution:
-      'UniWise restricts answers to lecture-only context. Every claim is retrieved from the course corpus, reranked, and cited inline. Below a confidence threshold the assistant refuses to answer instead of hallucinating, and routes the student to office hours.',
+      'UniWise restricts answers to lecture-only context. Every claim is retrieved from the course corpus, reranked, and cited inline. Below a confidence threshold the assistant refuses to answer instead of hallucinating, and points the student back to supported material or appropriate academic support.',
     stack: [
       'FastAPI',
       'Streamlit',
@@ -108,12 +108,13 @@ export const projects = [
     tagline:
       'A frontend and brand website for a Srinagar-based real estate brand, powered by Google Sheets and Drive so listings can be updated without redeploying.',
     problem:
-      'A property brand built on local knowledge (verified titles, on-ground support, neighbourhood-level relationships in J&K) had no online presence that signalled any of that. Generic listing templates would have flattened the exact things that make the business trustworthy, and the team needed to update listings themselves without touching code.',
+      'A property brand built on local knowledge (verified titles, on-ground support, neighbourhood-level relationships in J&K) had no online presence that signalled any of that. Generic listing templates would have flattened the things that make the business trustworthy, and the team needed to update listings themselves without touching code.',
     solution:
       'A calm, premium site built around three signals buyers actually care about in this market: verified titles, local presence, and curated listings. Properties, project pages, and images live in Google Sheets and Google Drive, fetched via API and revalidated on a short ISR cache so the team can update listings without a deploy.',
     stack: [
-      'Next.js 14',
-      'React',
+      'Next.js 15',
+      'React 19',
+      'TypeScript',
       'Tailwind CSS',
       'Google Sheets API',
       'Google Drive API',
@@ -129,7 +130,7 @@ export const projects = [
       'Fully responsive, since most traffic for this market is on mobile.',
     ],
     impact:
-      'Design is a research discipline first. The brief was J&K property buyer psychology, not page templates, and the brand promise had to survive being scrolled past in three seconds.',
+      'This project pushed me beyond just building pages. I had to think about content management, client workflows, mobile layout, and how non-technical users would keep the site updated. The brief was local property buyer needs, not page templates.',
     cta: {
       caseStudy: null,
       // Repository is private, so the GitHub button is omitted.
@@ -171,11 +172,11 @@ export const projects = [
     index: '05',
     title: 'Course Companion Web App',
     tagline:
-      'A Spring Boot and MySQL coursework project: a gamified study companion with course search, XP, streaks, badges, flashcards, and a grade tracker.',
+      'A Spring Boot and MySQL coursework project for managing and searching course-related content.',
     problem:
-      'Course information can become difficult to browse when it is spread across separate pages, datasets, or system views, and students often lose momentum without a sense of progress. This project focused on building a structured web app where course-related data could be stored, searched, and managed, with light gamification on top to keep students engaged.',
+      'Course-related information can become difficult to manage when it is spread across separate views, datasets, and backend logic. The project focused on creating a structured system for storing, searching, and managing course content.',
     solution:
-      'Built as a group coursework project, the app uses a Spring Boot backend with MySQL for persistent storage, Spring Security for auth, Thymeleaf for server-rendered pages, and REST-style routes for application logic. A preloaded dataset supports testing search and badge-related features. I contributed to backend design, database integration, debugging, testing, and team integration.',
+      'Built as a group coursework project, the app uses a Spring Boot backend with MySQL for persistent storage, Spring Security for authentication support, Thymeleaf for server-rendered pages, and REST-style routes for application logic. A preloaded dataset supports testing search and badge-related behaviour. I contributed to backend design, database integration, debugging, testing, and team integration.',
     stack: [
       'Java',
       'Spring Boot',
@@ -187,18 +188,17 @@ export const projects = [
       'JUnit',
     ],
     features: [
-      'Spring Boot backend with REST controllers and service layer.',
-      'MySQL database integration for persistent course, user, and progress data.',
-      'Course search and filtering across the catalogue.',
-      'Gamification layer: XP, levels, streaks, badges, and a leaderboard.',
-      'Flashcards, deadlines, goals, and a grade tracker for study planning.',
-      'Spring Security login and registration with profile management.',
-      'Preloaded dataset for testing search and badge behaviour.',
-      'JUnit test suites and local deployment through localhost.',
+      'Spring Boot backend for application logic and request handling.',
+      'MySQL database integration for persistent course data.',
+      'Structured course management entities.',
+      'Search functionality for discovering courses and content.',
+      'Spring Security and Thymeleaf support in the backend stack.',
+      'Preloaded dataset for testing search and badge-related behaviour.',
+      'JUnit testing and local deployment through localhost.',
       'Collaborative group development with shared debugging and integration work.',
     ],
     impact:
-      'This project helped me become more comfortable with Java backend development, database-backed applications, REST-style architecture, Spring Security, and working inside a shared codebase.',
+      'This project helped me become more confident with Java backend development, database-backed applications, REST-style architecture, Spring Security, and working inside a shared codebase.',
     cta: {
       caseStudy: null,
       github: 'https://github.com/namitzz/Course-Companion-Web-App-',

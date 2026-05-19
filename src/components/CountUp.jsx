@@ -18,16 +18,21 @@ export default function CountUp({
   prefix = '',
   suffix = '',
   decimals = 0,
+  plain = false,
   className = '',
 }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.4 })
   const mv = useMotionValue(from)
-  const display = useTransform(mv, (v) =>
-    prefix +
-    (decimals ? v.toFixed(decimals) : Math.round(v).toLocaleString()) +
-    suffix,
-  )
+  const display = useTransform(mv, (v) => {
+    const rounded = Math.round(v)
+    const formatted = decimals
+      ? v.toFixed(decimals)
+      : plain
+        ? String(rounded)
+        : rounded.toLocaleString()
+    return prefix + formatted + suffix
+  })
 
   useEffect(() => {
     if (!inView) return

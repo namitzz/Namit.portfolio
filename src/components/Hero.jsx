@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { profile } from '../data/content'
-import Avatar from './Avatar'
 import HeroBackdrop from './HeroBackdrop'
 import FloatingCards from './FloatingCards'
 import CountUp from './CountUp'
@@ -21,9 +20,9 @@ export default function Hero() {
       <HeroBackdrop />
       <FloatingCards />
 
-      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-10 md:grid-cols-12">
-        {/* Left: copy */}
-        <div className="md:col-span-7">
+      <div className="relative mx-auto flex w-full max-w-7xl items-center">
+        {/* Copy column (full width now that the avatar is gone) */}
+        <div className="w-full">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -57,10 +56,7 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.45 }}
             className="mt-6 max-w-2xl text-base leading-relaxed text-white/70 md:text-lg"
           >
-            Final-year BSc Computer Science at the University of Leicester.
-            Working across applied AI, retrieval-augmented generation, education
-            technology, computer vision, data science, UX, and digital
-            transformation.
+            {profile.subheadline}
           </motion.p>
 
           <motion.div
@@ -110,14 +106,10 @@ export default function Hero() {
             <Stat to={5} suffix="" label="featured projects" />
             <Stat to={1} suffix="M+" label="records analysed" />
             <Stat to={5} suffix="+" label="doc formats" />
-            <Stat to={2026} label="grad year" />
+            <Stat to={2026} label="grad year" plain />
           </motion.div>
         </div>
 
-        {/* Right: avatar */}
-        <div className="flex items-center justify-center md:col-span-5 md:justify-end">
-          <Avatar />
-        </div>
       </div>
 
       {/* Scroll hint */}
@@ -186,11 +178,11 @@ function ShimmerWord({ text, delay = 0 }) {
   )
 }
 
-function Stat({ to, label, suffix = '', decimals = 0 }) {
+function Stat({ to, label, suffix = '', decimals = 0, plain = false }) {
   return (
     <div className="bg-white/[0.02] p-5">
       <div className="font-display text-2xl font-semibold">
-        <CountUp to={to} suffix={suffix} decimals={decimals} />
+        <CountUp to={to} suffix={suffix} decimals={decimals} plain={plain} />
       </div>
       <div className="mt-1 text-xs uppercase tracking-widest text-white/45">
         {label}
