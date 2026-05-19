@@ -16,13 +16,13 @@ export default function Writing() {
   return (
     <section id="writing" className="relative z-10 px-6 py-28 md:px-12">
       <div className="mx-auto w-full max-w-5xl">
-        <p className="eyebrow">Writing and public guidance</p>
+        <p className="eyebrow">Writing</p>
         <h2 className="section-title mt-3 text-3xl md:text-4xl">
           Writing and public guidance
         </h2>
         <p className="mt-4 max-w-2xl text-white/70">
-          Alongside building projects, I have also contributed to guidance on
-          how students can use AI responsibly in their studies.
+          Alongside building projects, I have contributed to guidance on
+          responsible AI use in student learning.
         </p>
 
         <div className="mt-10 space-y-6">

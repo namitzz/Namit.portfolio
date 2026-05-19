@@ -5,12 +5,6 @@ import FloatingCards from './FloatingCards'
 import CountUp from './CountUp'
 import MagneticButton from './MagneticButton'
 
-const headline = [
-  ['I', 'build'],
-  ['AI', 'systems'],
-  ['that', 'are'],
-]
-
 export default function Hero() {
   return (
     <section
@@ -40,7 +34,7 @@ export default function Hero() {
 
           {/* Word-reveal headline */}
           <h1 className="section-title mt-7 max-w-5xl text-[clamp(2.4rem,6.4vw,5.2rem)] font-semibold leading-[1.02] tracking-tight">
-            <RevealLine delay={0.1}>I build AI and software for</RevealLine>
+            <RevealLine delay={0.1}>I build practical AI and software for</RevealLine>
             <RevealLine delay={0.55} className="block">
               <span className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)] bg-clip-text text-transparent">
                 learning,

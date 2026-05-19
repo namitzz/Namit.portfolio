@@ -40,12 +40,12 @@ export default function Nav({ themeKey }) {
           </motion.span>
         </a>
 
-        <ul className="hidden items-center gap-1 md:flex">
+        <ul className="hidden items-center gap-0.5 md:flex">
           {links.map((l) => (
             <li key={l.href}>
               <a
                 href={l.href}
-                className="rounded-full px-3 py-1.5 text-sm text-white/70 transition hover:bg-white/5 hover:text-white"
+                className="rounded-full px-2.5 py-1.5 text-[13px] text-white/70 transition hover:bg-white/5 hover:text-white lg:px-3 lg:text-sm"
               >
                 {l.label}
               </a>
