@@ -1,8 +1,8 @@
 // All static content lives here so copy can be edited without touching components.
 //
-// To enable the CV download button, drop a PDF into `public/` and set
-// `cv` below to its path (e.g. '/Namit_Singh_Sarna_CV.pdf'). Until then
-// leave it as `null` and the Hero will hide the button automatically.
+// TODO (CV): drop the PDF at `public/Namit_Singh_Sarna_CV.pdf`, then set
+// `profile.links.cv` to '/Namit_Singh_Sarna_CV.pdf'. Until that file is in
+// place, `cv` stays `null` and the Hero hides the download button.
 
 export const profile = {
   name: 'Namit Singh Sarna',
@@ -19,7 +19,13 @@ export const profile = {
   headline:
     'I build practical AI and software systems that help people learn, decide, and work better.',
   subheadline:
-    'Final-year Computer Science student at the University of Leicester, focused on source-grounded RAG, applied ML, backend systems, computer vision, and human-centred software.',
+    'Final-year Computer Science student at the University of Leicester, focused on source-grounded RAG, applied AI, backend systems, and full-stack software.',
+  highlights: [
+    'Predicted First Class, achieved First Class in Year 2.',
+    'Built UniWise, a source-grounded RAG academic assistant with a pluggable LLM backend.',
+    'Shipped Cloud Seven Realty, a live property platform for a paying client.',
+    'Contributor to ClassFutures guidance on responsible Generative AI use in studies.',
+  ],
   about: [
     "I'm Namit, a final-year Computer Science student at the University of Leicester, graduating in July 2026.",
     'I like building practical systems across AI, backend development, data, and user-facing software. I care about whether the thing works, whether people can understand it, and whether it solves a real problem.',
@@ -259,6 +265,13 @@ export const timeline = [
   },
   {
     year: '2025',
+    title: 'Contributor, ClassFutures Generative AI guidance',
+    org: 'ClassFutures',
+    body:
+      'Contributor to ClassFutures guidance on responsible Generative AI use in studies, focusing on academic integrity, critical thinking, and ethical adoption.',
+  },
+  {
+    year: '2025',
     title: 'AI in Education, applied work',
     org: 'Independent / micro-internship',
     body:
@@ -270,5 +283,20 @@ export const timeline = [
     org: 'Self-directed and university',
     body:
       'Built Posture AI, Cloud Seven Realty, and the Crime Prediction Dashboard as deliberate practice across computer vision, frontend and brand work, and applied data science. Also contributed to the Course Companion Web App as a group coursework project for CO2302 at Leicester.',
+  },
+]
+
+export const writing = [
+  {
+    id: 'classfutures-ai-guide',
+    title: 'Using Generative AI in Your Studies',
+    role: 'Contributor',
+    publisher: 'ClassFutures',
+    url: 'https://classfutures.co.uk/resources/ai/generative-ai-studies-guide',
+    tags: ['Generative AI', 'Education', 'Academic integrity', 'Critical thinking'],
+    summary:
+      'Contributed to guidance on responsible Generative AI use in learning, with a focus on academic integrity, critical thinking, and ethical adoption.',
+    description:
+      'This guide connects closely with the direction of my UniWise project: AI should support learning, not replace thinking. My contribution focused on responsible use, ethical adoption, and helping students treat AI as a study support tool rather than a shortcut.',
   },
 ]

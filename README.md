@@ -67,6 +67,23 @@ Project sections only render "View Case Study", "GitHub", and "Live Demo"
 buttons when the corresponding URL is set in `content.js`. `null` values
 are intentionally hidden so there are no dead `#` links.
 
+## Writing section
+
+The Writing section lives in [`src/components/Writing.jsx`](src/components/Writing.jsx)
+and is populated from the `writing` array in
+[`src/data/content.js`](src/data/content.js). Each entry renders an article
+card with:
+
+- A "Read article" link that opens the article in a new tab.
+- A "Preview on page" toggle that expands an embedded iframe preview.
+
+Featured entry: [ClassFutures, "Using Generative AI in Your Studies"](https://classfutures.co.uk/resources/ai/generative-ai-studies-guide).
+
+Publishers can block iframe embedding via `X-Frame-Options` or
+`Content-Security-Policy: frame-ancestors`. When that happens the iframe
+renders blank. The external link below the iframe is the working fallback
+and is always shown.
+
 ## Links
 
 - GitHub: <https://github.com/namitzz>

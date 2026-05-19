@@ -49,6 +49,26 @@ export default function About() {
               </span>
             ))}
           </div>
+
+          {profile.highlights?.length > 0 && (
+            <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+              <p className="eyebrow">Selected highlights</p>
+              <ul className="mt-3 space-y-2">
+                {profile.highlights.map((h) => (
+                  <li
+                    key={h}
+                    className="flex gap-3 text-sm leading-relaxed text-white/80"
+                  >
+                    <span
+                      className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ background: 'var(--accent)' }}
+                    />
+                    <span>{h}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </motion.div>
       </div>
     </section>

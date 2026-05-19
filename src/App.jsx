@@ -12,6 +12,7 @@ import WorkIntro from './components/WorkIntro'
 import ProjectSection from './components/ProjectSection'
 import Skills from './components/Skills'
 import Experience from './components/Experience'
+import Writing from './components/Writing'
 import Contact from './components/Contact'
 
 import UniWiseMock from './components/mockups/UniWiseMock'
@@ -100,6 +101,10 @@ export default function App() {
             accentLabel={accentLabels[p.id]}
           />
         ))}
+
+        <SectionTrigger onEnter={() => activate('base')}>
+          <Writing />
+        </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>
           <Skills />
