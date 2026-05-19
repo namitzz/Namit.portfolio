@@ -54,11 +54,11 @@ export const themes = {
   course: {
     id: 'course',
     name: 'Course Companion',
-    bgFrom: '#07111F',
-    bgTo: '#0B1728',
-    accent: '#F5B84B',
-    accent2: '#5AC8FF',
-    glow: 'rgba(245,184,75,0.18)',
-    muted: 'rgba(220,235,255,0.65)',
+    bgFrom: '#1A0B2E',
+    bgTo: '#0E1A3A',
+    accent: '#2575fc',
+    accent2: '#a78bfa',
+    glow: 'rgba(106,17,203,0.22)',
+    muted: 'rgba(220,225,255,0.65)',
   },
 }
