@@ -13,8 +13,9 @@ export const profile = {
   links: {
     github: 'https://github.com/namitzz',
     linkedin: 'https://www.linkedin.com/in/namit-singh-sarna-55a021323',
-    // Set to a real path once the CV PDF is added to /public.
-    cv: null,
+    // Currently a .docx; replace with a PDF in /public and update the path
+    // for in-browser preview. The .docx will download on click.
+    cv: '/Namit_Singh_Sarna_CV.docx',
   },
   headline:
     'I build practical AI and software systems that help people learn, decide, and work better.',
