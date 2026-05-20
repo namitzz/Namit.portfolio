@@ -129,7 +129,7 @@ def build():
     )
     draw.text(
         (pad_x + 26, y + 2),
-        "PORTFOLIO  ·  AI, FULL-STACK, EDUCATION TECH",
+        "PORTFOLIO  ·  AI, FULL-STACK,HUMAN-CENTRED TECH",
         font=eyebrow,
         fill=(200, 200, 215),
         spacing=4,
