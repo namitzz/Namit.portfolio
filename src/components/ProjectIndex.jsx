@@ -71,6 +71,18 @@ export default function ProjectIndex() {
                     {p.title}
                   </h4>
 
+                  {p.status && (
+                    <span
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-white/70"
+                    >
+                      <span
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ background: 'var(--accent)' }}
+                      />
+                      {p.status}
+                    </span>
+                  )}
+
                   <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/65">
                     {p.tagline}
                   </p>

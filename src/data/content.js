@@ -75,8 +75,9 @@ export const projects = [
     themeKey: 'vision',
     index: '02',
     title: 'Posture AI',
+    status: 'Prototype · In development',
     tagline:
-      'A real-time computer vision prototype for gym form correction, rep tracking, and AI coaching feedback.',
+      'An AI-assisted computer vision prototype, currently in development, exploring gym form feedback, rep tracking, and coaching summaries.',
     problem:
       'Form mistakes in the gym can increase injury risk and slow progress, but personal trainers are expensive and most form-check apps are static, post-hoc, or vague. Getting live, specific feedback during a set is still difficult without a coach watching.',
     solution:
@@ -99,7 +100,7 @@ export const projects = [
       'End-of-set AI coaching summary describing what to fix next.',
     ],
     impact:
-      'Taught me where the cost actually lives in a vision pipeline. It is rarely the model, almost always the per-frame Python glue around it.',
+      'This project helped me understand how real-time computer vision prototypes are structured, including pose tracking, frame processing, feedback timing, and the importance of reviewing AI-assisted code carefully.',
     cta: {
       caseStudy: null,
       github: 'https://github.com/namitzz/posture',

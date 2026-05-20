@@ -52,6 +52,22 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
           <h3 className="section-title mt-5 text-4xl font-semibold leading-tight md:text-5xl">
             {project.title}
           </h3>
+          {project.status && (
+            <span
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em]"
+              style={{
+                borderColor: 'var(--accent)',
+                color: 'var(--accent)',
+                background: 'rgba(255,255,255,0.02)',
+              }}
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ background: 'var(--accent)' }}
+              />
+              {project.status}
+            </span>
+          )}
           <p className="mt-3 text-lg text-white/70">{project.tagline}</p>
 
           <div className="mt-8 space-y-6">
