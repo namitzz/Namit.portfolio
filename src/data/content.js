@@ -19,7 +19,9 @@ export const profile = {
   headline:
     'I build practical AI and software systems that help people learn, decide, and work better.',
   subheadline:
-    'Final-year Computer Science student at the University of Leicester, focused on source-grounded RAG, applied AI, backend systems, and full-stack software.',
+    'Final-year Computer Science student at the University of Leicester, focused on source-grounded RAG, applied AI, backend systems, and full-stack software, with a strong interest in education technology and trustworthy learning tools.',
+  positioning:
+    'Main direction: practical AI and software systems, with a strong education-tech angle.',
   highlights: [
     'Predicted First Class, achieved First Class in Year 2.',
     'Built UniWise, a source-grounded RAG academic assistant with a pluggable LLM backend.',
@@ -28,8 +30,8 @@ export const profile = {
   ],
   about: [
     "I'm Namit, a final-year Computer Science student at the University of Leicester, graduating in July 2026.",
-    'I like building practical systems across AI, backend development, data, and user-facing software. I care about whether the thing works, whether people can understand it, and whether it solves a real problem.',
-    'My main interest is AI for learning and decision support. UniWise is the clearest example: a source-grounded RAG assistant that answers from course material, shows evidence, and refuses when the support is weak.',
+    'I build practical systems across AI, backend development, data, and user-facing software. My strongest direction is AI for learning and trustworthy knowledge, but I also enjoy building full-stack and backend systems that solve real problems.',
+    'UniWise is the clearest example of the work I want to do more of: a source-grounded RAG assistant that answers from course material, shows evidence, and refuses when the support is weak.',
   ],
 }
 

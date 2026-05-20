@@ -50,8 +50,14 @@ export default function About() {
             ))}
           </div>
 
+          {profile.positioning && (
+            <p className="mt-8 text-sm text-white/55">
+              {profile.positioning}
+            </p>
+          )}
+
           {profile.highlights?.length > 0 && (
-            <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+            <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
               <p className="eyebrow">Selected highlights</p>
               <ul className="mt-3 space-y-2">
                 {profile.highlights.map((h) => (

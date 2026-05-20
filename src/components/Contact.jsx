@@ -29,12 +29,12 @@ export default function Contact() {
 
           <p className="eyebrow">Contact</p>
           <h2 className="section-title mt-3 max-w-3xl text-4xl font-semibold leading-tight md:text-5xl">
-            Open to AI, software engineering, education technology, digital
-            transformation, and research opportunities.
+            Open to graduate roles, AI education, RAG systems, and software
+            projects.
           </h2>
           <p className="mt-5 max-w-xl text-white/65">
-            If any of the work above resonates, or you’re building something
-            adjacent, the inbox is the fastest way to start a conversation.
+            Want to talk about graduate roles, AI education, RAG systems, or
+            software projects? Feel free to reach out.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -57,14 +57,16 @@ export default function Contact() {
             >
               GitHub
             </a>
-            <a
-              href={profile.links.cv}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-ghost"
-            >
-              CV
-            </a>
+            {profile.links.cv && (
+              <a
+                href={profile.links.cv}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-ghost"
+              >
+                CV
+              </a>
+            )}
           </div>
         </motion.div>
 

@@ -22,7 +22,9 @@ export default function Writing() {
         </h2>
         <p className="mt-4 max-w-2xl text-white/70">
           Alongside building projects, I have contributed to guidance on
-          responsible AI use in student learning.
+          responsible AI use in student learning. This connects with my wider
+          interest in building AI tools that support understanding instead of
+          replacing it.
         </p>
 
         <div className="mt-10 space-y-6">

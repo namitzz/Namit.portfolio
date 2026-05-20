@@ -15,6 +15,8 @@ import Skills from './components/Skills'
 import Experience from './components/Experience'
 import Writing from './components/Writing'
 import Contact from './components/Contact'
+import ContactStrip from './components/ContactStrip'
+import FloatingContact from './components/FloatingContact'
 
 import UniWiseMock from './components/mockups/UniWiseMock'
 import VisionMock from './components/mockups/VisionMock'
@@ -87,6 +89,8 @@ export default function App() {
           <Marquee items={marqueeItems} speed={36} />
         </div>
 
+        <ContactStrip />
+
         <SectionTrigger onEnter={() => activate('base')}>
           <About />
         </SectionTrigger>
@@ -120,6 +124,8 @@ export default function App() {
           <Contact />
         </SectionTrigger>
       </main>
+
+      <FloatingContact />
     </div>
   )
 }

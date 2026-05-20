@@ -59,9 +59,12 @@ export default function Hero() {
             transition={{ duration: 0.7, delay: 0.55 }}
             className="mt-9 flex flex-wrap items-center gap-3"
           >
-            <MagneticButton href="#work" className="btn-primary">
+            <MagneticButton href="#projects" className="btn-primary">
               View Projects →
             </MagneticButton>
+            <a href="#contact" className="btn-ghost">
+              Contact me
+            </a>
             <a
               href={profile.links.github}
               className="btn-ghost"

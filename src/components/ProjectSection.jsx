@@ -25,7 +25,7 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
   }, [inView, project.themeKey, onActivate])
 
   return (
-    <section id={project.id} ref={ref} className="relative z-10 px-6 py-28 md:px-12">
+    <section id={project.id} ref={ref} className="relative z-10 px-6 py-24 md:px-12">
       <div className="mx-auto grid w-full max-w-7xl gap-14 md:grid-cols-12 md:gap-10 lg:gap-16">
         {/* Narrative column */}
         <motion.div

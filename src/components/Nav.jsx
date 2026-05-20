@@ -2,11 +2,10 @@ import { motion } from 'framer-motion'
 import { themes } from '../data/themes'
 
 const links = [
-  { href: '#work', label: 'Work' },
+  { href: '#projects', label: 'Projects' },
   { href: '#about', label: 'About' },
   { href: '#writing', label: 'Writing' },
   { href: '#skills', label: 'Skills' },
-  { href: '#experience', label: 'Experience' },
   { href: '#contact', label: 'Contact' },
 ]
 

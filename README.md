@@ -1,5 +1,9 @@
 # Namit Singh Sarna — Portfolio
 
+This portfolio centres on practical AI and software systems, with a strong
+focus on source-grounded RAG, education technology, and trustworthy learning
+tools.
+
 Scroll-based personal portfolio where each project changes the visual theme
 as it enters view. The background, accent colours, and mockup UIs transition
 smoothly between projects so each project has a distinct visual style.
@@ -27,6 +31,14 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 npm run build
 npm run preview
 ```
+
+## Site layout
+
+The site is a single-page scroll experience with quick-jump navigation:
+
+- **Homepage project story.** Full-detail project sections, one per project, with the scroll-based theme switch.
+- **Project directory at `#projects`.** Compact card grid that shows every project at a glance, with View details, GitHub, and Live demo buttons (rendered only when the URL exists in `content.js`).
+- **Contact links near the top and bottom.** A compact contact strip sits just under the hero so visitors do not have to scroll the whole page, and the full Contact section with email, LinkedIn, GitHub, and CV is at the bottom. On desktop, a small floating Contact button is also pinned to the bottom-right.
 
 ## Featured projects
 
