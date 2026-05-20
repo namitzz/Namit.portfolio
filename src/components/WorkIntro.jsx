@@ -18,8 +18,8 @@ export default function WorkIntro() {
             </h2>
           </div>
           <p className="max-w-md text-sm text-white/55">
-            Each section has its own visual style, but the focus is on what I
-            built, why it mattered, and what I learned.
+            Use the project index to jump straight to a build, or scroll
+            through each section for the full breakdown.
           </p>
         </motion.div>
       </div>

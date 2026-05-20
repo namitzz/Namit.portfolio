@@ -9,6 +9,7 @@ import Hero from './components/Hero'
 import Marquee from './components/Marquee'
 import About from './components/About'
 import WorkIntro from './components/WorkIntro'
+import ProjectIndex from './components/ProjectIndex'
 import ProjectSection from './components/ProjectSection'
 import Skills from './components/Skills'
 import Experience from './components/Experience'
@@ -91,6 +92,7 @@ export default function App() {
         </SectionTrigger>
 
         <WorkIntro />
+        <ProjectIndex />
 
         {projects.map((p) => (
           <ProjectSection
