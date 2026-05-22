@@ -98,15 +98,17 @@ export default function App() {
         <WorkIntro />
         <ProjectIndex />
 
-        {projects.map((p) => (
-          <ProjectSection
-            key={p.id}
-            project={p}
-            onActivate={activate}
-            mockup={mockups[p.id]}
-            accentLabel={accentLabels[p.id]}
-          />
-        ))}
+        {projects
+          .filter((p) => !p.comingSoon)
+          .map((p) => (
+            <ProjectSection
+              key={p.id}
+              project={p}
+              onActivate={activate}
+              mockup={mockups[p.id]}
+              accentLabel={accentLabels[p.id]}
+            />
+          ))}
 
         <SectionTrigger onEnter={() => activate('base')}>
           <Writing />

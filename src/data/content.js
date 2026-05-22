@@ -213,6 +213,23 @@ export const projects = [
       demo: null,
     },
   },
+  // Placeholder. Shows in the Project directory only; the full project
+  // section is suppressed via `comingSoon` so the homepage doesn't render
+  // an empty Problem/Solution/Stack block for it.
+  {
+    id: 'agentforge',
+    themeKey: 'base',
+    index: '06',
+    title: 'AgentForge',
+    status: 'Coming soon',
+    comingSoon: true,
+    tagline: '',
+    cta: {
+      caseStudy: null,
+      github: null,
+      demo: null,
+    },
+  },
 ]
 
 export const skills = [

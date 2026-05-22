@@ -47,21 +47,31 @@ export default function ProjectIndex() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.45, delay: i * 0.05 }}
-              className="flex h-full flex-col rounded-2xl border border-white/15 bg-white/[0.04] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/35 hover:bg-white/[0.06]"
+              className={
+                p.comingSoon
+                  ? 'flex h-full flex-col rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-5'
+                  : 'flex h-full flex-col rounded-2xl border border-white/15 bg-white/[0.04] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/35 hover:bg-white/[0.06]'
+              }
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="font-mono text-xs text-white/40">
                   {p.index}
                 </span>
-                <span
-                  className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em]"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  {labels[p.id] || p.themeKey}
-                </span>
+                {!p.comingSoon && (
+                  <span
+                    className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em]"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    {labels[p.id] || p.themeKey}
+                  </span>
+                )}
               </div>
 
-              <h4 className="mt-3 font-display text-lg font-semibold leading-snug text-white">
+              <h4
+                className={`mt-3 font-display text-lg font-semibold leading-snug ${
+                  p.comingSoon ? 'text-white/70' : 'text-white'
+                }`}
+              >
                 {p.title}
               </h4>
 
@@ -75,11 +85,13 @@ export default function ProjectIndex() {
                 </span>
               )}
 
-              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/65">
-                {p.tagline}
-              </p>
+              {!p.comingSoon && p.tagline && (
+                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/65">
+                  {p.tagline}
+                </p>
+              )}
 
-              {p.stack?.length > 0 && (
+              {!p.comingSoon && p.stack?.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {p.stack.slice(0, 4).map((s) => (
                     <span
@@ -92,41 +104,43 @@ export default function ProjectIndex() {
                 </div>
               )}
 
-              <div className="mt-auto flex flex-wrap gap-2 pt-4">
-                <a
-                  href={`#${p.id}`}
-                  aria-label={`View details for ${p.title}`}
-                  className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium text-white/85 transition hover:border-white/40 hover:bg-white/[0.05]"
-                >
-                  View details →
-                </a>
-                {p.cta?.github && (
+              {!p.comingSoon && (
+                <div className="mt-auto flex flex-wrap gap-2 pt-4">
                   <a
-                    href={p.cta.github}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`Open ${p.title} on GitHub`}
-                    className="rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/75 transition hover:border-white/35 hover:text-white"
+                    href={`#${p.id}`}
+                    aria-label={`View details for ${p.title}`}
+                    className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium text-white/85 transition hover:border-white/40 hover:bg-white/[0.05]"
                   >
-                    GitHub ↗
+                    View details →
                   </a>
-                )}
-                {p.cta?.demo && (
-                  <a
-                    href={p.cta.demo}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`Open ${p.title} live demo`}
-                    className="rounded-full border px-3 py-1.5 text-xs font-medium transition"
-                    style={{
-                      borderColor: 'var(--accent)',
-                      color: 'var(--accent)',
-                    }}
-                  >
-                    Live demo ↗
-                  </a>
-                )}
-              </div>
+                  {p.cta?.github && (
+                    <a
+                      href={p.cta.github}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`Open ${p.title} on GitHub`}
+                      className="rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/75 transition hover:border-white/35 hover:text-white"
+                    >
+                      GitHub ↗
+                    </a>
+                  )}
+                  {p.cta?.demo && (
+                    <a
+                      href={p.cta.demo}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`Open ${p.title} live demo`}
+                      className="rounded-full border px-3 py-1.5 text-xs font-medium transition"
+                      style={{
+                        borderColor: 'var(--accent)',
+                        color: 'var(--accent)',
+                      }}
+                    >
+                      Live demo ↗
+                    </a>
+                  )}
+                </div>
+              )}
             </motion.li>
           ))}
         </ul>
