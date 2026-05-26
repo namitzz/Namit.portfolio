@@ -104,7 +104,14 @@ export const projects = [
       'This project helped me understand how real-time computer vision prototypes are structured, including pose tracking, frame processing, feedback timing, and the importance of reviewing AI-assisted code carefully.',
     cta: {
       caseStudy: null,
-      github: 'https://github.com/namitzz/posture',
+      // Repo is private for now. To make public later, set:
+      //   github: 'https://github.com/namitzz/posture',
+      // and remove the `githubPrivate` field below.
+      github: null,
+      githubPrivate: {
+        reason:
+          'Repository is private for now while the prototype is being cleaned up. Happy to share access or walk through the code on request.',
+      },
       demo: null,
     },
   },

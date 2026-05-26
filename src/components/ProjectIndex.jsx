@@ -124,6 +124,16 @@ export default function ProjectIndex() {
                       GitHub ↗
                     </a>
                   )}
+                  {!p.cta?.github && p.cta?.githubPrivate && (
+                    <span
+                      title={p.cta.githubPrivate.reason}
+                      aria-label={`${p.title} repository is private`}
+                      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.02] px-3 py-1.5 text-xs font-medium text-white/50"
+                    >
+                      <span aria-hidden="true">🔒</span>
+                      GitHub · Private
+                    </span>
+                  )}
                   {p.cta?.demo && (
                     <a
                       href={p.cta.demo}

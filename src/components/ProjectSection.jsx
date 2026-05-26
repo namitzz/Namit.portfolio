@@ -130,6 +130,9 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
                 GitHub
               </a>
             )}
+            {!project.cta.github && project.cta.githubPrivate && (
+              <PrivateRepoNote reason={project.cta.githubPrivate.reason} />
+            )}
             {project.cta.demo && (
               <a
                 href={project.cta.demo}
@@ -160,6 +163,48 @@ function Block({ label, body }) {
       <p className="eyebrow">{label}</p>
       <p className="mt-2 text-[15px] leading-relaxed text-white/75">{body}</p>
     </div>
+  )
+}
+
+/**
+ * Inline "Private" affordance for a GitHub repo that exists but is not
+ * publicly accessible. Uses a native <details> element so it is keyboard
+ * accessible, works on mobile (tap to expand), and needs no JS state.
+ *
+ * Drop-in: set `cta.githubPrivate = { reason: '...' }` on a project in
+ * content.js, leave `cta.github` as null, and this renders automatically.
+ */
+function PrivateRepoNote({ reason }) {
+  return (
+    <details className="group rounded-full border border-white/15 bg-white/[0.03] open:rounded-2xl open:bg-white/[0.04] open:px-4 open:py-3">
+      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white/80 transition group-open:px-0 group-open:py-0 hover:text-white">
+        <LockIcon />
+        GitHub · Private
+        <span
+          className="text-[11px] text-white/45 transition group-open:hidden"
+          aria-hidden="true"
+        >
+          (why?)
+        </span>
+      </summary>
+      <p className="mt-2 text-sm leading-relaxed text-white/70">{reason}</p>
+    </details>
+  )
+}
+
+function LockIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3.5 w-3.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" strokeLinecap="round" />
+    </svg>
   )
 }
 
