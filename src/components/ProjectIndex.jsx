@@ -30,7 +30,7 @@ export default function ProjectIndex() {
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.55 }}
         >
-          <p className="eyebrow">Project directory</p>
+          <p className="eyebrow">Skip ahead</p>
           <h3 className="section-title mt-3 text-2xl font-semibold leading-tight md:text-3xl">
             Project directory
           </h3>

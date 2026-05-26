@@ -18,11 +18,11 @@ export const profile = {
   headline:
     'I build practical AI and software systems that help people learn, decide, and work better.',
   subheadline:
-    'Final-year Computer Science student at the University of Leicester, focused on source-grounded RAG, applied AI, backend systems, and full-stack software, with a strong interest in education technology and trustworthy learning tools.',
+    'Final-year Computer Science student at the University of Leicester, focused on source-grounded RAG, AI integration, backend systems, and full-stack software, with a strong interest in education technology and trustworthy learning tools.',
   positioning:
     'Main direction: practical AI and software systems, with a strong education-tech angle.',
   highlights: [
-    'Predicted First Class, achieved First Class in Year 2.',
+    'Expecting First Class.',
     'Built UniWise, a source-grounded RAG academic assistant with a pluggable LLM backend.',
     'Shipped Cloud Seven Realty, a live property platform for a paying client.',
     'Contributor to ClassFutures guidance on responsible Generative AI use in studies.',
@@ -41,7 +41,7 @@ export const projects = [
     index: '01',
     title: 'UniWise',
     tagline:
-      'A source-grounded RAG assistant for higher education, built as my final-year dissertation prototype.',
+      'A source-grounded RAG study assistant. Dissertation project.',
     problem:
       'University students rely on lecture material that is fragmented across PDFs, slides, and notes. General-purpose LLMs can answer confidently from training data, even when the answer is not based on what the lecturer taught, which can make it harder for students to judge whether an answer is actually grounded in their module material.',
     solution:
@@ -64,7 +64,7 @@ export const projects = [
       'Pluggable LLM backend with OpenAI and Ollama adapters.',
     ],
     impact:
-      'Built as my final-year dissertation project. The harder problem turned out not to be retrieval, it was building a UI that makes refusal feel like trust rather than failure.',
+      'Retrieval was the part I expected to be hard. It was not. The harder problem was how to handle "I do not know." A refusal that looks like the system breaking ruins the trust the citations are meant to build. Getting that one detail right took longer than the rest of the pipeline.',
     cta: {
       caseStudy: null,
       github: null,
@@ -101,7 +101,7 @@ export const projects = [
       'End-of-set AI coaching summary describing what to fix next.',
     ],
     impact:
-      'This project helped me understand how real-time computer vision prototypes are structured, including pose tracking, frame processing, feedback timing, and the importance of reviewing AI-assisted code carefully.',
+      'Working on this taught me a lot about how real-time vision prototypes are actually put together. Pose tracking is the easy part to demo. Getting frame budgets, feedback timing, and overlay state to behave is where the real work lives. It also pushed me to be more careful about reviewing AI-assisted code, since shipping something a model wrote without reading it line by line is a fast way to introduce bugs you cannot explain later.',
     cta: {
       caseStudy: null,
       // Repo is private for now. To make public later, set:
@@ -145,7 +145,7 @@ export const projects = [
       'Fully responsive, since most traffic for this market is on mobile.',
     ],
     impact:
-      'This project pushed me beyond just building pages. I had to think about content management, client workflows, mobile layout, and how non-technical users would keep the site updated. The brief was local property buyer needs, not page templates.',
+      'I went in thinking this was a frontend job and came out understanding it was a client job. Most of the decisions had nothing to do with code. They were about how a non-technical team would actually keep the site alive, who buyers trust in this market, and what could be safely changed in a spreadsheet without a deploy. The code was the easy half.',
     cta: {
       caseStudy: null,
       // Repository is private, so the GitHub button is omitted.
@@ -174,7 +174,7 @@ export const projects = [
       'Stylised dashboard view of KPIs, trends, heatmap, and model performance.',
     ],
     impact:
-      'This project made me better at cleaning messy datasets, choosing evaluation metrics, and explaining model results clearly.',
+      'Most of the lessons here happened before the modelling even started. The data was uneven, the area sizes were not comparable, and the categories did not line up cleanly across years. By the time I was tuning models I had already made the decisions that actually mattered. Picking R squared, RMSE, and MAE side by side, and explaining why a Decision Tree could match a Random Forest on test but still be the wrong choice, was the part that taught me the most.',
     cta: {
       caseStudy: null,
       github: null,
@@ -213,7 +213,7 @@ export const projects = [
       'Collaborative group development with shared debugging and integration work.',
     ],
     impact:
-      'This project helped me become more confident with Java backend development, database-backed applications, REST-style architecture, Spring Security, and working inside a shared codebase.',
+      'The technical bit was Java, Spring Security, and MySQL, and I came out a lot more comfortable with all three. The less obvious lesson was how to work inside someone else\'s code. Reading a teammate\'s controller before you change it, asking what a method is meant to do before you "fix" it, and keeping commits small enough that the next person on integration day does not curse your name. That has stayed with me more than any of the syntax.',
     cta: {
       caseStudy: null,
       github: 'https://github.com/namitzz/Course-Companion-Web-App-',

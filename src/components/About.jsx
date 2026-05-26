@@ -33,7 +33,7 @@ export default function About() {
 
           <div className="mt-8 flex flex-wrap gap-2">
             {[
-              'Applied AI',
+              'AI integration',
               'RAG systems',
               'Education technology',
               'Computer vision',
