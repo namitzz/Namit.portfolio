@@ -37,7 +37,7 @@ export default function Hero() {
             <RevealLine delay={0.1}>I build practical AI and software for</RevealLine>
             <RevealLine delay={0.55} className="block">
               <span className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)] bg-clip-text text-transparent">
-                learning,
+                people,
               </span>{' '}
               <ShimmerWord text="trust," delay={0.9} />{' '}
               and real-world decisions.

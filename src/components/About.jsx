@@ -33,13 +33,14 @@ export default function About() {
 
           <div className="mt-8 flex flex-wrap gap-2">
             {[
-              'AI integration',
+              'Applied AI',
+              'Machine learning',
               'RAG systems',
-              'Education technology',
+              'Backend / APIs',
+              'Full-stack',
               'Computer vision',
               'Data science',
-              'UX',
-              'Digital transformation',
+              'Product-quality UX',
             ].map((t) => (
               <span
                 key={t}

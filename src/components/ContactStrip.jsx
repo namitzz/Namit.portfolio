@@ -20,8 +20,8 @@ export default function ContactStrip() {
         className="glass mx-auto flex w-full max-w-5xl flex-col items-start justify-between gap-3 rounded-2xl px-5 py-4 sm:flex-row sm:items-center"
       >
         <p className="text-sm text-white/75">
-          Open to graduate software, AI application, and education technology
-          opportunities.
+          Open to graduate roles in AI, machine learning, and software
+          engineering.
         </p>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">

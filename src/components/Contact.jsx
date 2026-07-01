@@ -29,12 +29,12 @@ export default function Contact() {
 
           <p className="eyebrow">Contact</p>
           <h2 className="section-title mt-3 max-w-3xl text-4xl font-semibold leading-tight md:text-5xl">
-            Open to graduate roles, AI education, RAG systems, and software
-            projects.
+            Open to graduate roles in AI, machine learning, and software
+            engineering.
           </h2>
           <p className="mt-5 max-w-xl text-white/65">
-            Want to talk about graduate roles, AI education, RAG systems, or
-            software projects? Feel free to reach out.
+            AI systems, backend, data pipelines, or a frontend that has to feel
+            right — happy to talk about any of it.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
