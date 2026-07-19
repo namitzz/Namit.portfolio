@@ -7,7 +7,7 @@
 export const profile = {
   name: 'Namit Singh Sarna',
   shortName: 'Namit',
-  role: 'Final-year BSc Computer Science · University of Leicester',
+  role: 'BSc Computer Science, First Class Honours · University of Leicester',
   // Replace with your preferred contact address.
   email: 'namitmec@gmail.com',
   links: {
@@ -18,19 +18,19 @@ export const profile = {
   headline:
     'I build practical AI and software systems that help people decide, work, and learn better.',
   subheadline:
-    'Final-year Computer Science student at the University of Leicester. Building across applied AI and machine learning, RAG systems, backend and full-stack software, computer vision, and data science — for graduate AI and software engineering roles.',
+    'BSc Computer Science graduate from the University of Leicester (First Class Honours). Building across applied AI and machine learning, RAG systems, backend and full-stack software, computer vision, and data science — for graduate AI and software engineering roles.',
   positioning:
     'Direction: practical AI and software engineering — RAG, backend systems, ML, computer vision, and full-stack.',
   highlights: [
-    'Expecting First Class.',
-    'Built UniWise: a source-grounded RAG system with pluggable LLM backend, cross-encoder reranking, and confidence-gated refusal.',
+    'First Class Honours (conferred).',
+    'Built UniWise: a source-grounded RAG study assistant with cross-encoder reranking, citation-level source evidence, and an evaluation harness scoring answer grounding.',
     'Shipped Cloud Seven Realty — a live production frontend for a paying client, backed by Google Sheets/Drive with ISR.',
     'Modelled ~1M+ Met Police records into LSOA-month panels and trained regression + K-Means for area profiling.',
     'Contributor to ClassFutures published guidance on responsible Generative AI use.',
   ],
   about: [
-    "I'm Namit, a final-year Computer Science student at the University of Leicester, graduating in July 2026.",
-    'I build practical systems across AI, backend engineering, data, and user-facing software — the kind of work that has to survive real users, not just a demo. I care about systems that ground themselves in evidence, explain themselves, and know when to refuse.',
+    "I'm Namit, a Computer Science graduate from the University of Leicester (First Class Honours, conferred July 2026).",
+    'I build practical systems across AI, backend engineering, data, and user-facing software — the kind of work that has to survive real users, not just a demo. I care about systems that ground themselves in evidence, explain themselves, and cite their sources so users can verify every answer.',
     'The projects below span RAG, computer vision, applied data science, and full-stack product work. Different domains, same discipline: pick the smallest system that actually solves the problem, then make it trustworthy.',
   ],
 }
@@ -46,7 +46,7 @@ export const projects = [
     problem:
       'University students rely on lecture material that is fragmented across PDFs, slides, and notes. General-purpose LLMs can answer confidently from training data, even when the answer is not based on what the lecturer taught, which can make it harder for students to judge whether an answer is actually grounded in their module material.',
     solution:
-      'UniWise restricts answers to lecture-only context. Relevant chunks are retrieved from the course corpus, reranked, and shown with source evidence. Below a confidence threshold the assistant refuses to answer instead of hallucinating, and points the student back to supported material or appropriate academic support.',
+      'UniWise restricts answers to lecture-only context. Relevant chunks are retrieved from the course corpus, reranked, and shown with source evidence, so students can trace every answer back to the exact slide or page it came from and stay within what the module actually taught.',
     stack: [
       'FastAPI',
       'Streamlit',
@@ -59,16 +59,16 @@ export const projects = [
     features: [
       'Ingestion for PDF, DOCX, PPTX, TXT, MD with chunk-level metadata.',
       'Dense vector retrieval with cross-encoder reranking for citation precision.',
-      'Refusal thresholds and confidence indicators to reduce hallucinations.',
+      'Confidence indicators and grounding checks that keep answers tied to retrieved sources.',
       'Source citations showing file, page, and chunk-level metadata.',
       'Telemetry and analytics for module-level question patterns.',
       'Pluggable LLM backend with OpenAI and Ollama adapters.',
     ],
     impact:
-      'Retrieval was the part I expected to be hard. It was not. The harder problem was how to handle "I do not know." A refusal that looks like the system breaking ruins the trust the citations are meant to build. Getting that one detail right took longer than the rest of the pipeline.',
+      'Retrieval was the part I expected to be hard. It was not. The harder problem was trust: an answer only helps a student if they can see exactly where it came from. Most of the work went into citation precision, reranking, and an evaluation harness that scored whether each answer was genuinely grounded in the retrieved source. Getting that verification loop right took longer than the rest of the pipeline.',
     cta: {
       caseStudy: null,
-      github: null,
+      github: 'https://github.com/namitzz/UniWise',
       demo: null,
     },
   },
@@ -252,7 +252,7 @@ export const skills = [
       'Vector DBs (Chroma)',
       'Sentence-transformers',
       'Cross-encoder reranking',
-      'Refusal & grounding',
+      'Answer grounding & citations',
       'OpenAI / Ollama',
     ],
   },
@@ -288,7 +288,7 @@ export const timeline = [
     title: 'BSc Computer Science',
     org: 'University of Leicester',
     body:
-      'Final-year, graduating July 2026. Coursework spans AI, software engineering, databases, HCI, and applied data science. Dissertation: UniWise, a source-grounded RAG assistant for higher education.',
+      'Graduated July 2026 with First Class Honours. Coursework spans AI, software engineering, databases, HCI, and applied data science. Dissertation: UniWise, a source-grounded RAG assistant for higher education.',
   },
   {
     year: '2025',

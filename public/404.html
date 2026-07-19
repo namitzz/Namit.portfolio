@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#08070d" />
+    <title>Page not found · Namit Singh Sarna</title>
+    <meta
+      name="description"
+      content="This page does not exist. Head back to Namit Singh Sarna's portfolio."
+    />
+    <meta name="robots" content="noindex" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <style>
+      :root {
+        --bg-from: #08070d;
+        --bg-to: #160f18;
+        --accent: #ff7a59;
+        --accent-2: #6be3d6;
+        --ink: #ffffff;
+        --muted: rgba(255, 255, 255, 0.6);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        min-height: 100vh;
+        font-family: 'Inter', system-ui, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(
+            circle at 15% 15%,
+            rgba(255, 122, 89, 0.18) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 85% 85%,
+            rgba(107, 227, 214, 0.12) 0%,
+            transparent 40%
+          ),
+          linear-gradient(160deg, var(--bg-from) 0%, var(--bg-to) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1.5rem;
+        overflow-x: hidden;
+      }
+      main {
+        width: 100%;
+        max-width: 720px;
+      }
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+        font-size: 0.72rem;
+        color: var(--muted);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 12px var(--accent);
+      }
+      h1 {
+        font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+        font-size: clamp(4rem, 14vw, 8rem);
+        line-height: 0.95;
+        margin: 1.5rem 0 0.5rem;
+        letter-spacing: -0.03em;
+        font-weight: 600;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      h2 {
+        font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+        font-size: clamp(1.4rem, 3.4vw, 2rem);
+        margin: 0 0 1.25rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      p {
+        color: rgba(255, 255, 255, 0.72);
+        line-height: 1.6;
+        margin: 0 0 1.5rem;
+        max-width: 46ch;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.8rem 1.4rem;
+        border-radius: 999px;
+        transition:
+          transform 0.2s ease,
+          filter 0.2s ease,
+          box-shadow 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #06060e;
+        border: 1px solid var(--accent);
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.1);
+        box-shadow: 0 12px 40px -10px var(--accent);
+      }
+      .btn-ghost {
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: var(--ink);
+        background: transparent;
+      }
+      .btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.35);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 2.5rem;
+      }
+      .directory {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.025);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+      }
+      .directory-title {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.4);
+        margin: 0 0 0.75rem;
+      }
+      .directory ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+      @media (min-width: 480px) {
+        .directory ul {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .directory a {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.8);
+        padding: 0.55rem 0.5rem;
+        border-radius: 0.5rem;
+        transition:
+          background 0.2s ease,
+          color 0.2s ease;
+        font-size: 0.9rem;
+      }
+      .directory a:hover {
+        background: rgba(255, 255, 255, 0.04);
+        color: #fff;
+      }
+      .directory .mono {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.35);
+        min-width: 1.75em;
+      }
+      footer {
+        margin-top: 2rem;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.4);
+      }
+      footer a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+      }
+      footer a:hover {
+        color: #fff;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          transition-duration: 0.001ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="eyebrow"><span class="dot"></span> Not found</span>
+      <h1>404</h1>
+      <h2>This page does not exist.</h2>
+      <p>
+        Probably a typo, a stale link, or something that got renamed. The main
+        portfolio is one click away.
+      </p>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="/">Back to portfolio →</a>
+        <a class="btn btn-ghost" href="/#contact">Get in touch</a>
+      </div>
+
+      <div class="directory">
+        <p class="directory-title">Jump straight to</p>
+        <ul>
+          <li>
+            <a href="/#uniwise"><span class="mono">01</span>UniWise</a>
+          </li>
+          <li>
+            <a href="/#vision"><span class="mono">02</span>Posture AI</a>
+          </li>
+          <li>
+            <a href="/#cloud"><span class="mono">03</span>Cloud Seven Realty</a>
+          </li>
+          <li>
+            <a href="/#crime"><span class="mono">04</span>Crime Prediction</a>
+          </li>
+          <li>
+            <a href="/#course"><span class="mono">05</span>Course Companion</a>
+          </li>
+          <li>
+            <a href="/#writing"><span class="mono">→</span>Writing</a>
+          </li>
+        </ul>
+      </div>
+
+      <footer>
+        Namit Singh Sarna · BSc Computer Science, First Class Honours ·
+        <a href="https://github.com/namitzz" target="_blank" rel="noreferrer"
+          >GitHub</a
+        >
+      </footer>
+    </main>
+  </body>
+</html>

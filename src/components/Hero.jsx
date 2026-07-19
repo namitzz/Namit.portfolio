@@ -28,7 +28,7 @@ export default function Hero() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/60">
-              Available · graduating July 2026
+              Available · CS graduate, First Class Honours
             </span>
           </motion.div>
 
