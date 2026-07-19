@@ -178,7 +178,7 @@ export const projects = [
       'Most of the lessons here happened before the modelling even started. The data was uneven, the area sizes were not comparable, and the categories did not line up cleanly across years. By the time I was tuning models I had already made the decisions that actually mattered. Picking R squared, RMSE, and MAE side by side, and explaining why a Decision Tree could match a Random Forest on test but still be the wrong choice, was the part that taught me the most.',
     cta: {
       caseStudy: null,
-      github: null,
+      github: 'https://github.com/namitzz/crime-prediction-ml',
       demo: null,
     },
   },
