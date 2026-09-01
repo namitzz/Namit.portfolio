@@ -6,16 +6,13 @@ import CursorGlow from './components/CursorGlow'
 import ScrollProgress from './components/ScrollProgress'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
-import Marquee from './components/Marquee'
 import About from './components/About'
 import WorkIntro from './components/WorkIntro'
 import ProjectIndex from './components/ProjectIndex'
 import ProjectSection from './components/ProjectSection'
 import Skills from './components/Skills'
 import Experience from './components/Experience'
-import Writing from './components/Writing'
 import Contact from './components/Contact'
-import ContactStrip from './components/ContactStrip'
 import FloatingContact from './components/FloatingContact'
 
 import UniWiseMock from './components/mockups/UniWiseMock'
@@ -43,29 +40,6 @@ const accentLabels = {
   course: 'Spring Boot · MySQL',
 }
 
-const marqueeItems = [
-  'Python',
-  'FastAPI',
-  'Java',
-  'Spring Boot',
-  'MySQL',
-  'React',
-  'Tailwind',
-  'Framer Motion',
-  'ChromaDB',
-  'sentence-transformers',
-  'OpenAI',
-  'Ollama',
-  'OpenCV',
-  'MediaPipe',
-  'Pandas',
-  'scikit-learn',
-  'NumPy',
-  'Streamlit',
-  'Docker',
-  'Git',
-]
-
 export default function App() {
   const [themeKey, setThemeKey] = useState('base')
 
@@ -83,13 +57,6 @@ export default function App() {
         <SectionTrigger onEnter={() => activate('base')}>
           <Hero />
         </SectionTrigger>
-
-        {/* Tech marquee — sits between Hero and About */}
-        <div className="relative z-10 border-y border-white/5 bg-white/[0.015]">
-          <Marquee items={marqueeItems} speed={36} />
-        </div>
-
-        <ContactStrip />
 
         <SectionTrigger onEnter={() => activate('base')}>
           <About />
@@ -109,10 +76,6 @@ export default function App() {
               accentLabel={accentLabels[p.id]}
             />
           ))}
-
-        <SectionTrigger onEnter={() => activate('base')}>
-          <Writing />
-        </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>
           <Skills />

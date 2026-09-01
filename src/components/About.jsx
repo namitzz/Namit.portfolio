@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { profile } from '../data/content'
+import { profile, writing } from '../data/content'
 
 export default function About() {
   return (
@@ -75,6 +75,22 @@ export default function About() {
                 ))}
               </ul>
             </div>
+          )}
+
+          {writing?.[0] && (
+            <p className="mt-6 text-sm text-white/55">
+              Published:{' '}
+              <a
+                href={writing[0].url}
+                target="_blank"
+                rel="noreferrer"
+                className="underline hover:text-white"
+                style={{ color: 'var(--accent)' }}
+              >
+                {writing[0].publisher} · {writing[0].title}
+              </a>{' '}
+              ({writing[0].role})
+            </p>
           )}
         </motion.div>
       </div>
