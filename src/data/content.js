@@ -18,19 +18,19 @@ export const profile = {
   headline:
     'I build practical AI and software systems that help people decide, work, and learn better.',
   subheadline:
-    'BSc Computer Science graduate from the University of Leicester (First Class Honours). Building across applied AI and machine learning, RAG systems, backend and full-stack software, computer vision, and data science — for graduate AI and software engineering roles.',
+    'BSc Computer Science graduate from the University of Leicester (First Class Honours). Applied AI, RAG systems, backend, and full-stack. Open to graduate AI and software engineering roles.',
   positioning:
-    'Direction: practical AI and software engineering — RAG, backend systems, ML, computer vision, and full-stack.',
+    'Direction: practical AI and software engineering. RAG, backend systems, ML, computer vision, and full-stack.',
   highlights: [
     'First Class Honours (conferred).',
     'Built UniWise: a source-grounded RAG study assistant with cross-encoder reranking, citation-level source evidence, and an evaluation harness scoring answer grounding.',
-    'Shipped Cloud Seven Realty — a live production frontend for a paying client, backed by Google Sheets/Drive with ISR.',
+    'Shipped Cloud Seven Realty, a live production frontend for a paying client, backed by Google Sheets/Drive with ISR.',
     'Modelled ~1M+ Met Police records into LSOA-month panels and trained regression + K-Means for area profiling.',
     'Contributor to ClassFutures published guidance on responsible Generative AI use.',
   ],
   about: [
     "I'm Namit, a Computer Science graduate from the University of Leicester (First Class Honours, conferred July 2026).",
-    'I build practical systems across AI, backend engineering, data, and user-facing software — the kind of work that has to survive real users, not just a demo. I care about systems that ground themselves in evidence, explain themselves, and cite their sources so users can verify every answer.',
+    'I build practical systems across AI, backend engineering, data, and user-facing software. The kind of work that has to survive real users, not just a demo. I care about systems that ground themselves in evidence, explain themselves, and cite their sources so users can verify every answer.',
     'The projects below span RAG, computer vision, applied data science, and full-stack product work. Different domains, same discipline: pick the smallest system that actually solves the problem, then make it trustworthy.',
   ],
 }

@@ -13,9 +13,15 @@ export default function About() {
           className="md:col-span-4"
         >
           <p className="eyebrow">About</p>
-          <h2 className="section-title mt-3 text-3xl md:text-4xl">
+          <motion.h2
+            initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }}
+            whileInView={{ clipPath: 'inset(0 0 0 0)', opacity: 1 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="section-title mt-3 text-3xl md:text-4xl"
+          >
             A short, honest version.
-          </h2>
+          </motion.h2>
         </motion.div>
 
         <motion.div

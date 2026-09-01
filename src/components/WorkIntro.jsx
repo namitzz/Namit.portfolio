@@ -13,9 +13,15 @@ export default function WorkIntro() {
         >
           <div>
             <p className="eyebrow">Featured work</p>
-            <h2 className="section-title mt-3 max-w-3xl text-3xl font-semibold leading-tight md:text-5xl">
+            <motion.h2
+              initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }}
+              whileInView={{ clipPath: 'inset(0 0 0 0)', opacity: 1 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="section-title mt-3 max-w-3xl text-3xl font-semibold leading-tight md:text-5xl"
+            >
               Selected projects across AI, backend systems, data, and product design.
-            </h2>
+            </motion.h2>
           </div>
           <p className="max-w-md text-sm text-white/55">
             Use the project index to jump straight to a build, or scroll

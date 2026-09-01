@@ -16,8 +16,8 @@ export default function MagneticButton({
   const ref = useRef(null)
   const x = useMotionValue(0)
   const y = useMotionValue(0)
-  const sx = useSpring(x, { stiffness: 220, damping: 18 })
-  const sy = useSpring(y, { stiffness: 220, damping: 18 })
+  const sx = useSpring(x, { stiffness: 90, damping: 20, mass: 0.6 })
+  const sy = useSpring(y, { stiffness: 90, damping: 20, mass: 0.6 })
 
   const onMove = (e) => {
     const el = ref.current

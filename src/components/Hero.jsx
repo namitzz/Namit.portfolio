@@ -9,7 +9,7 @@ export default function Hero() {
   return (
     <section
       id="top"
-      className="relative z-10 flex min-h-[100svh] items-center overflow-hidden px-6 pt-32 pb-24 md:px-12"
+      className="noise relative z-10 flex min-h-[100svh] items-center overflow-hidden px-6 pt-32 pb-24 md:px-12"
     >
       <HeroBackdrop />
       <FloatingCards />
