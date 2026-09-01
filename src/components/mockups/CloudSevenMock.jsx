@@ -209,7 +209,7 @@ function CloudLogo() {
           fontSize="6"
           fontWeight="700"
           fill="#e8c98b"
-          fontFamily="Space Grotesk, sans-serif"
+          fontFamily="Georgia, serif"
         >
           7
         </text>

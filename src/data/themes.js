@@ -4,12 +4,12 @@ export const themes = {
   base: {
     id: 'base',
     name: 'Namit',
-    bgFrom: '#08070D',
-    bgTo: '#160F18',
-    accent: '#FF7A59',
-    accent2: '#6BE3D6',
-    glow: 'rgba(255,122,89,0.20)',
-    muted: 'rgba(255,255,255,0.6)',
+    bgFrom: '#0A0F1C',
+    bgTo: '#111827',
+    accent: '#7DD3FC',
+    accent2: '#22D3EE',
+    glow: 'rgba(125,211,252,0.22)',
+    muted: 'rgba(203,213,225,0.65)',
   },
   uniwise: {
     id: 'uniwise',

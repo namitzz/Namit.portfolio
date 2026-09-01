@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  /* Default (base) theme — overridden by ThemeBackground via inline style */
-  --bg-from: #08070d;
-  --bg-to: #160f18;
-  --accent: #ff7a59;
-  --accent-2: #6be3d6;
+  /* Default (base) theme, overridden by ThemeBackground via inline style. */
+  --bg-from: #0a0f1c;
+  --bg-to: #111827;
+  --accent: #7dd3fc;
+  --accent-2: #22d3ee;
   --ink: #ffffff;
-  --muted: rgba(255, 255, 255, 0.6);
+  --muted: rgba(203, 213, 225, 0.65);
 }
 
 html {
@@ -104,7 +104,7 @@ body {
 }
 
 .section-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 600;
   letter-spacing: -0.02em;
 }

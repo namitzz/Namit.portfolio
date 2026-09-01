@@ -190,7 +190,7 @@ function CloudBanner() {
       <rect x="0" y="135" width="800" height="25" fill="rgba(120,140,160,0.18)" />
 
       {/* Brand text */}
-      <text x="32" y="32" fontFamily="Space Grotesk, sans-serif" fontSize="14" fontWeight="700" fill="#1a1814">
+      <text x="32" y="32" fontFamily="Georgia, serif" fontSize="14" fontWeight="700" fill="#1a1814">
         Cloud Seven Realty
       </text>
       <text x="32" y="48" fontFamily="Inter, sans-serif" fontSize="9" fill="rgba(26,24,20,0.55)">
