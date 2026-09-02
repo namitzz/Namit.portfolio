@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useInView } from 'framer-motion'
 
 import ThemeBackground from './components/ThemeBackground'
-import CursorGlow from './components/CursorGlow'
 import ScrollProgress from './components/ScrollProgress'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
@@ -13,7 +12,6 @@ import ProjectSection from './components/ProjectSection'
 import Skills from './components/Skills'
 import Experience from './components/Experience'
 import Contact from './components/Contact'
-import FloatingContact from './components/FloatingContact'
 
 import UniWiseMock from './components/mockups/UniWiseMock'
 import VisionMock from './components/mockups/VisionMock'
@@ -49,7 +47,6 @@ export default function App() {
   return (
     <div className="relative min-h-screen">
       <ThemeBackground themeKey={themeKey} />
-      <CursorGlow />
       <ScrollProgress />
       <Nav themeKey={themeKey} />
 
@@ -89,8 +86,6 @@ export default function App() {
           <Contact />
         </SectionTrigger>
       </main>
-
-      <FloatingContact />
     </div>
   )
 }

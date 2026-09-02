@@ -13,20 +13,6 @@ export default function Contact() {
           transition={{ duration: 0.7 }}
           className="glass-strong relative overflow-hidden rounded-3xl p-10 md:p-14"
         >
-          {/* Animated decorative orbs */}
-          <motion.div
-            className="pointer-events-none absolute -top-24 -right-20 h-72 w-72 rounded-full blur-3xl"
-            style={{ background: 'var(--accent)', opacity: 0.18 }}
-            animate={{ y: [0, 10, 0], x: [0, -6, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full blur-3xl"
-            style={{ background: 'var(--accent-2)', opacity: 0.14 }}
-            animate={{ y: [0, -12, 0], x: [0, 8, 0] }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
           <p className="eyebrow">Contact</p>
           <motion.h2
             initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }}

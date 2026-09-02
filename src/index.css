@@ -4,12 +4,12 @@
 
 :root {
   /* Default (base) theme, overridden by ThemeBackground via inline style. */
-  --bg-from: #0a0f1c;
-  --bg-to: #111827;
-  --accent: #7dd3fc;
-  --accent-2: #22d3ee;
+  --bg-from: #0a0a0b;
+  --bg-to: #0e0e10;
+  --accent: #ffffff;
+  --accent-2: #71717a;
   --ink: #ffffff;
-  --muted: rgba(203, 213, 225, 0.65);
+  --muted: rgba(255, 255, 255, 0.55);
 }
 
 html {

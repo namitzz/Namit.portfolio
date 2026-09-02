@@ -1,7 +1,5 @@
 import { motion } from 'framer-motion'
 import { profile } from '../data/content'
-import HeroBackdrop from './HeroBackdrop'
-import FloatingCards from './FloatingCards'
 import CountUp from './CountUp'
 import MagneticButton from './MagneticButton'
 
@@ -9,11 +7,8 @@ export default function Hero() {
   return (
     <section
       id="top"
-      className="noise relative z-10 flex min-h-[100svh] items-center overflow-hidden px-6 pt-32 pb-24 md:px-12"
+      className="relative z-10 flex min-h-[100svh] items-center overflow-hidden px-6 pt-32 pb-24 md:px-12"
     >
-      <HeroBackdrop />
-      <FloatingCards />
-
       <div className="relative mx-auto flex w-full max-w-7xl items-center">
         {/* Copy column (full width now that the avatar is gone) */}
         <div className="w-full">
@@ -33,14 +28,10 @@ export default function Hero() {
           </motion.div>
 
           {/* Word-reveal headline */}
-          <h1 className="section-title mt-7 max-w-5xl text-[clamp(2.4rem,6.4vw,5.2rem)] font-semibold leading-[1.02] tracking-tight">
+          <h1 className="section-title mt-7 max-w-5xl text-[clamp(2.4rem,6.4vw,5.2rem)] leading-[1.02] tracking-tight text-white">
             <RevealLine delay={0.1}>I build practical AI and software for</RevealLine>
             <RevealLine delay={0.55} className="block">
-              <span className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)] bg-clip-text text-transparent">
-                people,
-              </span>{' '}
-              <ShimmerWord text="trust," delay={0.9} />{' '}
-              and real-world decisions.
+              people, trust, and real-world decisions.
             </RevealLine>
           </h1>
 
@@ -139,39 +130,6 @@ function RevealLine({ children, delay = 0, className = '' }) {
         {children}
       </motion.span>
     </span>
-  )
-}
-
-/** A single word that gets a one-shot shimmer when revealed. */
-function ShimmerWord({ text, delay = 0 }) {
-  return (
-    <motion.span
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay, duration: 0.6 }}
-      className="relative inline-block"
-    >
-      <span
-        className="bg-clip-text text-transparent"
-        style={{
-          backgroundImage:
-            'linear-gradient(90deg, #ffffff 0%, #ffffff 35%, var(--accent) 50%, #ffffff 65%, #ffffff 100%)',
-          backgroundSize: '300% 100%',
-          WebkitBackgroundClip: 'text',
-          backgroundClip: 'text',
-          animation: 'shimmerSweep 3.6s ease-in-out infinite',
-        }}
-      >
-        {text}
-      </span>
-      <style>{`
-        @keyframes shimmerSweep {
-          0% { background-position: 100% 0; }
-          60% { background-position: -100% 0; }
-          100% { background-position: -100% 0; }
-        }
-      `}</style>
-    </motion.span>
   )
 }
 
