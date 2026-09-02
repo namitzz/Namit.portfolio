@@ -7,8 +7,8 @@ import { skills } from '../data/content'
  */
 export default function Skills() {
   return (
-    <section id="skills" className="relative px-6 py-24 md:px-10 md:py-32">
-      <div className="mx-auto w-full max-w-[1400px]">
+    <section id="skills" className="relative px-6 py-32 md:px-16 md:py-44">
+      <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}

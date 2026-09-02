@@ -9,8 +9,8 @@ import { timeline } from '../data/content'
  */
 export default function Experience() {
   return (
-    <section id="experience" className="relative px-6 py-24 md:px-10 md:py-32">
-      <div className="mx-auto w-full max-w-[1500px]">
+    <section id="experience" className="relative px-6 py-32 md:px-16 md:py-44">
+      <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-14 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}

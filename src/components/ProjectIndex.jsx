@@ -27,8 +27,8 @@ const years = {
 
 export default function ProjectIndex() {
   return (
-    <section id="work" className="relative px-6 py-24 md:px-10 md:py-32">
-      <div className="mx-auto w-full max-w-[1400px]">
+    <section id="work" className="relative px-6 py-32 md:px-16 md:py-44">
+      <div className="mx-auto w-full max-w-[1600px]">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}

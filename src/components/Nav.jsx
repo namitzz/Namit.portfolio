@@ -40,7 +40,7 @@ export default function Nav() {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="fixed top-0 left-0 right-0 z-[60]"
       >
-        <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between px-6 py-6 md:px-10 md:py-8">
+        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between px-6 py-6 md:px-10 md:py-8">
           <a
             href="#top"
             className="serif text-[22px] leading-none tracking-tight md:text-[24px]"
@@ -96,7 +96,7 @@ export default function Nav() {
           >
             {/* Menu items */}
             <div className="flex flex-1 items-center px-6 md:px-10">
-              <ul className="mx-auto w-full max-w-[1500px]">
+              <ul className="mx-auto w-full max-w-[1600px]">
                 {links.map((l, i) => (
                   <motion.li
                     key={l.href}
@@ -147,7 +147,7 @@ export default function Nav() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3, delay: 0.25 }}
-              className="mx-auto grid w-full max-w-[1500px] grid-cols-2 gap-6 border-t px-6 py-6 md:grid-cols-3 md:px-10"
+              className="mx-auto grid w-full max-w-[1600px] grid-cols-2 gap-6 border-t px-6 py-6 md:grid-cols-3 md:px-10"
               style={{ borderColor: 'var(--hairline)' }}
             >
               <div>
