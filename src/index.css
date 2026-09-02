@@ -3,15 +3,16 @@
 @tailwind utilities;
 
 :root {
-  /* Software-artifact base. Overridden by ThemeBackground for project sections. */
-  --bg-from: #000000;
-  --bg-to: #000000;
-  --ink: #f4f4f5;
-  --muted: rgba(244, 244, 245, 0.55);
-  --faint: rgba(244, 244, 245, 0.12);
-  --hairline: rgba(244, 244, 245, 0.08);
-  --accent: #4ade80;
-  --accent-2: #f4f4f5;
+  /* Warm editorial base. Overridden by ThemeBackground for project sections. */
+  --bg-from: #f0e5df;
+  --bg-to: #ebdfd5;
+  --ink: #1a1814;
+  --ink-soft: rgba(26, 24, 20, 0.72);
+  --muted: rgba(26, 24, 20, 0.55);
+  --faint: rgba(26, 24, 20, 0.14);
+  --hairline: rgba(26, 24, 20, 0.10);
+  --accent: #c1583a;
+  --accent-2: #1a1814;
 }
 
 html {
@@ -20,19 +21,19 @@ html {
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: #000;
+  background: var(--bg-from);
   color: var(--ink);
   overflow-x: hidden;
   font-feature-settings: 'ss01', 'cv11';
 }
 
-/* Selection: green terminal cursor colour. */
+/* Selection — warm accent. */
 ::selection {
   background: var(--accent);
-  color: #000;
+  color: #f0e5df;
 }
 
-/* Scrollbar: thin, near-invisible. */
+/* Scrollbar — thin, matches ink. */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -40,59 +41,56 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(244, 244, 245, 0.06);
+  background: rgba(26, 24, 20, 0.14);
   border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(244, 244, 245, 0.14);
+  background: rgba(26, 24, 20, 0.30);
 }
 
-/* Button styles: brutalist, hairline borders, no rounded pills. */
+/* Buttons — editorial pill, ink on cream and inverse. */
 .btn-primary {
-  background: var(--accent);
-  color: #000;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.7rem 1.1rem;
-  border: 1px solid var(--accent);
-  border-radius: 2px;
-  transition: filter 0.15s ease, background 0.15s ease;
+  background: var(--ink);
+  color: var(--bg-from);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .btn-primary:hover {
-  filter: brightness(1.1);
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--ink);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 0.78rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.9rem;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.7rem 1.1rem;
+  padding: 0.8rem 1.35rem;
   border: 1px solid var(--hairline);
-  border-radius: 2px;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  border-radius: 999px;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 .btn-ghost:hover {
   border-color: var(--ink);
-  color: var(--ink);
-  background: rgba(244, 244, 245, 0.03);
+  background: rgba(26, 24, 20, 0.03);
 }
 
-/* Legacy .glass utilities collapse to a flat hairline card. */
+/* Legacy .glass utilities collapse to flat warm cards. */
 .glass,
 .glass-strong {
-  background: rgba(244, 244, 245, 0.02);
+  background: rgba(26, 24, 20, 0.03);
   border: 1px solid var(--hairline);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
+/* Editorial small caps eyebrow. */
 .eyebrow {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   text-transform: uppercase;
@@ -102,39 +100,38 @@ body {
   font-weight: 500;
 }
 
+/* Display serif — used for hero name + section titles. */
 .section-title {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.015em;
 }
 
-/* Serif utility for the one deliberate contrast (Hero name display). */
 .serif {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
   letter-spacing: -0.02em;
 }
 
-/* Mono label — small tags, chip content, HUD text. */
+/* Mono label — small tags, small chips. */
 .mono-label {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   color: var(--muted);
 }
 
-/* Hairline horizontal rule. */
 .hr {
   height: 1px;
   width: 100%;
   background: var(--hairline);
 }
 
-/* Focus rings — deliberate, keyboard-first. */
+/* Focus rings — accent on cream. */
 :focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

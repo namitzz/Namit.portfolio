@@ -1,17 +1,17 @@
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { projects } from '../data/content'
 
 /**
- * Work index as a table. Each row is a project: index, name, domain,
- * year, status, link glyph. Hover expands a row to reveal tagline +
- * stack + CTAs inline. Nothing rounded, no glass, hairline dividers.
+ * Work index as an editorial list. Big serif project name per row,
+ * small mono meta on the right, hairline dividers, huge line-height.
+ * On hover the row's accent underline extends and the arrow slides.
+ * Reference: karliekloss.com item rows scaled up.
  */
 const domains = {
   uniwise: 'RAG · EdTech',
   vision: 'Computer Vision',
   cloud: 'Client site',
-  crime: 'Data science',
+  crime: 'Data Science',
   course: 'Backend · MySQL',
   agentforge: 'Agent orchestration',
 }
@@ -25,47 +25,35 @@ const years = {
   agentforge: '—',
 }
 
-const statusMap = {
-  uniwise: 'dissertation',
-  vision: 'prototype',
-  cloud: 'shipped',
-  crime: 'coursework',
-  course: 'group work',
-  agentforge: 'coming soon',
-}
-
 export default function ProjectIndex() {
   return (
-    <section id="work" className="relative px-6 py-24 md:px-10">
+    <section id="work" className="relative px-6 py-24 md:px-10 md:py-32">
       <div className="mx-auto w-full max-w-[1400px]">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-60px' }}
-          transition={{ duration: 0.5 }}
-          className="mb-10 flex flex-wrap items-baseline justify-between gap-4 border-b border-white/10 pb-4"
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.7 }}
+          className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
+          style={{ borderColor: 'var(--hairline)' }}
         >
-          <div className="flex items-baseline gap-4">
-            <span className="mono-label">§01</span>
-            <h2 className="section-title text-2xl text-white md:text-3xl">
-              work
+          <div>
+            <p className="eyebrow">Selected work</p>
+            <h2
+              className="serif mt-3 text-[clamp(2.6rem,6vw,4.8rem)] leading-[0.95] tracking-[-0.02em]"
+              style={{ color: 'var(--ink)' }}
+            >
+              Projects.
             </h2>
           </div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">
-            {projects.length} entries · hover to expand
+          <p
+            className="mono-label"
+            style={{ color: 'var(--muted)' }}
+          >
+            {projects.length} · 2024–2026
           </p>
         </motion.div>
-
-        {/* Column headers */}
-        <div className="hidden grid-cols-[3rem_1fr_10rem_5rem_9rem_2rem] items-center gap-4 border-b border-white/10 pb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white/35 md:grid">
-          <span>idx</span>
-          <span>name</span>
-          <span>domain</span>
-          <span>year</span>
-          <span>status</span>
-          <span className="text-right">→</span>
-        </div>
 
         {/* Rows */}
         <ul>
@@ -79,41 +67,53 @@ export default function ProjectIndex() {
 }
 
 function ProjectRow({ project, index }) {
-  const [open, setOpen] = useState(false)
   const isComing = project.comingSoon
   const isLinked = !isComing
 
-  const rowContent = (
-    <div className="grid grid-cols-[3rem_1fr] items-baseline gap-4 py-4 md:grid-cols-[3rem_1fr_10rem_5rem_9rem_2rem]">
-      <span className="font-mono text-[12px] text-white/40 group-hover:text-white/70">
-        {project.index}
+  const inner = (
+    <div className="grid grid-cols-[3rem_1fr] items-baseline gap-4 py-8 md:grid-cols-[4rem_1fr_10rem_5rem_2.5rem] md:gap-6 md:py-10">
+      {/* Numeric index */}
+      <span
+        className="mono-label"
+        style={{ color: 'var(--muted)' }}
+      >
+        {String(index + 1).padStart(2, '0')}
       </span>
 
-      <span className="flex items-baseline gap-3">
-        <span className="text-[17px] text-white group-hover:text-white md:text-[19px]">
+      {/* Big serif title */}
+      <div className="col-span-1 md:col-span-1">
+        <h3
+          className="serif text-[clamp(1.9rem,4.5vw,3.4rem)] leading-[1] tracking-[-0.015em] transition-colors"
+          style={{ color: 'var(--ink)' }}
+        >
           {project.title}
-        </span>
+        </h3>
         {isComing && (
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">
-            soon
-          </span>
+          <p className="mono-label mt-2" style={{ color: 'var(--muted)' }}>
+            Coming soon
+          </p>
         )}
-      </span>
+      </div>
 
-      <span className="hidden font-mono text-[12px] text-white/50 md:inline">
+      {/* Domain, year, arrow — desktop only */}
+      <span
+        className="mono-label hidden md:inline"
+        style={{ color: 'var(--muted)' }}
+      >
         {domains[project.id] || '—'}
       </span>
-      <span className="hidden font-mono text-[12px] text-white/50 md:inline">
+      <span
+        className="mono-label hidden md:inline"
+        style={{ color: 'var(--muted)' }}
+      >
         {years[project.id] || '—'}
       </span>
-      <span className="hidden font-mono text-[12px] text-white/50 md:inline">
-        {statusMap[project.id] || '—'}
-      </span>
       <span
-        className={`hidden text-right font-mono text-[14px] md:inline ${
-          isLinked ? 'text-white/40 group-hover:text-white' : 'text-white/20'
-        }`}
         aria-hidden="true"
+        className="serif hidden text-right text-[1.8rem] leading-none transition-transform md:inline"
+        style={{
+          color: isLinked ? 'var(--ink)' : 'var(--muted)',
+        }}
       >
         {isLinked ? '→' : '·'}
       </span>
@@ -121,77 +121,25 @@ function ProjectRow({ project, index }) {
   )
 
   return (
-    <li
-      className="group border-b border-white/[0.07]"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      onFocus={() => setOpen(true)}
-      onBlur={() => setOpen(false)}
+    <motion.li
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.6, delay: index * 0.05 }}
+      className="group border-b"
+      style={{ borderColor: 'var(--hairline)' }}
     >
       {isLinked ? (
         <a
           href={`#${project.id}`}
           aria-label={`Jump to ${project.title}`}
-          className="block cursor-pointer transition-colors hover:bg-white/[0.02]"
+          className="block transition-colors hover:bg-[rgba(26,24,20,0.03)]"
         >
-          {rowContent}
+          {inner}
         </a>
       ) : (
-        <div className="block">{rowContent}</div>
+        <div className="block opacity-70">{inner}</div>
       )}
-
-      {/* Inline hover panel */}
-      <motion.div
-        initial={false}
-        animate={{
-          height: open ? 'auto' : 0,
-          opacity: open ? 1 : 0,
-        }}
-        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-        className="overflow-hidden"
-      >
-        <div className="grid grid-cols-1 gap-4 pb-5 pl-12 pr-4 md:grid-cols-[1fr_auto]">
-          {project.tagline && (
-            <p className="max-w-2xl text-[13.5px] leading-relaxed text-white/60">
-              {project.tagline}
-            </p>
-          )}
-
-          <div className="flex flex-wrap items-center gap-2">
-            {project.cta?.github && (
-              <a
-                href={project.cta.github}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="font-mono text-[11px] uppercase tracking-[0.12em] text-white/55 underline decoration-white/20 underline-offset-[4px] transition-colors hover:text-white hover:decoration-white"
-              >
-                github ↗
-              </a>
-            )}
-            {project.cta?.githubPrivate && (
-              <span
-                className="font-mono text-[11px] uppercase tracking-[0.12em] text-white/40"
-                title={project.cta.githubPrivate.reason}
-              >
-                repo · private
-              </span>
-            )}
-            {project.cta?.demo && (
-              <a
-                href={project.cta.demo}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="font-mono text-[11px] uppercase tracking-[0.12em] underline decoration-white/20 underline-offset-[4px] transition-colors hover:decoration-white"
-                style={{ color: 'var(--accent)' }}
-              >
-                live ↗
-              </a>
-            )}
-          </div>
-        </div>
-      </motion.div>
-    </li>
+    </motion.li>
   )
 }

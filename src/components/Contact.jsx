@@ -2,57 +2,82 @@ import { motion } from 'framer-motion'
 import { profile } from '../data/content'
 
 /**
- * Contact as a terminal-prompt block. Each channel is a monospaced
- * line prefixed with `>`, action on the right. No hero card,
- * no orbs, no glass.
+ * Contact as an editorial closing block. Big serif line on the left,
+ * neat list of channels on the right, warm cream throughout.
  */
 export default function Contact() {
   const rows = [
-    { label: 'email', value: profile.email, href: `mailto:${profile.email}`, action: 'copy' },
-    { label: 'github', value: profile.links.github.replace('https://', ''), href: profile.links.github, action: 'visit' },
-    { label: 'linkedin', value: profile.links.linkedin.replace('https://www.', ''), href: profile.links.linkedin, action: 'visit' },
+    { label: 'Email', value: profile.email, href: `mailto:${profile.email}` },
+    {
+      label: 'GitHub',
+      value: profile.links.github.replace('https://', ''),
+      href: profile.links.github,
+    },
+    {
+      label: 'LinkedIn',
+      value: profile.links.linkedin.replace('https://www.', ''),
+      href: profile.links.linkedin,
+    },
     profile.links.cv && {
-      label: 'cv',
+      label: 'CV',
       value: profile.links.cv.replace(/^\//, ''),
       href: profile.links.cv,
-      action: 'download',
     },
   ].filter(Boolean)
 
   return (
-    <section id="contact" className="relative px-6 py-24 md:px-10">
+    <section id="contact" className="relative px-6 py-24 md:px-10 md:py-32">
       <div className="mx-auto w-full max-w-[1400px]">
-        <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-white/10 pb-4">
-          <div className="flex items-baseline gap-4">
-            <span className="mono-label">§05</span>
-            <h2 className="section-title text-2xl text-white md:text-3xl">
-              contact
-            </h2>
-          </div>
-          <p
-            className="font-mono text-[11px] uppercase tracking-[0.16em]"
-            style={{ color: 'var(--accent)' }}
+        <div
+          className="mb-16 border-b pb-6"
+          style={{ borderColor: 'var(--hairline)' }}
+        >
+          <p className="eyebrow">Contact</p>
+          <motion.h2
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7 }}
+            className="serif mt-3 text-[clamp(2.6rem,6vw,4.8rem)] leading-[0.95] tracking-[-0.02em]"
+            style={{ color: 'var(--ink)' }}
           >
-            ● available
-          </p>
+            Let&apos;s talk.
+          </motion.h2>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-16">
-          {/* Left: pitch */}
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-16">
+          {/* Left column: pitch */}
           <div className="md:col-span-5">
-            <p className="text-[17px] leading-relaxed text-white/80">
+            <p
+              className="text-[19px] leading-relaxed"
+              style={{ color: 'var(--ink)' }}
+            >
               Open to graduate roles in AI, machine learning, and software
               engineering.
             </p>
-            <p className="mt-4 text-[14.5px] leading-relaxed text-white/55">
+            <p
+              className="mt-4 text-[15px] leading-relaxed"
+              style={{ color: 'var(--muted)' }}
+            >
               Applied AI, backend, data pipelines, or a frontend that has to
               feel right. Happy to talk about any of it.
             </p>
+
+            <p className="mono-label mt-8" style={{ color: 'var(--accent)' }}>
+              <span
+                className="mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle"
+                style={{ background: 'var(--accent)' }}
+              />
+              Currently available
+            </p>
           </div>
 
-          {/* Right: channel rows */}
+          {/* Right column: channels */}
           <div className="md:col-span-7">
-            <ul className="border-t border-white/10">
+            <ul
+              className="border-t"
+              style={{ borderColor: 'var(--hairline)' }}
+            >
               {rows.map((r) => (
                 <motion.li
                   key={r.label}
@@ -60,32 +85,38 @@ export default function Contact() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: '-40px' }}
                   transition={{ duration: 0.35 }}
-                  className="group border-b border-white/10"
+                  className="group border-b"
+                  style={{ borderColor: 'var(--hairline)' }}
                 >
                   <a
                     href={r.href}
                     target={r.href.startsWith('http') ? '_blank' : undefined}
                     rel={r.href.startsWith('http') ? 'noreferrer' : undefined}
-                    className="grid grid-cols-[1.5rem_5rem_1fr_auto] items-center gap-4 py-4 font-mono text-[13px] transition-colors hover:bg-white/[0.02]"
+                    className="grid grid-cols-[6rem_1fr_2rem] items-center gap-4 py-5 transition-colors hover:bg-[rgba(26,24,20,0.03)]"
                   >
-                    <span className="text-white/30 group-hover:text-white/60">
-                      &gt;
-                    </span>
-                    <span className="uppercase tracking-[0.12em] text-white/45">
+                    <span
+                      className="mono-label"
+                      style={{ color: 'var(--muted)' }}
+                    >
                       {r.label}
                     </span>
-                    <span className="truncate text-white/85">{r.value}</span>
-                    <span className="mono-label opacity-0 transition-opacity group-hover:opacity-100">
-                      [{r.action}] ↗
+                    <span
+                      className="serif truncate text-[19px] tracking-tight"
+                      style={{ color: 'var(--ink)' }}
+                    >
+                      {r.value}
+                    </span>
+                    <span
+                      className="serif text-right text-[24px] leading-none opacity-40 transition-opacity group-hover:opacity-100"
+                      aria-hidden="true"
+                      style={{ color: 'var(--ink)' }}
+                    >
+                      →
                     </span>
                   </a>
                 </motion.li>
               ))}
             </ul>
-
-            <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-white/35">
-              response time · usually within 24h
-            </p>
           </div>
         </div>
       </div>

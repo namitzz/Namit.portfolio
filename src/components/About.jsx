@@ -2,23 +2,41 @@ import { motion } from 'framer-motion'
 import { profile, writing } from '../data/content'
 
 /**
- * About as a spec document. Left column: numbered marker, section
- * title, tag list. Right column: body copy and highlights table.
- * No cards, no glass; hairline dividers only.
+ * About as a two-column editorial spread. Left column: eyebrow + big
+ * serif title + tags. Right column: paragraphs + highlights list.
+ * No cards, warm cream ground, hairline dividers.
  */
 export default function About() {
   return (
-    <section id="about" className="relative px-6 py-24 md:px-10">
+    <section id="about" className="relative px-6 py-24 md:px-10 md:py-32">
       <div className="mx-auto w-full max-w-[1400px]">
-        <SectionHeader index="§02" label="about" hint="a short, honest version" />
+        <div
+          className="mb-16 border-b pb-6"
+          style={{ borderColor: 'var(--hairline)' }}
+        >
+          <p className="eyebrow">About</p>
+          <motion.h2
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7 }}
+            className="serif mt-3 text-[clamp(2.6rem,6vw,4.8rem)] leading-[0.95] tracking-[-0.02em]"
+            style={{ color: 'var(--ink)' }}
+          >
+            A short, honest version.
+          </motion.h2>
+        </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-16">
-          {/* Left column: identity + tags */}
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-16">
+          {/* Left column: direction + tags */}
           <div className="md:col-span-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">
+            <p className="mono-label" style={{ color: 'var(--muted)' }}>
               Direction
             </p>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/70">
+            <p
+              className="mt-3 text-[15px] leading-relaxed"
+              style={{ color: 'var(--ink-soft)' }}
+            >
               {profile.positioning}
             </p>
 
@@ -34,7 +52,11 @@ export default function About() {
               ].map((t) => (
                 <span
                   key={t}
-                  className="border border-white/10 px-2 py-1 font-mono text-[10.5px] uppercase tracking-[0.1em] text-white/65"
+                  className="rounded-full border px-3 py-1 text-[12px]"
+                  style={{
+                    borderColor: 'var(--hairline)',
+                    color: 'var(--ink-soft)',
+                  }}
                 >
                   {t}
                 </span>
@@ -49,7 +71,8 @@ export default function About() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.6 }}
-              className="space-y-5 text-[17px] leading-relaxed text-white/80"
+              className="space-y-5 text-[19px] leading-relaxed"
+              style={{ color: 'var(--ink)' }}
             >
               {profile.about.map((p, i) => (
                 <p key={i}>{p}</p>
@@ -57,15 +80,30 @@ export default function About() {
             </motion.div>
 
             {profile.highlights?.length > 0 && (
-              <div className="mt-12">
-                <p className="mono-label mb-4">§02.1 · selected highlights</p>
-                <ol className="border-t border-white/10">
+              <div className="mt-14">
+                <p
+                  className="mono-label mb-4"
+                  style={{ color: 'var(--muted)' }}
+                >
+                  Highlights
+                </p>
+                <ol
+                  className="border-t"
+                  style={{ borderColor: 'var(--hairline)' }}
+                >
                   {profile.highlights.map((h, i) => (
                     <li
                       key={h}
-                      className="grid grid-cols-[2.5rem_1fr] gap-4 border-b border-white/10 py-3.5 text-[14.5px] leading-snug text-white/75"
+                      className="grid grid-cols-[2.5rem_1fr] gap-4 border-b py-4 text-[15px] leading-snug"
+                      style={{
+                        borderColor: 'var(--hairline)',
+                        color: 'var(--ink-soft)',
+                      }}
                     >
-                      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/35">
+                      <span
+                        className="mono-label"
+                        style={{ color: 'var(--muted)' }}
+                      >
                         {String(i + 1).padStart(2, '0')}
                       </span>
                       <span>{h}</span>
@@ -76,46 +114,26 @@ export default function About() {
             )}
 
             {writing?.[0] && (
-              <p className="mt-8 font-mono text-[12px] text-white/50">
-                <span className="text-white/30">&gt;</span>{' '}
-                <span className="text-white/40">published:</span>{' '}
+              <p
+                className="mt-8 text-[14px]"
+                style={{ color: 'var(--muted)' }}
+              >
+                Published:{' '}
                 <a
                   href={writing[0].url}
                   target="_blank"
                   rel="noreferrer"
-                  className="underline decoration-white/20 underline-offset-[4px] transition-colors hover:decoration-white"
+                  className="underline underline-offset-[4px] transition-colors hover:opacity-80"
                   style={{ color: 'var(--accent)' }}
                 >
                   {writing[0].publisher} · {writing[0].title} ↗
                 </a>{' '}
-                <span className="text-white/40">({writing[0].role})</span>
+                ({writing[0].role})
               </p>
             )}
           </div>
         </div>
       </div>
     </section>
-  )
-}
-
-/**
- * Numbered spec-style section header, used in About and mirrored in
- * Skills / Experience / Contact for a unified look.
- */
-function SectionHeader({ index, label, hint }) {
-  return (
-    <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-white/10 pb-4">
-      <div className="flex items-baseline gap-4">
-        <span className="mono-label">{index}</span>
-        <h2 className="section-title text-2xl text-white md:text-3xl">
-          {label}
-        </h2>
-      </div>
-      {hint && (
-        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">
-          {hint}
-        </p>
-      )}
-    </div>
   )
 }

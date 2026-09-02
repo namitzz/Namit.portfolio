@@ -4,7 +4,6 @@ import { useInView } from 'framer-motion'
 import ThemeBackground from './components/ThemeBackground'
 import ScrollProgress from './components/ScrollProgress'
 import Nav from './components/Nav'
-import HUD from './components/HUD'
 import Hero from './components/Hero'
 import ProjectIndex from './components/ProjectIndex'
 import ProjectSection from './components/ProjectSection'
@@ -50,7 +49,6 @@ export default function App() {
       <ThemeBackground themeKey={themeKey} />
       <ScrollProgress />
       <Nav />
-      <HUD />
 
       <main className="relative z-10">
         <SectionTrigger onEnter={() => activate('base')}>
