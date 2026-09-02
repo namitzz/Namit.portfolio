@@ -2,195 +2,181 @@ import { motion } from 'framer-motion'
 import { profile } from '../data/content'
 
 /**
- * Editorial hero. Left column: eyebrow, oversized serif name, short
- * one-line intro, minimal CTAs. Right: a large playful geometric
- * shape that slowly drifts. Everything on a warm cream ground.
- * References: karliekloss.com scale, conqr.mx anchor confidence,
- * v-labs.co shape playfulness.
+ * Cinematic hero (conqr.mx pattern). One dramatic 3D-feel torus /
+ * subsurface-glow shape as the anchor, massive negative space, minimal
+ * text at the corners. Name and details are quiet edge chrome; the
+ * shape is the show.
  */
 export default function Hero() {
   return (
     <section
       id="top"
-      className="relative min-h-[100svh] w-full overflow-hidden px-6 pt-32 pb-16 md:px-10 md:pt-40"
+      className="relative flex min-h-[100svh] w-full items-center justify-center overflow-hidden px-6 md:px-10"
     >
-      <div className="mx-auto grid w-full max-w-[1400px] items-center gap-12 md:grid-cols-12 md:gap-6">
-        {/* Left column: copy */}
-        <div className="md:col-span-7">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
+      {/* The dramatic hero object */}
+      <HeroTorus />
+
+      {/* Bottom-left: identity + short line */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.6 }}
+        className="absolute bottom-8 left-6 z-10 max-w-lg md:bottom-14 md:left-10"
+      >
+        <p className="mono-label" style={{ color: 'var(--muted)' }}>
+          Portfolio · 2026
+        </p>
+        <h1
+          className="serif mt-3 text-[clamp(2.4rem,5.5vw,4.6rem)] leading-[0.95] tracking-[-0.02em]"
+          style={{ color: 'var(--ink)' }}
+        >
+          Namit Singh Sarna
+        </h1>
+        <p
+          className="mt-3 max-w-md text-[14px] leading-relaxed"
+          style={{ color: 'var(--muted)' }}
+        >
+          {profile.headline}
+        </p>
+      </motion.div>
+
+      {/* Bottom-right: status */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.7 }}
+        className="absolute bottom-8 right-6 z-10 hidden md:bottom-14 md:right-10 md:block"
+      >
+        <div className="flex flex-col items-end gap-2 text-right">
+          <span
+            className="mono-label flex items-center gap-2"
+            style={{ color: 'var(--muted)' }}
+          >
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ background: 'var(--accent)' }}
+            />
+            Available
+          </span>
+          <span
             className="mono-label"
             style={{ color: 'var(--muted)' }}
           >
-            Portfolio · 2026
-          </motion.p>
+            United Kingdom
+          </span>
+        </div>
+      </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="serif mt-6 text-[clamp(3.5rem,12vw,10rem)] leading-[0.92] tracking-[-0.02em]"
-            style={{ color: 'var(--ink)' }}
-          >
-            Namit
-            <br />
-            Singh Sarna
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-            className="mt-8 max-w-xl text-[17px] leading-relaxed md:text-[19px]"
-            style={{ color: 'var(--ink-soft)' }}
-          >
-            {profile.headline}
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="mt-4 max-w-xl text-[14.5px] leading-relaxed"
+      {/* Top-left tiny meta below logo (logo is in Nav) */}
+      {/* Scroll indicator, bottom-centre */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, y: [0, 6, 0] }}
+        transition={{
+          opacity: { delay: 1.2, duration: 0.6 },
+          y: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
+        }}
+        className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 md:bottom-6"
+      >
+        <div className="flex flex-col items-center gap-1">
+          <span
+            className="mono-label"
             style={{ color: 'var(--muted)' }}
           >
-            {profile.subheadline}
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.55 }}
-            className="mt-10 flex flex-wrap items-center gap-3"
-          >
-            <a href="#work" className="btn-primary">
-              View work
-            </a>
-            <a href="#contact" className="btn-ghost">
-              Contact
-            </a>
-            {profile.links.cv && (
-              <a
-                href={profile.links.cv}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-ghost"
-              >
-                Download CV ↗
-              </a>
-            )}
-          </motion.div>
+            Scroll
+          </span>
+          <span
+            className="h-6 w-px"
+            style={{ background: 'var(--faint)' }}
+          />
         </div>
-
-        {/* Right column: playful hero shape */}
-        <div className="md:col-span-5">
-          <HeroShape />
-        </div>
-      </div>
-
-      {/* Footer strip: identity meta */}
-      <div className="mx-auto mt-24 grid w-full max-w-[1400px] grid-cols-2 gap-6 border-t pt-6 md:mt-32 md:grid-cols-4"
-        style={{ borderColor: 'var(--hairline)' }}
-      >
-        <MetaCell k="Based" v="United Kingdom" />
-        <MetaCell k="Education" v="Leicester · First Class" />
-        <MetaCell k="Focus" v="AI · Backend · Full-stack" />
-        <MetaCell k="Available for" v="Graduate roles" />
-      </div>
+      </motion.div>
     </section>
   )
 }
 
-/** Meta cell in the hero footer strip. Small mono key, cream ink value. */
-function MetaCell({ k, v }) {
-  return (
-    <div>
-      <p className="mono-label" style={{ color: 'var(--muted)' }}>
-        {k}
-      </p>
-      <p className="mt-1 text-[13px]" style={{ color: 'var(--ink)' }}>
-        {v}
-      </p>
-    </div>
-  )
-}
-
 /**
- * Big drifting geometric shape. Two overlapping soft-warm circles that
- * rotate + drift slowly. Cheap, no images, feels playful without being
- * cartoonish.
+ * Cinematic torus. Two overlapping radial-gradient discs create a
+ * subsurface-glow torus effect (conqr.mx metallic donut vibe). Slowly
+ * drifts and rotates for depth. Pure CSS/SVG, no external deps.
  */
-function HeroShape() {
+function HeroTorus() {
   return (
-    <div className="relative mx-auto flex aspect-square w-full max-w-[520px] items-center justify-center">
-      {/* Outer soft disc */}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+      className="pointer-events-none relative aspect-square w-[min(88vw,72vh)]"
+      aria-hidden="true"
+    >
+      {/* Ambient bloom underneath */}
+      <div
+        className="absolute inset-[-20%] rounded-full"
+        style={{
+          background:
+            'radial-gradient(circle at 50% 50%, rgba(220,38,38,0.22) 0%, rgba(59,130,246,0.10) 40%, transparent 70%)',
+          filter: 'blur(80px)',
+        }}
+      />
+
+      {/* Outer disc with subsurface red/blue */}
       <motion.div
-        aria-hidden="true"
         className="absolute inset-0 rounded-full"
         style={{
-          background: 'radial-gradient(circle at 30% 30%, #d97757 0%, #b1442a 65%, #7a2a15 100%)',
-          filter: 'blur(0.5px)',
+          background:
+            'radial-gradient(circle at 35% 35%, #f87171 0%, #dc2626 25%, #7f1d1d 55%, #1e293b 78%, #0b1220 92%)',
+          boxShadow:
+            'inset 0 0 120px rgba(59,130,246,0.35), inset 0 0 40px rgba(0,0,0,0.6), 0 40px 160px rgba(220,38,38,0.18)',
         }}
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 90, repeat: Infinity, ease: 'linear' }}
       />
 
-      {/* Inner ink disc that drifts */}
+      {/* Inner black hole (creates the torus/donut) */}
       <motion.div
-        aria-hidden="true"
         className="absolute rounded-full"
         style={{
-          width: '55%',
-          height: '55%',
-          background: 'var(--ink)',
+          top: '28%',
+          left: '28%',
+          width: '44%',
+          height: '44%',
+          background:
+            'radial-gradient(circle at 50% 50%, #0a0a0a 60%, #000 100%)',
+          boxShadow:
+            'inset 0 20px 60px rgba(220,38,38,0.30), inset 0 -20px 60px rgba(59,130,246,0.20), 0 0 60px rgba(0,0,0,0.9)',
         }}
         animate={{
-          x: [0, 12, -8, 0],
-          y: [0, -6, 10, 0],
+          x: [0, 4, -3, 0],
+          y: [0, -3, 4, 0],
         }}
-        transition={{
-          duration: 18,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* Small teal accent dot for depth */}
+      {/* Highlight sheen top-left */}
       <motion.div
-        aria-hidden="true"
         className="absolute rounded-full"
         style={{
-          width: '14%',
-          height: '14%',
-          right: '8%',
-          top: '18%',
-          background: '#7edcc0',
+          top: '8%',
+          left: '18%',
+          width: '35%',
+          height: '15%',
+          background:
+            'radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.35) 0%, transparent 70%)',
+          transform: 'rotate(-20deg)',
+          filter: 'blur(6px)',
         }}
-        animate={{
-          x: [0, -6, 4, 0],
-          y: [0, 8, -4, 0],
-        }}
-        transition={{
-          duration: 14,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
+        animate={{ opacity: [0.45, 0.7, 0.45] }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* Sworm circles at the bottom (v-labs style dots) */}
-      <div className="absolute -bottom-4 left-4 grid grid-cols-4 gap-2 opacity-60">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <span
-            key={i}
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ background: 'var(--ink)' }}
-            aria-hidden="true"
-          />
-        ))}
-      </div>
-    </div>
+      {/* Subtle grain noise */}
+      <div
+        className="absolute inset-0 rounded-full opacity-[0.08] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'180\' height=\'180\'><filter id=\'n\'><feTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'2\'/></filter><rect width=\'100%\' height=\'100%\' filter=\'url(%23n)\' opacity=\'0.5\'/></svg>")',
+        }}
+      />
+    </motion.div>
   )
 }

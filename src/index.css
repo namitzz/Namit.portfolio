@@ -3,16 +3,16 @@
 @tailwind utilities;
 
 :root {
-  /* Warm editorial base. Overridden by ThemeBackground for project sections. */
-  --bg-from: #f0e5df;
-  --bg-to: #ebdfd5;
-  --ink: #1a1814;
-  --ink-soft: rgba(26, 24, 20, 0.72);
-  --muted: rgba(26, 24, 20, 0.55);
-  --faint: rgba(26, 24, 20, 0.14);
-  --hairline: rgba(26, 24, 20, 0.10);
-  --accent: #c1583a;
-  --accent-2: #1a1814;
+  /* Cinematic dark. Overridden per-project by ThemeBackground. */
+  --bg-from: #000000;
+  --bg-to: #050506;
+  --ink: #f4f4f5;
+  --ink-soft: rgba(244, 244, 245, 0.72);
+  --muted: rgba(244, 244, 245, 0.55);
+  --faint: rgba(244, 244, 245, 0.18);
+  --hairline: rgba(244, 244, 245, 0.10);
+  --accent: #dc2626;
+  --accent-2: #3b82f6;
 }
 
 html {
@@ -21,41 +21,39 @@ html {
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: var(--bg-from);
+  background: #000;
   color: var(--ink);
   overflow-x: hidden;
   font-feature-settings: 'ss01', 'cv11';
 }
 
-/* Selection — warm accent. */
 ::selection {
   background: var(--accent);
-  color: #f0e5df;
+  color: #fff;
 }
 
-/* Scrollbar — thin, matches ink. */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(26, 24, 20, 0.14);
+  background: rgba(244, 244, 245, 0.08);
   border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(26, 24, 20, 0.30);
+  background: rgba(244, 244, 245, 0.20);
 }
 
-/* Buttons — editorial pill, ink on cream and inverse. */
+/* Buttons — cinematic pill, ink on black inverse. */
 .btn-primary {
   background: var(--ink);
-  color: var(--bg-from);
+  color: #000;
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.9rem;
   font-weight: 500;
-  padding: 0.85rem 1.4rem;
+  padding: 0.85rem 1.5rem;
   border: 1px solid var(--ink);
   border-radius: 999px;
   transition: opacity 0.2s ease, transform 0.2s ease;
@@ -71,36 +69,33 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.9rem;
   font-weight: 500;
-  padding: 0.8rem 1.35rem;
+  padding: 0.8rem 1.4rem;
   border: 1px solid var(--hairline);
   border-radius: 999px;
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 .btn-ghost:hover {
   border-color: var(--ink);
-  background: rgba(26, 24, 20, 0.03);
+  background: rgba(244, 244, 245, 0.04);
 }
 
-/* Legacy .glass utilities collapse to flat warm cards. */
 .glass,
 .glass-strong {
-  background: rgba(26, 24, 20, 0.03);
+  background: rgba(244, 244, 245, 0.02);
   border: 1px solid var(--hairline);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
-/* Editorial small caps eyebrow. */
 .eyebrow {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  font-size: 0.7rem;
   color: var(--muted);
   font-weight: 500;
 }
 
-/* Display serif — used for hero name + section titles. */
 .section-title {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
@@ -113,12 +108,11 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Mono label — small tags, small chips. */
 .mono-label {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   color: var(--muted);
 }
 
@@ -128,7 +122,6 @@ body {
   background: var(--hairline);
 }
 
-/* Focus rings — accent on cream. */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
