@@ -1,160 +1,197 @@
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { projects } from '../data/content'
 
 /**
- * Projects directory. Compact card grid that lets visitors see every
- * project at a glance and jump straight to the full case study, or
- * open the GitHub / live demo directly when available.
- *
- * This is the `#projects` view referenced by the navbar. Each card
- * also deep-links to the full project section via `#${project.id}`.
+ * Work index as a table. Each row is a project: index, name, domain,
+ * year, status, link glyph. Hover expands a row to reveal tagline +
+ * stack + CTAs inline. Nothing rounded, no glass, hairline dividers.
  */
-const labels = {
+const domains = {
   uniwise: 'RAG · EdTech',
   vision: 'Computer Vision',
-  cloud: 'Client Platform',
-  crime: 'Data Science',
-  course: 'Spring Boot · MySQL',
+  cloud: 'Client site',
+  crime: 'Data science',
+  course: 'Backend · MySQL',
+  agentforge: 'Agent orchestration',
+}
+
+const years = {
+  uniwise: '2026',
+  vision: '2025',
+  cloud: '2025',
+  crime: '2024',
+  course: '2024',
+  agentforge: '—',
+}
+
+const statusMap = {
+  uniwise: 'dissertation',
+  vision: 'prototype',
+  cloud: 'shipped',
+  crime: 'coursework',
+  course: 'group work',
+  agentforge: 'coming soon',
 }
 
 export default function ProjectIndex() {
   return (
-    <section
-      id="projects"
-      className="relative z-10 px-6 pt-4 pb-16 md:px-12"
-    >
-      <div className="mx-auto w-full max-w-7xl">
+    <section id="work" className="relative px-6 py-24 md:px-10">
+      <div className="mx-auto w-full max-w-[1400px]">
+        {/* Section header */}
         <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.55 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.5 }}
+          className="mb-10 flex flex-wrap items-baseline justify-between gap-4 border-b border-white/10 pb-4"
         >
-          <p className="eyebrow">Skip ahead</p>
-          <h3 className="section-title mt-3 text-2xl font-semibold leading-tight md:text-3xl">
-            Project directory
-          </h3>
-          <p className="mt-3 max-w-xl text-sm text-white/65">
-            Short on time? Jump straight to the project you care about.
+          <div className="flex items-baseline gap-4">
+            <span className="mono-label">§01</span>
+            <h2 className="section-title text-2xl text-white md:text-3xl">
+              work
+            </h2>
+          </div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">
+            {projects.length} entries · hover to expand
           </p>
         </motion.div>
 
-        <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Column headers */}
+        <div className="hidden grid-cols-[3rem_1fr_10rem_5rem_9rem_2rem] items-center gap-4 border-b border-white/10 pb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-white/35 md:grid">
+          <span>idx</span>
+          <span>name</span>
+          <span>domain</span>
+          <span>year</span>
+          <span>status</span>
+          <span className="text-right">→</span>
+        </div>
+
+        {/* Rows */}
+        <ul>
           {projects.map((p, i) => (
-            <motion.li
-              key={p.id}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.45, delay: i * 0.05 }}
-              className={
-                p.comingSoon
-                  ? 'flex h-full flex-col rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-5'
-                  : 'flex h-full flex-col rounded-2xl border border-white/15 bg-white/[0.04] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/35 hover:bg-white/[0.06]'
-              }
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-mono text-xs text-white/40">
-                  {p.index}
-                </span>
-                {!p.comingSoon && (
-                  <span
-                    className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em]"
-                    style={{ color: 'var(--accent)' }}
-                  >
-                    {labels[p.id] || p.themeKey}
-                  </span>
-                )}
-              </div>
-
-              <h4
-                className={`mt-3 font-display text-lg font-semibold leading-snug ${
-                  p.comingSoon ? 'text-white/70' : 'text-white'
-                }`}
-              >
-                {p.title}
-              </h4>
-
-              {p.status && (
-                <span className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-white/70">
-                  <span
-                    className="h-1.5 w-1.5 rounded-full"
-                    style={{ background: 'var(--accent)' }}
-                  />
-                  {p.status}
-                </span>
-              )}
-
-              {!p.comingSoon && p.tagline && (
-                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/65">
-                  {p.tagline}
-                </p>
-              )}
-
-              {!p.comingSoon && p.stack?.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {p.stack.slice(0, 4).map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-0.5 font-mono text-[10px] text-white/70"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {!p.comingSoon && (
-                <div className="mt-auto flex flex-wrap gap-2 pt-4">
-                  <a
-                    href={`#${p.id}`}
-                    aria-label={`View details for ${p.title}`}
-                    className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium text-white/85 transition hover:border-white/40 hover:bg-white/[0.05]"
-                  >
-                    View details →
-                  </a>
-                  {p.cta?.github && (
-                    <a
-                      href={p.cta.github}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`Open ${p.title} on GitHub`}
-                      className="rounded-full border border-white/15 px-3 py-1.5 text-xs font-medium text-white/75 transition hover:border-white/35 hover:text-white"
-                    >
-                      GitHub ↗
-                    </a>
-                  )}
-                  {!p.cta?.github && p.cta?.githubPrivate && (
-                    <span
-                      title={p.cta.githubPrivate.reason}
-                      aria-label={`${p.title} repository is private`}
-                      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.02] px-3 py-1.5 text-xs font-medium text-white/50"
-                    >
-                      <span aria-hidden="true">🔒</span>
-                      GitHub · Private
-                    </span>
-                  )}
-                  {p.cta?.demo && (
-                    <a
-                      href={p.cta.demo}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`Open ${p.title} live demo`}
-                      className="rounded-full border px-3 py-1.5 text-xs font-medium transition"
-                      style={{
-                        borderColor: 'var(--accent)',
-                        color: 'var(--accent)',
-                      }}
-                    >
-                      Live demo ↗
-                    </a>
-                  )}
-                </div>
-              )}
-            </motion.li>
+            <ProjectRow key={p.id} project={p} index={i} />
           ))}
         </ul>
       </div>
     </section>
+  )
+}
+
+function ProjectRow({ project, index }) {
+  const [open, setOpen] = useState(false)
+  const isComing = project.comingSoon
+  const isLinked = !isComing
+
+  const rowContent = (
+    <div className="grid grid-cols-[3rem_1fr] items-baseline gap-4 py-4 md:grid-cols-[3rem_1fr_10rem_5rem_9rem_2rem]">
+      <span className="font-mono text-[12px] text-white/40 group-hover:text-white/70">
+        {project.index}
+      </span>
+
+      <span className="flex items-baseline gap-3">
+        <span className="text-[17px] text-white group-hover:text-white md:text-[19px]">
+          {project.title}
+        </span>
+        {isComing && (
+          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">
+            soon
+          </span>
+        )}
+      </span>
+
+      <span className="hidden font-mono text-[12px] text-white/50 md:inline">
+        {domains[project.id] || '—'}
+      </span>
+      <span className="hidden font-mono text-[12px] text-white/50 md:inline">
+        {years[project.id] || '—'}
+      </span>
+      <span className="hidden font-mono text-[12px] text-white/50 md:inline">
+        {statusMap[project.id] || '—'}
+      </span>
+      <span
+        className={`hidden text-right font-mono text-[14px] md:inline ${
+          isLinked ? 'text-white/40 group-hover:text-white' : 'text-white/20'
+        }`}
+        aria-hidden="true"
+      >
+        {isLinked ? '→' : '·'}
+      </span>
+    </div>
+  )
+
+  return (
+    <li
+      className="group border-b border-white/[0.07]"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+    >
+      {isLinked ? (
+        <a
+          href={`#${project.id}`}
+          aria-label={`Jump to ${project.title}`}
+          className="block cursor-pointer transition-colors hover:bg-white/[0.02]"
+        >
+          {rowContent}
+        </a>
+      ) : (
+        <div className="block">{rowContent}</div>
+      )}
+
+      {/* Inline hover panel */}
+      <motion.div
+        initial={false}
+        animate={{
+          height: open ? 'auto' : 0,
+          opacity: open ? 1 : 0,
+        }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        className="overflow-hidden"
+      >
+        <div className="grid grid-cols-1 gap-4 pb-5 pl-12 pr-4 md:grid-cols-[1fr_auto]">
+          {project.tagline && (
+            <p className="max-w-2xl text-[13.5px] leading-relaxed text-white/60">
+              {project.tagline}
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            {project.cta?.github && (
+              <a
+                href={project.cta.github}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="font-mono text-[11px] uppercase tracking-[0.12em] text-white/55 underline decoration-white/20 underline-offset-[4px] transition-colors hover:text-white hover:decoration-white"
+              >
+                github ↗
+              </a>
+            )}
+            {project.cta?.githubPrivate && (
+              <span
+                className="font-mono text-[11px] uppercase tracking-[0.12em] text-white/40"
+                title={project.cta.githubPrivate.reason}
+              >
+                repo · private
+              </span>
+            )}
+            {project.cta?.demo && (
+              <a
+                href={project.cta.demo}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="font-mono text-[11px] uppercase tracking-[0.12em] underline decoration-white/20 underline-offset-[4px] transition-colors hover:decoration-white"
+                style={{ color: 'var(--accent)' }}
+              >
+                live ↗
+              </a>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </li>
   )
 }

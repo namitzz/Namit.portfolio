@@ -4,11 +4,11 @@ import { useInView } from 'framer-motion'
 import ThemeBackground from './components/ThemeBackground'
 import ScrollProgress from './components/ScrollProgress'
 import Nav from './components/Nav'
+import HUD from './components/HUD'
 import Hero from './components/Hero'
-import About from './components/About'
-import WorkIntro from './components/WorkIntro'
 import ProjectIndex from './components/ProjectIndex'
 import ProjectSection from './components/ProjectSection'
+import About from './components/About'
 import Skills from './components/Skills'
 import Experience from './components/Experience'
 import Contact from './components/Contact'
@@ -41,14 +41,16 @@ const accentLabels = {
 export default function App() {
   const [themeKey, setThemeKey] = useState('base')
 
-  // Project sections + base wrappers push their theme up when scrolled into view.
+  // Project sections push their theme up when scrolled into view; base
+  // sections reset it back to the neutral software-artifact palette.
   const activate = useCallback((key) => setThemeKey(key), [])
 
   return (
     <div className="relative min-h-screen">
       <ThemeBackground themeKey={themeKey} />
       <ScrollProgress />
-      <Nav themeKey={themeKey} />
+      <Nav />
+      <HUD />
 
       <main className="relative z-10">
         <SectionTrigger onEnter={() => activate('base')}>
@@ -56,11 +58,8 @@ export default function App() {
         </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>
-          <About />
+          <ProjectIndex />
         </SectionTrigger>
-
-        <WorkIntro />
-        <ProjectIndex />
 
         {projects
           .filter((p) => !p.comingSoon)
@@ -73,6 +72,10 @@ export default function App() {
               accentLabel={accentLabels[p.id]}
             />
           ))}
+
+        <SectionTrigger onEnter={() => activate('base')}>
+          <About />
+        </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>
           <Skills />

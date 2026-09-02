@@ -1,73 +1,93 @@
 import { motion } from 'framer-motion'
 import { profile } from '../data/content'
-import MagneticButton from './MagneticButton'
 
+/**
+ * Contact as a terminal-prompt block. Each channel is a monospaced
+ * line prefixed with `>`, action on the right. No hero card,
+ * no orbs, no glass.
+ */
 export default function Contact() {
+  const rows = [
+    { label: 'email', value: profile.email, href: `mailto:${profile.email}`, action: 'copy' },
+    { label: 'github', value: profile.links.github.replace('https://', ''), href: profile.links.github, action: 'visit' },
+    { label: 'linkedin', value: profile.links.linkedin.replace('https://www.', ''), href: profile.links.linkedin, action: 'visit' },
+    profile.links.cv && {
+      label: 'cv',
+      value: profile.links.cv.replace(/^\//, ''),
+      href: profile.links.cv,
+      action: 'download',
+    },
+  ].filter(Boolean)
+
   return (
-    <section id="contact" className="relative z-10 px-6 py-32 md:px-12">
-      <div className="mx-auto w-full max-w-5xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.7 }}
-          className="glass-strong relative overflow-hidden rounded-3xl p-10 md:p-14"
-        >
-          <p className="eyebrow">Contact</p>
-          <motion.h2
-            initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }}
-            whileInView={{ clipPath: 'inset(0 0 0 0)', opacity: 1 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="section-title mt-3 max-w-3xl text-4xl font-semibold leading-tight md:text-5xl"
-          >
-            Open to graduate roles in AI, machine learning, and software
-            engineering.
-          </motion.h2>
-          <p className="mt-5 max-w-xl text-white/65">
-            AI systems, backend, data pipelines, or a frontend that has to feel
-            right. Happy to talk about any of it.
-          </p>
-
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <MagneticButton href={`mailto:${profile.email}`} className="btn-primary">
-              {profile.email} →
-            </MagneticButton>
-            <a
-              href={profile.links.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-ghost"
-            >
-              LinkedIn
-            </a>
-            <a
-              href={profile.links.github}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-ghost"
-            >
-              GitHub
-            </a>
-            {profile.links.cv && (
-              <a
-                href={profile.links.cv}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-ghost"
-              >
-                CV
-              </a>
-            )}
+    <section id="contact" className="relative px-6 py-24 md:px-10">
+      <div className="mx-auto w-full max-w-[1400px]">
+        <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-white/10 pb-4">
+          <div className="flex items-baseline gap-4">
+            <span className="mono-label">§05</span>
+            <h2 className="section-title text-2xl text-white md:text-3xl">
+              contact
+            </h2>
           </div>
-        </motion.div>
+          <p
+            className="font-mono text-[11px] uppercase tracking-[0.16em]"
+            style={{ color: 'var(--accent)' }}
+          >
+            ● available
+          </p>
+        </div>
 
-        <footer className="mt-10 flex flex-col items-start justify-between gap-3 text-xs text-white/40 sm:flex-row sm:items-center">
-          <span>© {new Date().getFullYear()} Namit Singh Sarna</span>
-          <span className="font-mono">
-            Built with React · Tailwind · Framer Motion
-          </span>
-        </footer>
+        <div className="mt-10 grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-16">
+          {/* Left: pitch */}
+          <div className="md:col-span-5">
+            <p className="text-[17px] leading-relaxed text-white/80">
+              Open to graduate roles in AI, machine learning, and software
+              engineering.
+            </p>
+            <p className="mt-4 text-[14.5px] leading-relaxed text-white/55">
+              Applied AI, backend, data pipelines, or a frontend that has to
+              feel right. Happy to talk about any of it.
+            </p>
+          </div>
+
+          {/* Right: channel rows */}
+          <div className="md:col-span-7">
+            <ul className="border-t border-white/10">
+              {rows.map((r) => (
+                <motion.li
+                  key={r.label}
+                  initial={{ opacity: 0, x: -6 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ duration: 0.35 }}
+                  className="group border-b border-white/10"
+                >
+                  <a
+                    href={r.href}
+                    target={r.href.startsWith('http') ? '_blank' : undefined}
+                    rel={r.href.startsWith('http') ? 'noreferrer' : undefined}
+                    className="grid grid-cols-[1.5rem_5rem_1fr_auto] items-center gap-4 py-4 font-mono text-[13px] transition-colors hover:bg-white/[0.02]"
+                  >
+                    <span className="text-white/30 group-hover:text-white/60">
+                      &gt;
+                    </span>
+                    <span className="uppercase tracking-[0.12em] text-white/45">
+                      {r.label}
+                    </span>
+                    <span className="truncate text-white/85">{r.value}</span>
+                    <span className="mono-label opacity-0 transition-opacity group-hover:opacity-100">
+                      [{r.action}] ↗
+                    </span>
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+
+            <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-white/35">
+              response time · usually within 24h
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   )

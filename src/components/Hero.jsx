@@ -1,146 +1,135 @@
 import { motion } from 'framer-motion'
 import { profile } from '../data/content'
-import CountUp from './CountUp'
-import MagneticButton from './MagneticButton'
 
+/**
+ * Hero as a title card / manifest. No cards, no gradients, no glow.
+ * Reads like the front matter of a spec doc: identity, build info,
+ * a big serif name for contrast, and a small keyboard-first CTA row.
+ */
 export default function Hero() {
   return (
     <section
       id="top"
-      className="relative z-10 flex min-h-[100svh] items-center overflow-hidden px-6 pt-32 pb-24 md:px-12"
+      className="relative flex min-h-[100svh] flex-col justify-between px-6 pt-24 pb-10 md:px-10 md:pt-28"
     >
-      <div className="relative mx-auto flex w-full max-w-7xl items-center">
-        {/* Copy column (full width now that the avatar is gone) */}
-        <div className="w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: 'easeOut' }}
-            className="flex items-center gap-3"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-            </span>
-            <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/60">
-              Available · CS graduate, First Class Honours
-            </span>
-          </motion.div>
-
-          {/* Word-reveal headline */}
-          <h1 className="section-title mt-7 max-w-5xl text-[clamp(2.4rem,6.4vw,5.2rem)] leading-[1.02] tracking-tight text-white">
-            <RevealLine delay={0.1}>I build practical AI and software for</RevealLine>
-            <RevealLine delay={0.55} className="block">
-              people, trust, and real-world decisions.
-            </RevealLine>
-          </h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.45 }}
-            className="mt-6 max-w-2xl text-base leading-relaxed text-white/70 md:text-lg"
-          >
-            {profile.subheadline}
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.55 }}
-            className="mt-9 flex flex-wrap items-center gap-3"
-          >
-            <MagneticButton href="#projects" className="btn-primary">
-              View Projects →
-            </MagneticButton>
-            <a href="#contact" className="btn-ghost">
-              Contact me
-            </a>
-            <a
-              href={profile.links.github}
-              className="btn-ghost"
-              target="_blank"
-              rel="noreferrer"
-            >
-              GitHub
-            </a>
-            <a
-              href={profile.links.linkedin}
-              className="btn-ghost"
-              target="_blank"
-              rel="noreferrer"
-            >
-              LinkedIn
-            </a>
-            {profile.links.cv && (
-              <a
-                href={profile.links.cv}
-                className="btn-ghost"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Download CV
-              </a>
-            )}
-          </motion.div>
-
-          {/* Stat strip with count-up */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.7 }}
-            className="mt-12 grid max-w-2xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] sm:grid-cols-4"
-          >
-            <Stat to={5} suffix="" label="featured projects" />
-            <Stat to={1} suffix="M+" label="records analysed" />
-            <Stat to={5} suffix="+" label="doc formats" />
-            <Stat to={2026} label="grad year" plain />
-          </motion.div>
-        </div>
-
+      {/* Front-matter meta block */}
+      <div className="mx-auto w-full max-w-[1400px]">
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="grid grid-cols-2 gap-6 border-b border-white/10 pb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-white/45 md:grid-cols-4"
+        >
+          <MetaCell k="portfolio" v="namit.ss" />
+          <MetaCell k="build" v="2026.03" />
+          <MetaCell k="loc" v="United Kingdom" />
+          <MetaCell k="status" v="available" hot />
+        </motion.div>
       </div>
 
-      {/* Scroll hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1, y: [0, 6, 0] }}
-        transition={{
-          opacity: { delay: 1.1, duration: 1 },
-          y: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
-        }}
-        className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 items-center gap-2 text-xs uppercase tracking-[0.25em] text-white/40 md:flex"
-      >
-        <span>Scroll</span>
-        <span className="h-8 w-px bg-white/30" />
-      </motion.div>
+      {/* Main title card */}
+      <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col justify-center py-16">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="mono-label"
+        >
+          §00 · Identity
+        </motion.p>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          className="serif mt-4 text-[clamp(3rem,10vw,8rem)] leading-[0.95] tracking-[-0.02em] text-white"
+        >
+          Namit Singh Sarna
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className="mt-8 max-w-2xl font-mono text-[13px] leading-[1.7] text-white/70"
+        >
+          <span className="text-white/40">&gt;</span> {profile.headline}
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.42 }}
+          className="mt-3 max-w-2xl text-[15px] leading-relaxed text-white/55"
+        >
+          {profile.subheadline}
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.55 }}
+          className="mt-10 flex flex-wrap items-center gap-2"
+        >
+          <a href="#work" className="btn-primary">
+            [w] View work
+          </a>
+          <a href="#contact" className="btn-ghost">
+            [c] Contact
+          </a>
+          <a
+            href={profile.links.github}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-ghost"
+          >
+            GitHub ↗
+          </a>
+          <a
+            href={profile.links.linkedin}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-ghost"
+          >
+            LinkedIn ↗
+          </a>
+          {profile.links.cv && (
+            <a
+              href={profile.links.cv}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-ghost"
+            >
+              CV ↗
+            </a>
+          )}
+        </motion.div>
+      </div>
+
+      {/* Footer strip */}
+      <div className="mx-auto w-full max-w-[1400px]">
+        <div className="flex items-center justify-between border-t border-white/10 pt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-white/35">
+          <span>press [w][a][s][x][c] to navigate</span>
+          <span className="hidden md:inline">↓ scroll</span>
+        </div>
+      </div>
     </section>
   )
 }
 
-/** Lifts a line of text up from below as it reveals. */
-function RevealLine({ children, delay = 0, className = '' }) {
+function MetaCell({ k, v, hot }) {
   return (
-    <span className={`block overflow-hidden ${className}`}>
-      <motion.span
-        className="inline-block"
-        initial={{ y: '110%' }}
-        animate={{ y: '0%' }}
-        transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {children}
-      </motion.span>
-    </span>
-  )
-}
-
-function Stat({ to, label, suffix = '', decimals = 0, plain = false }) {
-  return (
-    <div className="bg-white/[0.02] p-5">
-      <div className="font-display text-2xl font-semibold">
-        <CountUp to={to} suffix={suffix} decimals={decimals} plain={plain} />
-      </div>
-      <div className="mt-1 text-xs uppercase tracking-widest text-white/45">
-        {label}
+    <div>
+      <div className="text-white/30">{k}</div>
+      <div className="mt-1 flex items-center gap-1.5 text-white/80">
+        {hot && (
+          <span
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }}
+            aria-hidden="true"
+          />
+        )}
+        <span>{v}</span>
       </div>
     </div>
   )
