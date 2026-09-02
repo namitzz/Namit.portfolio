@@ -7,6 +7,7 @@ export default {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         display: ['"Instrument Serif"', 'Georgia', 'serif'],
         serif: ['"Instrument Serif"', 'Georgia', 'serif'],
+        rounded: ['Manrope', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {

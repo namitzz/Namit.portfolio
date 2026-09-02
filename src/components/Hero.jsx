@@ -33,7 +33,7 @@ export default function Hero() {
           Namit Singh Sarna
         </h1>
         <p
-          className="mt-4 max-w-md text-[14px] leading-relaxed"
+          className="mt-4 max-w-md font-rounded text-[14.5px] font-medium leading-relaxed"
           style={{ color: 'var(--muted)' }}
         >
           {profile.headline}

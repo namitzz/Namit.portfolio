@@ -34,10 +34,15 @@ export default function Experience() {
           {timeline.map((t, i) => (
             <motion.article
               key={t.title}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.5, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                duration: 0.7,
+                delay: i * 0.07,
+                type: 'spring',
+                bounce: 0.26,
+              }}
               className="group relative flex h-full flex-col border p-6 transition-colors md:p-8"
               style={{
                 borderColor: 'var(--hairline)',

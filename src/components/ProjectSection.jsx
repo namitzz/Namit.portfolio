@@ -1,120 +1,166 @@
 import {
   motion,
   useInView,
-  useMotionValue,
-  useSpring,
+  useScroll,
   useTransform,
 } from 'framer-motion'
 import { useEffect, useRef } from 'react'
-import ProjectBanner from './ProjectBanner'
 
 /**
- * Full-height project section.
+ * Conqr-style dramatic project section.
  *
- * Left column: thematic banner + narrative.
- * Right column: sticky JSX mockup with mouse-tilt parallax.
+ * Structure: full-viewport "picture" reveal (the mockup as the anchor,
+ * subtly parallaxed and scaled with scroll), then a wide editorial
+ * narrative row below. Bouncy v-labs-style spring reveals on entry.
  *
  * Pushes its `themeKey` up to the parent when scrolled into view.
  */
 export default function ProjectSection({ project, onActivate, mockup, accentLabel }) {
   const ref = useRef(null)
-  const inView = useInView(ref, { amount: 0.45, margin: '-10% 0px -10% 0px' })
+  const inView = useInView(ref, { amount: 0.35, margin: '-10% 0px -10% 0px' })
 
   useEffect(() => {
     if (inView) onActivate?.(project.themeKey)
   }, [inView, project.themeKey, onActivate])
 
+  // Scroll-linked parallax on the mockup (conqr scroll method).
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start end', 'end start'],
+  })
+  const mockupY = useTransform(scrollYProgress, [0, 1], ['4%', '-6%'])
+  const mockupScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.98, 1, 0.98])
+
   return (
-    <section id={project.id} ref={ref} className="relative z-10 px-6 py-32 md:px-16">
-      <div className="mx-auto grid w-full max-w-7xl gap-14 md:grid-cols-12 md:gap-10 lg:gap-16">
-        {/* Narrative column */}
+    <section
+      id={project.id}
+      ref={ref}
+      className="relative z-10 py-28 md:py-36"
+    >
+      {/* Full-viewport picture: the mockup takes the stage first. */}
+      <div className="relative mx-auto flex w-full max-w-[1600px] flex-col items-center px-6 md:px-16">
+        {/* Small header strip above the mockup */}
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{
+            duration: 0.6,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="mb-8 flex w-full flex-wrap items-center justify-between gap-3 border-b pb-4"
+          style={{ borderColor: 'rgba(255,255,255,0.10)' }}
+        >
+          <div className="flex items-baseline gap-3">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+              {project.index}
+            </span>
+            <span
+              className="serif text-[clamp(1.4rem,2.4vw,2rem)] leading-none"
+              style={{ color: '#fff' }}
+            >
+              {project.title}
+            </span>
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">
+            {accentLabel || project.themeKey}
+          </span>
+        </motion.div>
+
+        {/* Mockup — the dramatic picture reveal */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.94, y: 40 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{
+            duration: 0.9,
+            ease: [0.22, 1, 0.36, 1],
+            type: 'spring',
+            bounce: 0.18,
+          }}
+          className="relative w-full"
+          style={{
+            y: mockupY,
+            scale: mockupScale,
+            willChange: 'transform',
+          }}
+        >
+          {mockup}
+        </motion.div>
+
+        {/* Status pill */}
+        {project.status && (
+          <motion.span
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.25, duration: 0.4 }}
+            className="mt-8 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em]"
+            style={{
+              borderColor: 'var(--accent)',
+              color: 'var(--accent)',
+            }}
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: 'var(--accent)' }}
+            />
+            {project.status}
+          </motion.span>
+        )}
+      </div>
+
+      {/* Wide editorial narrative row below the mockup */}
+      <div className="mx-auto mt-24 grid w-full max-w-[1600px] gap-12 px-6 md:mt-32 md:grid-cols-12 md:gap-12 md:px-16">
+        {/* Left: tagline + narrative */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.7 }}
-          className="md:col-span-5"
+          className="md:col-span-7"
         >
-          {/* Thematic banner */}
-          <ProjectBanner themeKey={project.themeKey} />
+          <p
+            className="serif text-[clamp(1.6rem,3.2vw,2.6rem)] leading-[1.15] tracking-[-0.015em]"
+            style={{ color: '#fff' }}
+          >
+            {project.tagline}
+          </p>
 
-          <div className="mt-6 flex items-center gap-3">
-            <span className="font-mono text-xs text-white/40">{project.index}</span>
-            <span className="h-px flex-1 bg-white/10" />
-            <span
-              className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em]"
-              style={{ color: 'var(--accent)' }}
-            >
-              {accentLabel || project.themeKey}
-            </span>
-          </div>
-
-          <h3 className="section-title mt-5 text-4xl font-semibold leading-tight md:text-5xl">
-            {project.title}
-          </h3>
-          {project.status && (
-            <span
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em]"
-              style={{
-                borderColor: 'var(--accent)',
-                color: 'var(--accent)',
-                background: 'rgba(255,255,255,0.02)',
-              }}
-            >
-              <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ background: 'var(--accent)' }}
-              />
-              {project.status}
-            </span>
-          )}
-          <p className="mt-3 text-lg text-white/70">{project.tagline}</p>
-
-          <div className="mt-8 space-y-6">
+          <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-14">
             <Block label="Problem" body={project.problem} />
             <Block label="Solution" body={project.solution} />
+          </div>
 
-            <div>
-              <p className="eyebrow">Tech stack</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {project.stack.map((s) => (
-                  <motion.span
-                    key={s}
-                    whileHover={{ y: -1, scale: 1.03 }}
-                    className="cursor-default rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1 font-mono text-xs text-white/75 transition-colors hover:border-white/30 hover:text-white"
-                  >
-                    {s}
-                  </motion.span>
-                ))}
-              </div>
-            </div>
+          <div className="mt-12">
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+              Key features
+            </p>
+            <ul className="mt-4 space-y-2.5">
+              {project.features.map((f, i) => (
+                <motion.li
+                  key={f}
+                  initial={{ opacity: 0, x: -6 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.04, duration: 0.4 }}
+                  className="flex gap-3 text-[15px] text-white/80"
+                >
+                  <span
+                    className="mt-2 inline-block h-1 w-1 shrink-0 rounded-full"
+                    style={{ background: 'var(--accent)' }}
+                  />
+                  <span>{f}</span>
+                </motion.li>
+              ))}
+            </ul>
+          </div>
 
-            <div>
-              <p className="eyebrow">Key features</p>
-              <ul className="mt-3 space-y-2">
-                {project.features.map((f, i) => (
-                  <motion.li
-                    key={f}
-                    initial={{ opacity: 0, x: -8 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05, duration: 0.4 }}
-                    className="flex gap-3 text-sm text-white/80"
-                  >
-                    <span
-                      className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ background: 'var(--accent)' }}
-                    />
-                    <span>{f}</span>
-                  </motion.li>
-                ))}
-              </ul>
-            </div>
-
+          <div className="mt-12">
             <Block label="Impact / what I learned" body={project.impact} />
           </div>
 
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-10 flex flex-wrap gap-3">
             {project.cta.caseStudy && (
               <a href={project.cta.caseStudy} className="btn-primary">
                 View Case Study →
@@ -127,7 +173,7 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
                 target="_blank"
                 rel="noreferrer"
               >
-                GitHub
+                GitHub ↗
               </a>
             )}
             {!project.cta.github && project.cta.githubPrivate && (
@@ -140,18 +186,49 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
                 target="_blank"
                 rel="noreferrer"
               >
-                Live Demo
+                Live Demo ↗
               </a>
             )}
           </div>
         </motion.div>
 
-        {/* Sticky mockup column with mouse-tilt */}
-        <div className="md:col-span-7">
-          <div className="md:sticky md:top-28">
-            <TiltMockup>{mockup}</TiltMockup>
+        {/* Right: tech stack sidebar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="md:col-span-5"
+        >
+          <div
+            className="md:sticky md:top-32 md:border-l md:pl-10"
+            style={{ borderColor: 'rgba(255,255,255,0.10)' }}
+          >
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+              Tech stack
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {project.stack.map((s, i) => (
+                <motion.span
+                  key={s}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{
+                    delay: i * 0.03,
+                    type: 'spring',
+                    stiffness: 260,
+                    damping: 20,
+                  }}
+                  whileHover={{ y: -2 }}
+                  className="cursor-default rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[12px] text-white/75 transition-colors hover:border-white/30 hover:text-white"
+                >
+                  {s}
+                </motion.span>
+              ))}
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )
@@ -160,20 +237,14 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
 function Block({ label, body }) {
   return (
     <div>
-      <p className="eyebrow">{label}</p>
-      <p className="mt-2 text-[15px] leading-relaxed text-white/75">{body}</p>
+      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+        {label}
+      </p>
+      <p className="mt-3 text-[15.5px] leading-relaxed text-white/80">{body}</p>
     </div>
   )
 }
 
-/**
- * Inline "Private" affordance for a GitHub repo that exists but is not
- * publicly accessible. Uses a native <details> element so it is keyboard
- * accessible, works on mobile (tap to expand), and needs no JS state.
- *
- * Drop-in: set `cta.githubPrivate = { reason: '...' }` on a project in
- * content.js, leave `cta.github` as null, and this renders automatically.
- */
 function PrivateRepoNote({ reason }) {
   return (
     <details className="group rounded-full border border-white/15 bg-white/[0.03] open:rounded-2xl open:bg-white/[0.04] open:px-4 open:py-3">
@@ -205,52 +276,5 @@ function LockIcon() {
       <rect x="5" y="11" width="14" height="9" rx="2" />
       <path d="M8 11V8a4 4 0 0 1 8 0v3" strokeLinecap="round" />
     </svg>
-  )
-}
-
-/** Subtle 3D mouse-tilt around the project mockup. */
-function TiltMockup({ children }) {
-  const ref = useRef(null)
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  const rx = useSpring(useTransform(y, [-0.5, 0.5], ['4deg', '-4deg']), {
-    stiffness: 180,
-    damping: 20,
-  })
-  const ry = useSpring(useTransform(x, [-0.5, 0.5], ['-4deg', '4deg']), {
-    stiffness: 180,
-    damping: 20,
-  })
-
-  const onMove = (e) => {
-    const el = ref.current
-    if (!el) return
-    const r = el.getBoundingClientRect()
-    x.set((e.clientX - r.left) / r.width - 0.5)
-    y.set((e.clientY - r.top) / r.height - 0.5)
-  }
-  const onLeave = () => {
-    x.set(0)
-    y.set(0)
-  }
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-100px' }}
-      transition={{ duration: 0.8 }}
-      style={{
-        rotateX: rx,
-        rotateY: ry,
-        transformStyle: 'preserve-3d',
-        transformPerspective: 1200,
-      }}
-    >
-      {children}
-    </motion.div>
   )
 }

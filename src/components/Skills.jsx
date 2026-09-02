@@ -26,10 +26,15 @@ export default function Skills() {
           {skills.map((s, i) => (
             <motion.li
               key={s.group}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.4, delay: i * 0.03 }}
+              transition={{
+                duration: 0.6,
+                delay: i * 0.05,
+                type: 'spring',
+                bounce: 0.24,
+              }}
               className="grid grid-cols-[2.5rem_1fr] gap-4 border-b py-5 md:grid-cols-[3rem_14rem_1fr] md:gap-8"
               style={{ borderColor: 'var(--hairline)' }}
             >

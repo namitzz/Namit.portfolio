@@ -122,10 +122,15 @@ function ProjectRow({ project, index }) {
 
   return (
     <motion.li
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.6, delay: index * 0.05 }}
+      transition={{
+        duration: 0.7,
+        delay: index * 0.08,
+        type: 'spring',
+        bounce: 0.28,
+      }}
       className="group border-b"
       style={{ borderColor: 'var(--hairline)' }}
     >
