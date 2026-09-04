@@ -18,7 +18,7 @@ export const profile = {
   headline:
     'I build practical AI and software for people who need it to actually work.',
   subheadline:
-    'BSc Computer Science, First Class Honours, University of Leicester. Applied AI, RAG, backend, full-stack. Open to graduate roles.',
+    'BSc Computer Science, First Class Honours, Leicester. Currently reading an MSc at Aston. Applied AI, RAG, backend, full-stack.',
   positioning:
     'Practical AI and software engineering. RAG, backend, ML, and full-stack.',
   highlights: [
@@ -29,7 +29,7 @@ export const profile = {
     'Contributor to ClassFutures guidance on responsible Generative AI use.',
   ],
   about: [
-    "I'm Namit, a Computer Science graduate from the University of Leicester. First Class Honours, conferred July 2026.",
+    "I'm Namit, a Computer Science graduate from the University of Leicester (First Class Honours, conferred July 2026), currently reading an MSc at Aston University.",
     'I build systems that have to survive real use, not just a demo. Ones that ground themselves in evidence, explain themselves, and can cite their sources.',
     'The projects below span RAG, computer vision, data science, and full-stack. Different domains, same discipline: smallest system that solves the problem, then make it trustworthy.',
   ],
@@ -221,13 +221,51 @@ export const projects = [
       demo: null,
     },
   },
+  {
+    id: 'tovo',
+    themeKey: 'course',
+    index: '06',
+    title: 'Tovo',
+    status: 'Live',
+    tagline:
+      'A React + Supabase app for learning German across CEFR levels A1 to C1.',
+    problem:
+      'Language apps tend to gamify everything but drift from real curriculum. Learners want structured practice tied to actual proficiency levels, not just streaks.',
+    solution:
+      'Tovo is structured around the CEFR framework (A1 to C1), with a personalised onboarding flow, level-appropriate content, audio prompts, and progress tracking backed by Supabase. Built with React 19, TypeScript, Zustand for state, and Framer Motion for the interaction feel.',
+    stack: [
+      'React 19',
+      'TypeScript',
+      'Vite',
+      'Supabase',
+      'Zustand',
+      'Framer Motion',
+      'Recharts',
+      'Sentry',
+    ],
+    features: [
+      'Personalised onboarding: name, current level, learning goals.',
+      'Structured CEFR levels A1 through C1 with level-appropriate content.',
+      'Supabase backend for auth and persistent progress.',
+      'Zustand state store for a fast, reactive UI.',
+      'Audio prompts to reinforce listening and pronunciation.',
+      'Recharts-based progress visualisation.',
+    ],
+    impact:
+      'Working on Tovo taught me how much of a language product lives outside the language: onboarding, streak logic, level gating, latency on audio. The interesting engineering was making the CEFR structure feel like a companion rather than a syllabus.',
+    cta: {
+      caseStudy: null,
+      github: 'https://github.com/namitzz/Tovo',
+      demo: 'https://namitzz.github.io/Tovo/',
+    },
+  },
   // Placeholder. Shows in the Project directory only; the full project
   // section is suppressed via `comingSoon` so the homepage doesn't render
   // an empty Problem/Solution/Stack block for it.
   {
     id: 'agentforge',
     themeKey: 'base',
-    index: '06',
+    index: '07',
     title: 'AgentForge',
     status: 'Coming soon',
     comingSoon: true,
@@ -283,6 +321,13 @@ export const skills = [
 ]
 
 export const timeline = [
+  {
+    year: '2026 – present',
+    title: 'MSc, Aston University',
+    org: 'Aston University · Birmingham',
+    body:
+      'Currently reading an MSc at Aston University, continuing on from Leicester. Building on the applied AI and full-stack direction of my undergraduate work.',
+  },
   {
     year: '2023 – 2026',
     title: 'BSc Computer Science',

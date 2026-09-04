@@ -53,19 +53,19 @@ export default function Hero() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.4, delay: 0.9 }}
           aria-hidden="true"
-          className="serif text-outline pointer-events-none absolute right-4 bottom-[8%] select-none leading-none tracking-[-0.06em] md:right-10 md:bottom-[10%]"
+          className="serif text-outline pointer-events-none absolute right-4 bottom-[10%] select-none leading-none tracking-[-0.05em] md:right-10 md:bottom-[14%]"
           style={{
-            fontSize: 'clamp(4rem, 18vw, 18rem)',
+            fontSize: 'clamp(2.6rem, 10vw, 10rem)',
           }}
         >
           Portfolio
         </motion.p>
 
         <h1
-          className="serif relative z-10 w-full leading-[0.9] tracking-[-0.045em]"
+          className="serif relative z-10 w-full leading-[0.92] tracking-[-0.03em]"
           style={{
             color: 'var(--ink)',
-            fontSize: 'clamp(4rem, 20vw, 20rem)',
+            fontSize: 'clamp(2.8rem, 9vw, 8rem)',
           }}
         >
           <NameLine delay={0.15}>Namit</NameLine>

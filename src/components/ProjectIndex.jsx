@@ -13,6 +13,7 @@ const domains = {
   cloud: 'Client site',
   crime: 'Data Science',
   course: 'Backend · MySQL',
+  tovo: 'React · Supabase',
   agentforge: 'Agent orchestration',
 }
 
@@ -22,6 +23,7 @@ const years = {
   cloud: '2025',
   crime: '2024',
   course: '2024',
+  tovo: '2026',
   agentforge: '—',
 }
 
@@ -41,7 +43,7 @@ export default function ProjectIndex() {
           <div>
             <p className="eyebrow">Reel 01 · Selected work</p>
             <h2
-              className="serif mt-3 text-[clamp(2.6rem,6vw,4.8rem)] leading-[0.95] tracking-[-0.02em]"
+              className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
             >
               Projects.
@@ -83,7 +85,7 @@ function ProjectRow({ project, index }) {
       {/* Big serif title */}
       <div className="col-span-1 md:col-span-1">
         <h3
-          className="serif text-[clamp(1.9rem,4.5vw,3.4rem)] leading-[1] tracking-[-0.015em] transition-colors"
+          className="serif text-[clamp(1.5rem,3vw,2.4rem)] leading-[1] tracking-[-0.015em] transition-colors"
           style={{ color: 'var(--ink)' }}
         >
           {project.title}

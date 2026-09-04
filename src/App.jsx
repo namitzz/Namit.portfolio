@@ -18,6 +18,7 @@ import VisionMock from './components/mockups/VisionMock'
 import CloudSevenMock from './components/mockups/CloudSevenMock'
 import CrimeMock from './components/mockups/CrimeMock'
 import CourseCompanionMock from './components/mockups/CourseCompanionMock'
+import TovoMock from './components/mockups/TovoMock'
 
 import { projects } from './data/content'
 
@@ -28,6 +29,7 @@ const mockups = {
   cloud: <CloudSevenMock />,
   crime: <CrimeMock />,
   course: <CourseCompanionMock />,
+  tovo: <TovoMock />,
 }
 
 const accentLabels = {
@@ -36,6 +38,7 @@ const accentLabels = {
   cloud: 'Brand · Frontend',
   crime: 'Data Science',
   course: 'Spring Boot · MySQL',
+  tovo: 'React · Supabase',
 }
 
 export default function App() {

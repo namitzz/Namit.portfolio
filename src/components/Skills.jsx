@@ -17,7 +17,7 @@ export default function Skills() {
           <div>
             <p className="eyebrow">Reel 03 · Toolbox</p>
             <h2
-              className="serif mt-3 text-[clamp(2.6rem,6vw,4.8rem)] leading-[0.95] tracking-[-0.02em]"
+              className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
             >
               What I work with.
