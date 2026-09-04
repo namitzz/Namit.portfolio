@@ -14,7 +14,7 @@ export default function About() {
           className="mb-16 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
-          <p className="eyebrow">About</p>
+          <p className="eyebrow">Reel 02 · About</p>
           <motion.h2
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}

@@ -46,9 +46,23 @@ export default function Hero() {
       </motion.div>
 
       {/* Centre: massive stacked name */}
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 items-center py-10">
+      <div className="relative mx-auto flex w-full max-w-[1600px] flex-1 items-center py-10">
+        {/* Ghost outlined backdrop wordmark (haiman-style layered display type) */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.4, delay: 0.9 }}
+          aria-hidden="true"
+          className="serif text-outline pointer-events-none absolute right-4 bottom-[8%] select-none leading-none tracking-[-0.06em] md:right-10 md:bottom-[10%]"
+          style={{
+            fontSize: 'clamp(4rem, 18vw, 18rem)',
+          }}
+        >
+          Portfolio
+        </motion.p>
+
         <h1
-          className="serif w-full leading-[0.9] tracking-[-0.045em]"
+          className="serif relative z-10 w-full leading-[0.9] tracking-[-0.045em]"
           style={{
             color: 'var(--ink)',
             fontSize: 'clamp(4rem, 20vw, 20rem)',
@@ -61,7 +75,7 @@ export default function Hero() {
               Sarna
               <span
                 className="ml-[0.03em] inline-block align-baseline"
-                style={{ color: 'var(--accent)' }}
+                style={{ color: '#f4552a' }}
               >
                 .
               </span>

@@ -2,77 +2,106 @@ import { motion } from 'framer-motion'
 import { skills } from '../data/content'
 
 /**
- * Editorial skills list. Group name in mono uppercase, items as a
- * dot-separated stream in sans. No cards, no icons, hairline dividers.
+ * Skills as a bento grid of catalogue cards — haiman FRAME 2025-style.
+ * Each group is a numbered card: index, group name, and its items as
+ * mono chips. Layers a subtle ghost-outlined number for depth.
  */
 export default function Skills() {
   return (
     <section id="skills" className="relative px-6 py-40 md:px-20 md:py-56">
       <div className="mx-auto w-full max-w-[1600px]">
         <div
-          className="mb-16 border-b pb-6"
+          className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
-          <p className="eyebrow">Skills</p>
-          <h2
-            className="serif mt-3 text-[clamp(2.6rem,6vw,4.8rem)] leading-[0.95] tracking-[-0.02em]"
-            style={{ color: 'var(--ink)' }}
-          >
-            The toolbox.
-          </h2>
+          <div>
+            <p className="eyebrow">Reel 03 · Toolbox</p>
+            <h2
+              className="serif mt-3 text-[clamp(2.6rem,6vw,4.8rem)] leading-[0.95] tracking-[-0.02em]"
+              style={{ color: 'var(--ink)' }}
+            >
+              What I work with.
+            </h2>
+          </div>
+          <p className="mono-label" style={{ color: 'var(--muted)' }}>
+            {skills.length} groups
+          </p>
         </div>
 
-        <ol>
+        {/* Bento grid — haiman-style FRAME cards */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {skills.map((s, i) => (
-            <motion.li
+            <motion.article
               key={s.group}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
+              viewport={{ once: true, margin: '-40px' }}
               transition={{
                 duration: 0.6,
                 delay: i * 0.05,
                 type: 'spring',
-                bounce: 0.24,
+                bounce: 0.22,
               }}
-              className="grid grid-cols-[2.5rem_1fr] gap-4 border-b py-5 md:grid-cols-[3rem_14rem_1fr] md:gap-8"
-              style={{ borderColor: 'var(--hairline)' }}
+              className="group relative flex h-full flex-col overflow-hidden border p-6 transition-colors md:p-7"
+              style={{
+                borderColor: 'var(--hairline)',
+                background: 'rgba(244,244,245,0.02)',
+              }}
             >
+              {/* Big ghost index in the corner */}
               <span
-                className="mono-label"
-                style={{ color: 'var(--muted)' }}
+                className="serif text-outline-strong pointer-events-none absolute -top-2 -right-2 select-none leading-none tracking-[-0.04em]"
+                style={{
+                  fontSize: 'clamp(4rem, 8vw, 6rem)',
+                }}
+                aria-hidden="true"
               >
                 {String(i + 1).padStart(2, '0')}
               </span>
 
-              <p
-                className="mono-label"
+              {/* Top strip: reel number + arrow */}
+              <div className="mb-6 flex items-baseline justify-between">
+                <span
+                  className="mono-label"
+                  style={{ color: 'var(--muted)' }}
+                >
+                  Frame {String(i + 1).padStart(2, '0')}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="serif text-[1.1rem] leading-none opacity-30 transition-opacity duration-300 group-hover:opacity-100"
+                  style={{ color: 'var(--ink)' }}
+                >
+                  ✦
+                </span>
+              </div>
+
+              {/* Group name */}
+              <h3
+                className="serif text-[clamp(1.4rem,2.6vw,2rem)] leading-[1.05] tracking-[-0.015em]"
                 style={{ color: 'var(--ink)' }}
               >
                 {s.group}
-              </p>
+              </h3>
 
-              <p
-                className="col-span-2 text-[15.5px] leading-relaxed md:col-span-1"
-                style={{ color: 'var(--ink-soft)' }}
-              >
-                {s.items.map((it, idx) => (
-                  <span key={it}>
-                    <span className="whitespace-nowrap">{it}</span>
-                    {idx < s.items.length - 1 && (
-                      <span
-                        className="mx-2"
-                        style={{ color: 'var(--muted)' }}
-                      >
-                        ·
-                      </span>
-                    )}
+              {/* Items as mono chips */}
+              <div className="mt-6 flex flex-wrap gap-1.5">
+                {s.items.map((it) => (
+                  <span
+                    key={it}
+                    className="rounded-sm border px-2 py-1 font-mono text-[10.5px] uppercase tracking-[0.08em]"
+                    style={{
+                      borderColor: 'var(--hairline)',
+                      color: 'var(--ink-soft)',
+                    }}
+                  >
+                    {it}
                   </span>
                 ))}
-              </p>
-            </motion.li>
+              </div>
+            </motion.article>
           ))}
-        </ol>
+        </div>
       </div>
     </section>
   )

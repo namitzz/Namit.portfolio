@@ -16,7 +16,7 @@ export default function Experience() {
           style={{ borderColor: 'var(--hairline)' }}
         >
           <div>
-            <p className="eyebrow">Experience &amp; Education</p>
+            <p className="eyebrow">Reel 04 · Experience &amp; Education</p>
             <h2
               className="serif mt-3 text-[clamp(2.6rem,6vw,4.8rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}

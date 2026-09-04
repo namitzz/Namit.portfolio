@@ -39,7 +39,7 @@ export default function ProjectIndex() {
           style={{ borderColor: 'var(--hairline)' }}
         >
           <div>
-            <p className="eyebrow">Selected work</p>
+            <p className="eyebrow">Reel 01 · Selected work</p>
             <h2
               className="serif mt-3 text-[clamp(2.6rem,6vw,4.8rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
