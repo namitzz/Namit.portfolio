@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
  * hero. Plays once per browser session (sessionStorage flag) so
  * repeat navigations don't re-play it.
  *
- * Total runtime: ~2.4s. Skippable by click or Esc.
+ * Total runtime: ~1.7s. Skippable by click or Esc.
  */
 const SESSION_KEY = 'namitss_intro_played_v1'
 
@@ -35,7 +35,7 @@ export default function IntroOverlay() {
     }
     window.addEventListener('keydown', onKey)
 
-    const t = setTimeout(dismiss, 2400)
+    const t = setTimeout(dismiss, 1700)
     return () => {
       clearTimeout(t)
       window.removeEventListener('keydown', onKey)
@@ -61,7 +61,7 @@ export default function IntroOverlay() {
           key="intro"
           initial={{ y: 0 }}
           exit={{ y: '-100%' }}
-          transition={{ duration: 0.9, ease: [0.83, 0, 0.17, 1] }}
+          transition={{ duration: 0.7, ease: [0.83, 0, 0.17, 1] }}
           onClick={() => setShow(false)}
           role="presentation"
           className="fixed inset-0 z-[100] flex cursor-pointer flex-col items-center justify-center overflow-hidden bg-black"
@@ -81,7 +81,7 @@ export default function IntroOverlay() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.55 }}
-            transition={{ duration: 0.35, delay: 1.2 }}
+            transition={{ duration: 0.3, delay: 0.7 }}
             className="absolute top-6 right-6 font-mono text-[10px] uppercase tracking-[0.22em] text-white/45 md:top-10 md:right-10"
           >
             skip →
@@ -89,9 +89,9 @@ export default function IntroOverlay() {
 
           {/* Kinetic reveal — three lines, each mask-slides up */}
           <div className="mx-auto flex flex-col items-center gap-2 px-6 text-center">
-            <IntroLine delay={0.10}>Namit</IntroLine>
-            <IntroLine delay={0.30}>Singh</IntroLine>
-            <IntroLine delay={0.50}>
+            <IntroLine delay={0.05}>Namit</IntroLine>
+            <IntroLine delay={0.18}>Singh</IntroLine>
+            <IntroLine delay={0.31}>
               <>
                 Sarna
                 <span
@@ -108,7 +108,7 @@ export default function IntroOverlay() {
           <motion.p
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.0 }}
+            transition={{ duration: 0.4, delay: 0.65 }}
             className="absolute bottom-6 left-6 font-mono text-[10px] uppercase tracking-[0.22em] text-white/60 md:bottom-10 md:left-10"
           >
             Software · AI · full-stack
@@ -125,7 +125,7 @@ export default function IntroOverlay() {
               <motion.div
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
-                transition={{ duration: 2.0, ease: 'easeOut', delay: 0.1 }}
+                transition={{ duration: 1.5, ease: 'easeOut', delay: 0.05 }}
                 className="h-full w-full origin-left"
                 style={{ background: 'var(--accent)' }}
               />
@@ -145,7 +145,7 @@ function IntroLine({ children, delay = 0 }) {
     <span
       className="serif block overflow-hidden leading-[0.9] tracking-[-0.04em] text-white"
       style={{
-        fontSize: 'clamp(3.5rem, 12vw, 11rem)',
+        fontSize: 'clamp(2.8rem, 9vw, 7.5rem)',
         paddingTop: '0.06em',
         paddingBottom: '0.02em',
       }}
@@ -155,7 +155,7 @@ function IntroLine({ children, delay = 0 }) {
         style={{ marginTop: '-0.06em', marginBottom: '-0.02em', willChange: 'transform' }}
         initial={{ y: '110%' }}
         animate={{ y: '0%' }}
-        transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
       >
         {children}
       </motion.span>

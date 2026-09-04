@@ -18,7 +18,7 @@ export const profile = {
   headline:
     'I build practical AI and software for people who need it to actually work.',
   subheadline:
-    'BSc Computer Science, First Class Honours, Leicester. Currently reading an MSc at Aston. Applied AI, RAG, backend, full-stack.',
+    'BSc Computer Science, First Class Honours, Leicester. Currently reading MSc AI for Business Transformation at Aston. Applied AI, RAG, backend, full-stack.',
   positioning:
     'Practical AI and software engineering. RAG, backend, ML, and full-stack.',
   highlights: [
@@ -29,7 +29,7 @@ export const profile = {
     'Contributor to ClassFutures guidance on responsible Generative AI use.',
   ],
   about: [
-    "I'm Namit, a Computer Science graduate from the University of Leicester (First Class Honours, conferred July 2026), currently reading an MSc at Aston University.",
+    "I'm Namit, a Computer Science graduate from the University of Leicester (First Class Honours, conferred July 2026), currently reading MSc AI for Business Transformation at Aston University.",
     'I build systems that have to survive real use, not just a demo. Ones that ground themselves in evidence, explain themselves, and can cite their sources.',
     'The projects below span RAG, computer vision, data science, and full-stack. Different domains, same discipline: smallest system that solves the problem, then make it trustworthy.',
   ],
@@ -321,20 +321,6 @@ export const skills = [
 ]
 
 export const timeline = [
-  {
-    year: '2026 – present',
-    title: 'MSc, Aston University',
-    org: 'Aston University · Birmingham',
-    body:
-      'Currently reading an MSc at Aston University, continuing on from Leicester. Building on the applied AI and full-stack direction of my undergraduate work.',
-  },
-  {
-    year: '2023 – 2026',
-    title: 'BSc Computer Science',
-    org: 'University of Leicester',
-    body:
-      'Graduated July 2026 with First Class Honours. Coursework spans AI, software engineering, databases, HCI, and applied data science. Dissertation: UniWise, a source-grounded RAG assistant for higher education.',
-  },
   {
     year: '2025',
     title: 'Contributor, ClassFutures Generative AI guidance',

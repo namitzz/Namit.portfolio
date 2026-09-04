@@ -9,14 +9,14 @@ import { timeline } from '../data/content'
  */
 export default function Experience() {
   return (
-    <section id="experience" className="relative px-6 py-40 md:px-20 md:py-56">
+    <section id="experience" className="relative px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-14 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
           <div>
-            <p className="eyebrow">Reel 04 · Experience &amp; Education</p>
+            <p className="eyebrow">Experience</p>
             <h2
               className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
@@ -36,13 +36,8 @@ export default function Experience() {
               key={t.title}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{
-                duration: 0.7,
-                delay: i * 0.07,
-                type: 'spring',
-                bounce: 0.26,
-              }}
+              viewport={{ once: true, amount: 0 }}
+              transition={{ duration: 0.45, delay: i * 0.04, ease: 'easeOut' }}
               className="group relative flex h-full flex-col border p-6 transition-colors md:p-8"
               style={{
                 borderColor: 'var(--hairline)',

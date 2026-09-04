@@ -8,14 +8,14 @@ import { skills } from '../data/content'
  */
 export default function Skills() {
   return (
-    <section id="skills" className="relative px-6 py-40 md:px-20 md:py-56">
+    <section id="skills" className="relative px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
           <div>
-            <p className="eyebrow">Reel 03 · Toolbox</p>
+            <p className="eyebrow">Skills</p>
             <h2
               className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
@@ -35,13 +35,8 @@ export default function Skills() {
               key={s.group}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{
-                duration: 0.6,
-                delay: i * 0.05,
-                type: 'spring',
-                bounce: 0.22,
-              }}
+              viewport={{ once: true, amount: 0 }}
+              transition={{ duration: 0.45, delay: i * 0.04, ease: 'easeOut' }}
               className="group relative flex h-full flex-col overflow-hidden border p-6 transition-colors md:p-7"
               style={{
                 borderColor: 'var(--hairline)',

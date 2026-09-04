@@ -45,27 +45,13 @@ export default function Hero() {
         </div>
       </motion.div>
 
-      {/* Centre: massive stacked name */}
+      {/* Centre: stacked name */}
       <div className="relative mx-auto flex w-full max-w-[1600px] flex-1 items-center py-10">
-        {/* Ghost outlined backdrop wordmark (haiman-style layered display type) */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.4, delay: 0.9 }}
-          aria-hidden="true"
-          className="serif text-outline pointer-events-none absolute right-4 bottom-[10%] select-none leading-none tracking-[-0.05em] md:right-10 md:bottom-[14%]"
-          style={{
-            fontSize: 'clamp(2.6rem, 10vw, 10rem)',
-          }}
-        >
-          Portfolio
-        </motion.p>
-
         <h1
           className="serif relative z-10 w-full leading-[0.92] tracking-[-0.03em]"
           style={{
             color: 'var(--ink)',
-            fontSize: 'clamp(2.8rem, 9vw, 8rem)',
+            fontSize: 'clamp(2.6rem, 7.5vw, 6.5rem)',
           }}
         >
           <NameLine delay={0.15}>Namit</NameLine>

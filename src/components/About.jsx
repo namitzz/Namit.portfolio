@@ -8,17 +8,17 @@ import { profile, writing } from '../data/content'
  */
 export default function About() {
   return (
-    <section id="about" className="relative px-6 py-40 md:px-20 md:py-56">
+    <section id="about" className="relative px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
-          <p className="eyebrow">Reel 02 · About</p>
+          <p className="eyebrow">About</p>
           <motion.h2
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.7 }}
             className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
             style={{ color: 'var(--ink)' }}
@@ -69,7 +69,7 @@ export default function About() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
+              viewport={{ once: true, amount: 0 }}
               transition={{ duration: 0.6 }}
               className="space-y-5 text-[19px] leading-relaxed"
               style={{ color: 'var(--ink)' }}

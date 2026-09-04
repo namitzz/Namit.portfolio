@@ -29,19 +29,19 @@ const years = {
 
 export default function ProjectIndex() {
   return (
-    <section id="work" className="relative px-6 py-40 md:px-20 md:py-56">
+    <section id="work" className="relative px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto w-full max-w-[1600px]">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
+          viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.7 }}
           className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
           <div>
-            <p className="eyebrow">Reel 01 · Selected work</p>
+            <p className="eyebrow">Selected work</p>
             <h2
               className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
@@ -126,13 +126,8 @@ function ProjectRow({ project, index }) {
     <motion.li
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{
-        duration: 0.7,
-        delay: index * 0.08,
-        type: 'spring',
-        bounce: 0.28,
-      }}
+      viewport={{ once: true, amount: 0 }}
+      transition={{ duration: 0.45, delay: index * 0.04, ease: 'easeOut' }}
       className="group border-b"
       style={{ borderColor: 'var(--hairline)' }}
     >

@@ -26,17 +26,17 @@ export default function Contact() {
   ].filter(Boolean)
 
   return (
-    <section id="contact" className="relative px-6 py-40 md:px-20 md:py-56">
+    <section id="contact" className="relative px-6 py-24 md:px-16 md:py-32">
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
-          <p className="eyebrow">Reel 05 · Contact</p>
+          <p className="eyebrow">Contact</p>
           <motion.h2
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.7 }}
             className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
             style={{ color: 'var(--ink)' }}
@@ -83,7 +83,7 @@ export default function Contact() {
                   key={r.label}
                   initial={{ opacity: 0, x: -6 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
+                  viewport={{ once: true, amount: 0 }}
                   transition={{ duration: 0.35 }}
                   className="group border-b"
                   style={{ borderColor: 'var(--hairline)' }}

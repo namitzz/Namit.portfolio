@@ -1,9 +1,4 @@
-import {
-  motion,
-  useInView,
-  useScroll,
-  useTransform,
-} from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 
 /**
@@ -23,19 +18,11 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
     if (inView) onActivate?.(project.themeKey)
   }, [inView, project.themeKey, onActivate])
 
-  // Scroll-linked parallax on the mockup (conqr scroll method).
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start'],
-  })
-  const mockupY = useTransform(scrollYProgress, [0, 1], ['4%', '-6%'])
-  const mockupScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.98, 1, 0.98])
-
   return (
     <section
       id={project.id}
       ref={ref}
-      className="relative z-10 py-28 md:py-36"
+      className="relative z-10 py-20 md:py-28"
     >
       {/* Full-viewport picture: the mockup takes the stage first. */}
       <div className="relative mx-auto flex w-full max-w-[1600px] flex-col items-center px-6 md:px-16">
@@ -43,7 +30,7 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
+          viewport={{ once: true, amount: 0 }}
           transition={{
             duration: 0.6,
             ease: [0.22, 1, 0.36, 1],
@@ -69,21 +56,11 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
 
         {/* Mockup — the dramatic picture reveal */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.94, y: 40 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{
-            duration: 0.9,
-            ease: [0.22, 1, 0.36, 1],
-            type: 'spring',
-            bounce: 0.18,
-          }}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0 }}
+          transition={{ duration: 0.55, ease: 'easeOut' }}
           className="relative w-full"
-          style={{
-            y: mockupY,
-            scale: mockupScale,
-            willChange: 'transform',
-          }}
         >
           {mockup}
         </motion.div>
@@ -111,12 +88,12 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
       </div>
 
       {/* Wide editorial narrative row below the mockup */}
-      <div className="mx-auto mt-24 grid w-full max-w-[1600px] gap-12 px-6 md:mt-32 md:grid-cols-12 md:gap-12 md:px-16">
+      <div className="mx-auto mt-14 grid w-full max-w-[1600px] gap-12 px-6 md:mt-16 md:grid-cols-12 md:gap-12 md:px-16">
         {/* Left: tagline + narrative */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
+          viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.7 }}
           className="md:col-span-7"
         >
@@ -127,12 +104,12 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
             {project.tagline}
           </p>
 
-          <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-14">
+          <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
             <Block label="Problem" body={project.problem} />
             <Block label="Solution" body={project.solution} />
           </div>
 
-          <div className="mt-12">
+          <div className="mt-10">
             <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
               Key features
             </p>
@@ -196,7 +173,7 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
+          viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
           className="md:col-span-5"
         >
@@ -211,16 +188,10 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
               {project.stack.map((s, i) => (
                 <motion.span
                   key={s}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{
-                    delay: i * 0.03,
-                    type: 'spring',
-                    stiffness: 260,
-                    damping: 20,
-                  }}
-                  whileHover={{ y: -2 }}
+                  transition={{ delay: i * 0.02, duration: 0.3 }}
                   className="cursor-default rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[12px] text-white/75 transition-colors hover:border-white/30 hover:text-white"
                 >
                   {s}

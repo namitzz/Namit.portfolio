@@ -6,9 +6,9 @@ export const themes = {
     name: 'Namit',
     bgFrom: '#000000',
     bgTo: '#050506',
-    accent: '#DC2626',
-    accent2: '#3B82F6',
-    glow: 'rgba(220,38,38,0.14)',
+    accent: '#F4552A',
+    accent2: '#F4552A',
+    glow: 'rgba(244,85,42,0.05)',
     muted: 'rgba(244,244,245,0.55)',
   },
   uniwise: {
