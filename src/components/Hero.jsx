@@ -48,19 +48,17 @@ export default function Hero() {
       {/* Centre: stacked name */}
       <div className="relative mx-auto flex w-full max-w-[1600px] flex-1 items-center py-10">
         <h1
-          className="serif relative z-10 w-full leading-[0.92] tracking-[-0.03em]"
+          className="serif relative z-10 w-full whitespace-nowrap leading-[1.05] tracking-[-0.03em]"
           style={{
             color: 'var(--ink)',
-            fontSize: 'clamp(2.6rem, 7.5vw, 6.5rem)',
+            fontSize: 'clamp(1.9rem, 7vw, 5.5rem)',
           }}
         >
-          <NameLine delay={0.15}>Namit</NameLine>
-          <NameLine delay={0.28}>Singh</NameLine>
-          <NameLine delay={0.42}>
+          <NameLine delay={0.15}>
             <>
-              Sarna
+              Namit Singh Sarna
               <span
-                className="ml-[0.03em] inline-block align-baseline"
+                className="ml-[0.02em] inline-block align-baseline"
                 style={{ color: '#f4552a' }}
               >
                 .

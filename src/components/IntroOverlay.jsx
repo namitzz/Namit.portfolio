@@ -87,15 +87,13 @@ export default function IntroOverlay() {
             skip →
           </motion.p>
 
-          {/* Kinetic reveal — three lines, each mask-slides up */}
-          <div className="mx-auto flex flex-col items-center gap-2 px-6 text-center">
-            <IntroLine delay={0.05}>Namit</IntroLine>
-            <IntroLine delay={0.18}>Singh</IntroLine>
-            <IntroLine delay={0.31}>
+          {/* Kinetic reveal — single line, mask-slides up */}
+          <div className="mx-auto flex flex-col items-center px-6 text-center">
+            <IntroLine delay={0.05}>
               <>
-                Sarna
+                Namit Singh Sarna
                 <span
-                  className="ml-[0.03em] inline-block align-baseline"
+                  className="ml-[0.02em] inline-block align-baseline"
                   style={{ color: 'var(--accent)' }}
                 >
                   .
@@ -143,9 +141,9 @@ export default function IntroOverlay() {
 function IntroLine({ children, delay = 0 }) {
   return (
     <span
-      className="serif block overflow-hidden leading-[0.9] tracking-[-0.04em] text-white"
+      className="serif block overflow-hidden whitespace-nowrap leading-[1.05] tracking-[-0.035em] text-white"
       style={{
-        fontSize: 'clamp(2.8rem, 9vw, 7.5rem)',
+        fontSize: 'clamp(1.9rem, 7vw, 5.5rem)',
         paddingTop: '0.06em',
         paddingBottom: '0.02em',
       }}
