@@ -3,6 +3,7 @@ import { useInView } from 'framer-motion'
 
 import ThemeBackground from './components/ThemeBackground'
 import ScrollProgress from './components/ScrollProgress'
+import IntroOverlay from './components/IntroOverlay'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import ProjectIndex from './components/ProjectIndex'
@@ -46,6 +47,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen">
+      <IntroOverlay />
       <ThemeBackground themeKey={themeKey} />
       <ScrollProgress />
       <Nav />

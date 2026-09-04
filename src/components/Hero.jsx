@@ -2,52 +2,36 @@ import { motion } from 'framer-motion'
 import { profile } from '../data/content'
 
 /**
- * Cinematic hero (conqr.mx pattern). One dramatic torus / subsurface
- * glow shape as the anchor, huge negative space, minimal corner
- * chrome. Animations kept cheap on the GPU: no rotating radial
- * gradients, no big filter blurs on animated elements.
+ * Editorial landing hero. The dramatic intro plays first (IntroOverlay);
+ * once it exits, this is the "spread you land on" — a magazine cover
+ * table-of-contents. No torus, no chrome, pure typography.
  */
 export default function Hero() {
   return (
     <section
       id="top"
-      className="relative flex min-h-[100svh] w-full items-center justify-center overflow-hidden px-6 md:px-10"
+      className="relative flex min-h-[100svh] w-full flex-col justify-between overflow-hidden px-6 pt-28 pb-8 md:px-16 md:pt-32 md:pb-12"
     >
-      {/* The dramatic hero object */}
-      <HeroTorus />
-
-      {/* Bottom-left: identity */}
+      {/* Top strip: magazine masthead */}
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.5 }}
-        className="absolute bottom-12 left-6 z-10 max-w-lg md:bottom-16 md:left-14 lg:bottom-20 lg:left-20"
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="mx-auto flex w-full max-w-[1600px] items-start justify-between gap-6"
       >
-        <p className="mono-label" style={{ color: 'var(--muted)' }}>
-          Portfolio · 2026
-        </p>
-        <h1
-          className="serif mt-4 text-[clamp(2.4rem,5vw,4.4rem)] leading-[0.95] tracking-[-0.02em]"
-          style={{ color: 'var(--ink)' }}
-        >
-          Namit Singh Sarna
-        </h1>
-        <p
-          className="mt-4 max-w-md font-rounded text-[14.5px] font-medium leading-relaxed"
-          style={{ color: 'var(--muted)' }}
-        >
-          {profile.headline}
-        </p>
-      </motion.div>
+        <div className="flex flex-col gap-1">
+          <span className="mono-label" style={{ color: 'var(--muted)' }}>
+            Portfolio · Vol. 01
+          </span>
+          <span className="mono-label" style={{ color: 'var(--muted)' }}>
+            2026 · United Kingdom
+          </span>
+        </div>
 
-      {/* Bottom-right: status */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.6 }}
-        className="absolute bottom-12 right-6 z-10 hidden md:bottom-16 md:right-14 md:block lg:bottom-20 lg:right-20"
-      >
-        <div className="flex flex-col items-end gap-2 text-right">
+        <div className="hidden flex-col items-end gap-1 md:flex">
+          <span className="mono-label" style={{ color: 'var(--muted)' }}>
+            AI · Full-stack · Data
+          </span>
           <span
             className="mono-label flex items-center gap-2"
             style={{ color: 'var(--muted)' }}
@@ -56,106 +40,118 @@ export default function Hero() {
               className="inline-block h-1.5 w-1.5 rounded-full"
               style={{ background: 'var(--accent)' }}
             />
-            Available
-          </span>
-          <span className="mono-label" style={{ color: 'var(--muted)' }}>
-            United Kingdom
+            Available · Graduate roles
           </span>
         </div>
       </motion.div>
 
-      {/* Scroll indicator */}
+      {/* Centre: massive stacked name */}
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 items-center py-10">
+        <h1
+          className="serif w-full leading-[0.9] tracking-[-0.045em]"
+          style={{
+            color: 'var(--ink)',
+            fontSize: 'clamp(4rem, 20vw, 20rem)',
+          }}
+        >
+          <NameLine delay={0.15}>Namit</NameLine>
+          <NameLine delay={0.28}>Singh</NameLine>
+          <NameLine delay={0.42}>
+            <>
+              Sarna
+              <span
+                className="ml-[0.03em] inline-block align-baseline"
+                style={{ color: 'var(--accent)' }}
+              >
+                .
+              </span>
+            </>
+          </NameLine>
+        </h1>
+      </div>
+
+      {/* Bottom strip: table of contents */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1, y: [0, 6, 0] }}
-        transition={{
-          opacity: { delay: 1.1, duration: 0.6 },
-          y: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
-        }}
-        className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 md:bottom-6"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.7 }}
+        className="mx-auto grid w-full max-w-[1600px] grid-cols-1 items-end gap-8 md:grid-cols-12"
       >
-        <div className="flex flex-col items-center gap-1">
-          <span className="mono-label" style={{ color: 'var(--muted)' }}>
-            Scroll
-          </span>
-          <span className="h-6 w-px" style={{ background: 'var(--faint)' }} />
+        <div className="md:col-span-5">
+          <p className="mono-label" style={{ color: 'var(--muted)' }}>
+            The Role
+          </p>
+          <p
+            className="serif mt-3 text-[clamp(1.2rem,1.8vw,1.65rem)] leading-[1.2] tracking-[-0.01em]"
+            style={{ color: 'var(--ink)' }}
+          >
+            Software engineer at the edge of AI and the web.
+          </p>
+        </div>
+
+        <div className="hidden md:col-span-3 md:block">
+          <p className="mono-label" style={{ color: 'var(--muted)' }}>
+            Focus
+          </p>
+          <ul
+            className="mt-3 space-y-1 text-[13px]"
+            style={{ color: 'var(--ink-soft)' }}
+          >
+            <li>RAG · retrieval-grounded systems</li>
+            <li>Backend · data · ML</li>
+            <li>Product-quality frontend</li>
+          </ul>
+        </div>
+
+        <div className="md:col-span-4 md:text-right">
+          <p className="mono-label" style={{ color: 'var(--muted)' }}>
+            Contents
+          </p>
+          <ul
+            className="mt-3 space-y-1 text-[13px]"
+            style={{ color: 'var(--ink-soft)' }}
+          >
+            <li>
+              <a href="#work" className="hover:opacity-70">
+                01 · Selected work
+              </a>
+            </li>
+            <li>
+              <a href="#about" className="hover:opacity-70">
+                02 · About
+              </a>
+            </li>
+            <li>
+              <a href="#contact" className="hover:opacity-70">
+                03 · Contact
+              </a>
+            </li>
+          </ul>
         </div>
       </motion.div>
     </section>
   )
 }
 
-/**
- * Cinematic torus. Static gradient with a subtle drift on the black
- * centre only — no rotating radial-gradients (that repaints every
- * frame) and no filter blurs on animated elements (also expensive).
- * The static bloom uses filter:blur but never animates, so it's
- * cached by the compositor.
- */
-function HeroTorus() {
+function NameLine({ children, delay = 0 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-      className="pointer-events-none relative aspect-square w-[min(62vw,56vh)]"
-      style={{ willChange: 'transform, opacity' }}
-      aria-hidden="true"
+    <span
+      className="block overflow-hidden"
+      style={{ paddingTop: '0.06em', paddingBottom: '0.02em' }}
     >
-      {/* Static ambient bloom — filter blurred once, not animated */}
-      <div
-        className="absolute inset-[-15%] rounded-full"
+      <motion.span
+        className="block"
         style={{
-          background:
-            'radial-gradient(circle at 50% 50%, rgba(220,38,38,0.20) 0%, rgba(59,130,246,0.09) 45%, transparent 72%)',
-          filter: 'blur(40px)',
-        }}
-      />
-
-      {/* Outer red disc — static, no rotation */}
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle at 50% 50%, #f87171 0%, #dc2626 24%, #7f1d1d 50%, #1e293b 76%, #0b1220 92%)',
-          boxShadow: '0 30px 120px rgba(220,38,38,0.14)',
-        }}
-      />
-
-      {/* Inner black hole — drifts subtly (only transform, cheap) */}
-      <motion.div
-        className="absolute rounded-full"
-        style={{
-          top: '28%',
-          left: '28%',
-          width: '44%',
-          height: '44%',
-          background: '#050505',
-          boxShadow:
-            'inset 0 0 40px rgba(220,38,38,0.20), inset 0 0 20px rgba(0,0,0,0.9)',
+          marginTop: '-0.06em',
+          marginBottom: '-0.02em',
           willChange: 'transform',
         }}
-        animate={{
-          x: [0, 3, -2, 0],
-          y: [0, -2, 3, 0],
-        }}
-        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-      />
-
-      {/* Small highlight sheen — CSS-only, static */}
-      <div
-        className="absolute rounded-full"
-        style={{
-          top: '10%',
-          left: '20%',
-          width: '30%',
-          height: '12%',
-          background:
-            'radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.25) 0%, transparent 70%)',
-          transform: 'rotate(-20deg)',
-          opacity: 0.6,
-        }}
-      />
-    </motion.div>
+        initial={{ y: '110%' }}
+        animate={{ y: '0%' }}
+        transition={{ duration: 1.0, delay, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {children}
+      </motion.span>
+    </span>
   )
 }

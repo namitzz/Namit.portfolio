@@ -16,22 +16,22 @@ export const profile = {
     cv: '/Namit_Singh_Sarna_CV.pdf',
   },
   headline:
-    'I build practical AI and software systems that help people decide, work, and learn better.',
+    'I build practical AI and software for people who need it to actually work.',
   subheadline:
-    'BSc Computer Science graduate from the University of Leicester (First Class Honours). Applied AI, RAG systems, backend, and full-stack. Open to graduate AI and software engineering roles.',
+    'BSc Computer Science, First Class Honours, University of Leicester. Applied AI, RAG, backend, full-stack. Open to graduate roles.',
   positioning:
-    'Direction: practical AI and software engineering. RAG, backend systems, ML, computer vision, and full-stack.',
+    'Practical AI and software engineering. RAG, backend, ML, and full-stack.',
   highlights: [
-    'First Class Honours (conferred).',
-    'Built UniWise: a source-grounded RAG study assistant with cross-encoder reranking, citation-level source evidence, and an evaluation harness scoring answer grounding.',
-    'Shipped Cloud Seven Realty, a live production frontend for a paying client, backed by Google Sheets/Drive with ISR.',
-    'Modelled ~1M+ Met Police records into LSOA-month panels and trained regression + K-Means for area profiling.',
-    'Contributor to ClassFutures published guidance on responsible Generative AI use.',
+    'First Class Honours (conferred, July 2026).',
+    'Built UniWise: a source-grounded RAG study assistant with reranking, citations, and an evaluation harness.',
+    'Shipped Cloud Seven Realty, a live production frontend for a paying client.',
+    'Modelled ~1M+ Met Police records for LSOA-level regression and area profiling.',
+    'Contributor to ClassFutures guidance on responsible Generative AI use.',
   ],
   about: [
-    "I'm Namit, a Computer Science graduate from the University of Leicester (First Class Honours, conferred July 2026).",
-    'I build practical systems across AI, backend engineering, data, and user-facing software. The kind of work that has to survive real users, not just a demo. I care about systems that ground themselves in evidence, explain themselves, and cite their sources so users can verify every answer.',
-    'The projects below span RAG, computer vision, applied data science, and full-stack product work. Different domains, same discipline: pick the smallest system that actually solves the problem, then make it trustworthy.',
+    "I'm Namit, a Computer Science graduate from the University of Leicester. First Class Honours, conferred July 2026.",
+    'I build systems that have to survive real use, not just a demo. Ones that ground themselves in evidence, explain themselves, and can cite their sources.',
+    'The projects below span RAG, computer vision, data science, and full-stack. Different domains, same discipline: smallest system that solves the problem, then make it trustworthy.',
   ],
 }
 
@@ -44,9 +44,9 @@ export const projects = [
     tagline:
       'A source-grounded RAG study assistant. Dissertation project.',
     problem:
-      'University students rely on lecture material that is fragmented across PDFs, slides, and notes. General-purpose LLMs can answer confidently from training data, even when the answer is not based on what the lecturer taught, which can make it harder for students to judge whether an answer is actually grounded in their module material.',
+      'Students rely on lecture material spread across PDFs, slides, and notes. General-purpose LLMs answer confidently from training data even when the answer isn\'t in the module, making it hard to know what\'s actually grounded.',
     solution:
-      'UniWise restricts answers to lecture-only context. Relevant chunks are retrieved from the course corpus, reranked, and shown with source evidence, so students can trace every answer back to the exact slide or page it came from and stay within what the module actually taught.',
+      'UniWise restricts answers to lecture-only context. Chunks are retrieved, reranked, and shown with source evidence, so every answer can be traced back to the exact slide or page it came from.',
     stack: [
       'FastAPI',
       'Streamlit',

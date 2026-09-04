@@ -26,7 +26,7 @@ export default function Contact() {
   ].filter(Boolean)
 
   return (
-    <section id="contact" className="relative px-6 py-32 md:px-16 md:py-44">
+    <section id="contact" className="relative px-6 py-40 md:px-20 md:py-56">
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 border-b pb-6"
