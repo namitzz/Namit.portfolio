@@ -63,6 +63,24 @@ export default function Experience() {
   const points = box.w ? buildStops(timeline.length, box.w, height) : []
   const d = points.length ? routePath(points) : ''
 
+  // How far along the route each stop sits, so the glow can be drawn up
+  // to exactly that point. Read off the rendered path: nothing else knows
+  // where a spline actually reaches.
+  const pathRef = useRef(null)
+  const [arc, setArc] = useState({ total: 0, at: [] })
+
+  useLayoutEffect(() => {
+    const el = pathRef.current
+    if (!el || !d) return
+    const total = el.getTotalLength()
+    setArc({ total, at: points.map((pt) => lengthAt(el, pt, total)) })
+    // `d` alone identifies the geometry; points are derived from the same
+    // width, so it is not a separate dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d])
+
+  const travelled = active !== null ? arc.at[active] || 0 : 0
+
   return (
     <section
       id="experience"
@@ -115,33 +133,57 @@ export default function Experience() {
                 >
                   <feGaussianBlur stdDeviation="7" />
                 </filter>
+
+                {/* The route's colours, laid along it. Each stop
+                    contributes its own tint at its own position, so the
+                    glow is the right colour wherever it has reached.
+                    Mapped on x rather than arc length because the stops
+                    advance left to right, which makes x a faithful stand
+                    in for progress and avoids a second measurement. */}
+                <linearGradient
+                  id="routeInk"
+                  gradientUnits="userSpaceOnUse"
+                  x1="0"
+                  y1="0"
+                  x2={box.w}
+                  y2="0"
+                >
+                  {gradientStops(points, box.w)}
+                </linearGradient>
               </defs>
 
-              {/* Glow underlay: the same route, solid and blurred, in the
-                  accent. It lifts the line off the ground so the dashes
-                  read as lit rather than as a dotted border. Static, so it
-                  rasterises once, and it lifts a little while a stop is
-                  being pointed at.
+              {/* The glow, revealed up to the stop being pointed at. One
+                  dash as long as the whole route, pulled back by its own
+                  length so nothing shows, then let out to that stop's
+                  distance. Animating the offset is what makes the light
+                  travel along the route as the pointer moves between
+                  stops. Drawn first, so it sits under the line. */}
+              {arc.total > 0 && (
+                <path
+                  d={d}
+                  fill="none"
+                  stroke="url(#routeInk)"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  filter="url(#routeGlow)"
+                  style={{
+                    strokeDasharray: arc.total,
+                    strokeDashoffset: arc.total - travelled,
+                    opacity: travelled > 0 ? 0.9 : 0,
+                    transition: reduce
+                      ? 'none'
+                      : 'stroke-dashoffset 620ms cubic-bezier(0.22,1,0.36,1), opacity 260ms ease',
+                  }}
+                />
+              )}
 
-                  Stroke goes through `style` rather than the presentation
-                  attribute, which will not resolve a CSS variable. */}
+              {/* The line itself, always drawn, and the element the arc
+                  lengths are measured from. */}
               <path
+                ref={pathRef}
                 d={d}
                 fill="none"
-                strokeWidth="4"
-                strokeLinecap="round"
-                filter="url(#routeGlow)"
-                style={{
-                  stroke: 'var(--accent)',
-                  opacity: active !== null ? 0.44 : 0.3,
-                  transition: reduce ? 'none' : 'opacity 400ms ease',
-                }}
-              />
-
-              <path
-                d={d}
-                fill="none"
-                stroke="rgba(244,244,245,0.34)"
+                stroke="rgba(244,244,245,0.30)"
                 strokeWidth="2"
                 strokeDasharray="3 9"
                 strokeLinecap="round"
@@ -297,6 +339,60 @@ function routePath(stops) {
     d += ` C ${(p1.x + (p2.x - p0.x) / 6).toFixed(2)} ${(p1.y + (p2.y - p0.y) / 6).toFixed(2)}, ${(p2.x - (p3.x - p1.x) / 6).toFixed(2)} ${(p2.y - (p3.y - p1.y) / 6).toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
   }
   return d
+}
+
+/**
+ * A gradient stop per route stop, in that stop's own colour. Offsets are
+ * forced non-decreasing: the stops carry a little horizontal jitter, and
+ * an offset that steps backwards makes the browser drop the gradient.
+ */
+function gradientStops(points, w) {
+  let last = 0
+  return points.map((p, i) => {
+    const at = Math.max(last, clamp(p.x / (w || 1), 0, 1))
+    last = at
+    return (
+      <stop
+        key={timeline[i]?.id || i}
+        offset={at}
+        stopColor={textColor(timeline[i] || {})}
+      />
+    )
+  })
+}
+
+/**
+ * How far along a path a point sits. Coarse sweep, then a refinement
+ * around the best sample, which is far cheaper than sampling the whole
+ * length finely and lands within a pixel.
+ */
+function lengthAt(el, target, total) {
+  let best = 0
+  let bestD = Infinity
+  const STEPS = 260
+
+  for (let i = 0; i <= STEPS; i++) {
+    const t = (i / STEPS) * total
+    const p = el.getPointAtLength(t)
+    const dd = (p.x - target.x) ** 2 + (p.y - target.y) ** 2
+    if (dd < bestD) {
+      bestD = dd
+      best = t
+    }
+  }
+
+  const span = total / STEPS
+  for (let i = -20; i <= 20; i++) {
+    const t = clamp(best + (i / 20) * span, 0, total)
+    const p = el.getPointAtLength(t)
+    const dd = (p.x - target.x) ** 2 + (p.y - target.y) ** 2
+    if (dd < bestD) {
+      bestD = dd
+      best = t
+    }
+  }
+
+  return best
 }
 
 function seededRandom(seed) {
