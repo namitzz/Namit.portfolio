@@ -9,7 +9,8 @@ import { skills } from '../data/content'
 export default function Skills() {
   return (
     <section id="skills" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.030)' }}>
+      style={{ background:
+          'linear-gradient(180deg, rgba(245,180,71,0.070) 0%, rgba(245,180,71,0.010) 26%, rgba(244,244,245,0.026) 100%)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
@@ -21,7 +22,7 @@ export default function Skills() {
               className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
             >
-              What I work with.
+              What I work with<span style={{ color: 'var(--accent)' }}>.</span>
             </h2>
           </div>
           <p className="mono-label" style={{ color: 'var(--muted)' }}>

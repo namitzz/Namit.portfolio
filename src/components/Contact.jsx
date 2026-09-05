@@ -27,7 +27,8 @@ export default function Contact() {
 
   return (
     <section id="contact" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.075)' }}>
+      style={{ background:
+          'linear-gradient(180deg, rgba(244,85,42,0.115) 0%, rgba(244,85,42,0.020) 30%, rgba(244,244,245,0.062) 100%)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 border-b pb-6"
@@ -42,7 +43,7 @@ export default function Contact() {
             className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
             style={{ color: 'var(--ink)' }}
           >
-            Let&apos;s talk.
+            Let&apos;s talk<span style={{ color: 'var(--accent)' }}>.</span>
           </motion.h2>
         </div>
 

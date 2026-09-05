@@ -9,7 +9,8 @@ import { profile } from '../data/content'
 export default function About() {
   return (
     <section id="about" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.015)' }}>
+      style={{ background:
+          'linear-gradient(180deg, rgba(244,85,42,0.085) 0%, rgba(244,85,42,0.012) 26%, rgba(244,244,245,0.014) 100%)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 border-b pb-6"
@@ -24,7 +25,7 @@ export default function About() {
             className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
             style={{ color: 'var(--ink)' }}
           >
-            A short, honest version.
+            A short, honest version<span style={{ color: 'var(--accent)' }}>.</span>
           </motion.h2>
         </div>
 

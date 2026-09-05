@@ -22,6 +22,7 @@ import CourseCompanionMock from './components/mockups/CourseCompanionMock'
 import TovoMock from './components/mockups/TovoMock'
 
 import { projects } from './data/content'
+import { themes } from './data/themes'
 
 // Each project id maps to a JSX mockup. Keeps ProjectSection generic.
 const mockups = {
@@ -40,8 +41,22 @@ export default function App() {
   // sections reset it back to the neutral software-artifact palette.
   const activate = useCallback((key) => setThemeKey(key), [])
 
+  // The palette has to live on the common ancestor of the background AND
+  // the content. It used to sit on ThemeBackground, which is a *sibling*
+  // of <main>, so every accent on the page silently fell back to the
+  // :root red and the project palettes only ever tinted the backdrop.
+  const theme = themes[themeKey] || themes.base
+
   return (
-    <div className="relative min-h-screen">
+    <div
+      className="relative min-h-screen"
+      style={{
+        '--accent': theme.accent,
+        '--accent-2': theme.accent2,
+        '--muted': theme.muted,
+        transition: 'color 0.8s ease',
+      }}
+    >
       <IntroOverlay />
       <ThemeBackground themeKey={themeKey} />
       <ScrollProgress />
@@ -60,6 +75,10 @@ export default function App() {
           <ProjectIndex />
         </SectionTrigger>
 
+        <SectionTrigger onEnter={() => activate('base')}>
+          <Experience />
+        </SectionTrigger>
+
         {projects
           .filter((p) => !p.comingSoon)
           .map((p) => (
@@ -70,10 +89,6 @@ export default function App() {
               mockup={mockups[p.id]}
             />
           ))}
-
-        <SectionTrigger onEnter={() => activate('base')}>
-          <Experience />
-        </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>
           <Skills />

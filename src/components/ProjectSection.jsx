@@ -36,10 +36,13 @@ export default function ProjectSection({ project, onActivate, mockup }) {
             ease: [0.22, 1, 0.36, 1],
           }}
           className="mb-8 flex w-full flex-wrap items-center justify-between gap-3 border-b pb-4"
-          style={{ borderColor: 'rgba(255,255,255,0.10)' }}
+          style={{ borderColor: 'color-mix(in srgb, var(--accent) 34%, transparent)' }}
         >
           <div className="flex flex-wrap items-baseline gap-3">
-            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+            <span
+              className="serif text-[clamp(1.4rem,2.4vw,2rem)] leading-none"
+              style={{ color: 'var(--accent)' }}
+            >
               {project.index}
             </span>
             <span
@@ -62,7 +65,10 @@ export default function ProjectSection({ project, onActivate, mockup }) {
               </span>
             )}
           </div>
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.18em]"
+            style={{ color: 'var(--accent-2)' }}
+          >
             {project.domain || project.themeKey}
           </span>
         </motion.div>
@@ -111,7 +117,10 @@ export default function ProjectSection({ project, onActivate, mockup }) {
           </div>
 
           <div className="mt-10">
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+            <p
+              className="font-mono text-[11px] uppercase tracking-[0.16em]"
+              style={{ color: 'var(--accent)', opacity: 0.85 }}
+            >
               Key features
             </p>
             <ul className="mt-4 space-y-2.5">
@@ -158,9 +167,12 @@ export default function ProjectSection({ project, onActivate, mockup }) {
         >
           <div
             className="md:sticky md:top-32 md:border-l md:pl-10"
-            style={{ borderColor: 'rgba(255,255,255,0.10)' }}
+            style={{ borderColor: 'color-mix(in srgb, var(--accent) 28%, transparent)' }}
           >
-            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+            <p
+              className="font-mono text-[11px] uppercase tracking-[0.16em]"
+              style={{ color: 'var(--accent)', opacity: 0.85 }}
+            >
               Tech stack
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -183,7 +195,10 @@ export default function ProjectSection({ project, onActivate, mockup }) {
 function Block({ label, children }) {
   return (
     <div>
-      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+      <p
+        className="font-mono text-[11px] uppercase tracking-[0.16em]"
+        style={{ color: 'var(--accent)', opacity: 0.85 }}
+      >
         {label}
       </p>
       <p className="mt-3 max-w-2xl text-[15.5px] leading-relaxed text-white/70">

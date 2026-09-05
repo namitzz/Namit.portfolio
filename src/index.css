@@ -11,8 +11,8 @@
   --muted: rgba(244, 244, 245, 0.55);
   --faint: rgba(244, 244, 245, 0.18);
   --hairline: rgba(244, 244, 245, 0.10);
-  --accent: #dc2626;
-  --accent-2: #3b82f6;
+  --accent: #f4552a;
+  --accent-2: #f5b447;
 }
 
 html {
@@ -64,7 +64,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 0.7rem;
-  color: var(--muted);
+  color: var(--accent);
   font-weight: 500;
 }
 

@@ -12,7 +12,8 @@ import { projects } from '../data/content'
 export default function ProjectIndex() {
   return (
     <section id="work" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.045)' }}>
+      style={{ background:
+          'linear-gradient(180deg, rgba(245,180,71,0.075) 0%, rgba(245,180,71,0.010) 26%, rgba(244,244,245,0.038) 100%)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         {/* Section header */}
         <motion.div
@@ -29,7 +30,7 @@ export default function ProjectIndex() {
               className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
             >
-              Projects.
+              Projects<span style={{ color: 'var(--accent)' }}>.</span>
             </h2>
           </div>
           <p

@@ -8,13 +8,25 @@ import { timeline } from '../data/content'
  *
  * Education entries carry an institution monogram, a classification,
  * and a link out. Work entries use the same row shape without them.
+ *
+ * This is the one inverted section on the page. The light band breaks the
+ * run of dark sections and sets up the colour of the project sections
+ * that follow. Its tokens are redefined locally so everything inside
+ * reads ink-on-paper without disturbing the global palette.
  */
 export default function Experience() {
   return (
     <section
       id="experience"
       className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.030)' }}
+      style={{
+        background: '#F2EFE8',
+        '--ink': '#12100D',
+        '--ink-soft': 'rgba(18,16,13,0.74)',
+        '--muted': 'rgba(18,16,13,0.52)',
+        '--hairline': 'rgba(18,16,13,0.14)',
+        '--accent': '#B8330F',
+      }}
     >
       <div className="mx-auto w-full max-w-[1600px]">
         <div
@@ -27,7 +39,7 @@ export default function Experience() {
               className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
             >
-              Timeline.
+              Timeline<span style={{ color: 'var(--accent)' }}>.</span>
             </h2>
           </div>
           <p className="mono-label" style={{ color: 'var(--muted)' }}>
@@ -133,7 +145,7 @@ function TimelineRow({ entry: t }) {
       href={t.href}
       target="_blank"
       rel="noreferrer"
-      className="group block transition-colors hover:bg-white/[0.015]"
+      className="group block transition-colors hover:bg-[rgba(18,16,13,0.035)]"
     >
       {inner}
     </a>

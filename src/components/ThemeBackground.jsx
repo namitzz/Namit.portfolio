@@ -8,21 +8,14 @@ import { themes } from '../data/themes'
  * (which Framer Motion can't always do smoothly).
  *
  * Sits behind everything (z-0). All other content lives on z >= 10.
+ * Paints only. The palette variables are set by App on the ancestor both
+ * this and <main> share, so the content inherits them too.
  */
 export default function ThemeBackground({ themeKey }) {
   const theme = themes[themeKey] || themes.base
 
   return (
-    <div
-      className="fixed inset-0 z-0 overflow-hidden"
-      aria-hidden
-      style={{
-        // Expose theme tokens as CSS variables so child components can opt-in.
-        '--accent': theme.accent,
-        '--accent-2': theme.accent2,
-        '--muted': theme.muted,
-      }}
-    >
+    <div className="fixed inset-0 z-0 overflow-hidden" aria-hidden>
       <AnimatePresence mode="sync">
         <motion.div
           key={theme.id}
