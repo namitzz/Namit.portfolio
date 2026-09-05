@@ -61,6 +61,7 @@ export default function Experience() {
   }, [height])
 
   const points = box.w ? buildStops(timeline.length, box.w, height) : []
+  const d = points.length ? routePath(points) : ''
 
   return (
     <section
@@ -104,10 +105,43 @@ export default function Experience() {
               height={height}
               className="absolute left-0 top-0"
             >
+              <defs>
+                <filter
+                  id="routeGlow"
+                  x="-10%"
+                  y="-10%"
+                  width="120%"
+                  height="120%"
+                >
+                  <feGaussianBlur stdDeviation="7" />
+                </filter>
+              </defs>
+
+              {/* Glow underlay: the same route, solid and blurred, in the
+                  accent. It lifts the line off the ground so the dashes
+                  read as lit rather than as a dotted border. Static, so it
+                  rasterises once, and it lifts a little while a stop is
+                  being pointed at.
+
+                  Stroke goes through `style` rather than the presentation
+                  attribute, which will not resolve a CSS variable. */}
               <path
-                d={routePath(points, box.w)}
+                d={d}
                 fill="none"
-                stroke="rgba(244,244,245,0.28)"
+                strokeWidth="4"
+                strokeLinecap="round"
+                filter="url(#routeGlow)"
+                style={{
+                  stroke: 'var(--accent)',
+                  opacity: active !== null ? 0.44 : 0.3,
+                  transition: reduce ? 'none' : 'opacity 400ms ease',
+                }}
+              />
+
+              <path
+                d={d}
+                fill="none"
+                stroke="rgba(244,244,245,0.34)"
                 strokeWidth="2"
                 strokeDasharray="3 9"
                 strokeLinecap="round"
