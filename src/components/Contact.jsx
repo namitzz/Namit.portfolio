@@ -27,7 +27,7 @@ export default function Contact() {
 
   return (
     <section id="contact" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.038)' }}>
+      style={{ background: 'rgba(244,244,245,0.075)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 border-b pb-6"
@@ -35,8 +35,8 @@ export default function Contact() {
         >
           <p className="eyebrow">Contact</p>
           <motion.h2
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ y: 12 }}
+            whileInView={{ y: 0 }}
             viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.7 }}
             className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
@@ -82,8 +82,8 @@ export default function Contact() {
               {rows.map((r) => (
                 <motion.li
                   key={r.label}
-                  initial={{ opacity: 0, x: -6 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ x: -6 }}
+                  whileInView={{ x: 0 }}
                   viewport={{ once: true, amount: 0 }}
                   transition={{ duration: 0.35 }}
                   className="group border-b"

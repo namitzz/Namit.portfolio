@@ -1,24 +1,15 @@
 // All static content lives here so copy can be edited without touching components.
 //
-// TODO (CV): drop the PDF at `public/Namit_Singh_Sarna_CV.pdf`, then set
-// `profile.links.cv` to '/Namit_Singh_Sarna_CV.pdf'. Until that file is in
-// place, `cv` stays `null` and the Hero hides the download button.
+// CV lives at `public/Namit_Singh_Sarna_CV.pdf`. Set `links.cv` to null to
+// hide the download links site-wide.
 
 export const profile = {
-  name: 'Namit Singh Sarna',
-  shortName: 'Namit',
-  role: 'BSc Computer Science, First Class Honours · University of Leicester',
-  // Replace with your preferred contact address.
   email: 'namitmec@gmail.com',
   links: {
     github: 'https://github.com/namitzz',
     linkedin: 'https://www.linkedin.com/in/namit-singh-sarna-55a021323',
     cv: '/Namit_Singh_Sarna_CV.pdf',
   },
-  headline:
-    'I build practical AI and software for people who need it to actually work.',
-  subheadline:
-    'BSc Computer Science, First Class Honours, Leicester. Currently reading MSc AI for Business Transformation at Aston. Applied AI, RAG, backend, full-stack.',
   positioning:
     'Practical AI and software engineering. RAG, backend, ML, and full-stack.',
   highlights: [
@@ -40,6 +31,8 @@ export const projects = [
     id: 'uniwise',
     themeKey: 'uniwise',
     index: '01',
+    domain: 'RAG · EdTech',
+    year: '2026',
     title: 'UniWise',
     tagline:
       'A source-grounded RAG study assistant. Dissertation project.',
@@ -76,6 +69,8 @@ export const projects = [
     id: 'vision',
     themeKey: 'vision',
     index: '02',
+    domain: 'Computer Vision',
+    year: '2025',
     title: 'Posture AI',
     status: 'Prototype · In development',
     tagline:
@@ -120,6 +115,8 @@ export const projects = [
     id: 'cloud',
     themeKey: 'cloud',
     index: '03',
+    domain: 'Brand · Frontend',
+    year: '2025',
     title: 'Cloud Seven Realty',
     tagline:
       'A frontend and brand website for a Srinagar-based real estate brand, powered by Google Sheets and Drive so listings can be updated without redeploying.',
@@ -158,6 +155,8 @@ export const projects = [
     id: 'crime',
     themeKey: 'crime',
     index: '04',
+    domain: 'Data Science',
+    year: '2024',
     title: 'Crime Prediction Dashboard',
     tagline:
       'Coursework project on Metropolitan Police records, with modelling and clustering at the LSOA level.',
@@ -186,6 +185,8 @@ export const projects = [
     id: 'course',
     themeKey: 'course',
     index: '05',
+    domain: 'Spring Boot · MySQL',
+    year: '2024',
     title: 'Course Companion Web App',
     tagline:
       'A Spring Boot and MySQL coursework project for managing and searching course-related content.',
@@ -225,6 +226,8 @@ export const projects = [
     id: 'tovo',
     themeKey: 'course',
     index: '06',
+    domain: 'React · Supabase',
+    year: '2026',
     title: 'Tovo',
     status: 'Live',
     tagline:
@@ -259,36 +262,16 @@ export const projects = [
       demo: 'https://namitzz.github.io/Tovo/',
     },
   },
-  // Placeholder. Shows in the Project directory only; the full project
-  // section is suppressed via `comingSoon` so the homepage doesn't render
-  // an empty Problem/Solution/Stack block for it.
-  {
-    id: 'agentforge',
-    themeKey: 'base',
-    index: '07',
-    title: 'AgentForge',
-    status: 'Coming soon',
-    comingSoon: true,
-    tagline: '',
-    cta: {
-      caseStudy: null,
-      github: null,
-      demo: null,
-    },
-  },
 ]
 
+// Kept deliberately short. A long list of every tool ever touched
+// flattens the strong signals into the same weight as the weak ones.
 export const skills = [
-  {
-    group: 'AI & Machine Learning',
-    items: ['Applied ML', 'Model evaluation', 'Feature engineering', 'scikit-learn', 'PyTorch basics'],
-  },
   {
     group: 'RAG & LLM Systems',
     items: [
       'Retrieval-Augmented Generation',
       'Vector DBs (Chroma)',
-      'Sentence-transformers',
       'Cross-encoder reranking',
       'Answer grounding & citations',
       'OpenAI / Ollama',
@@ -296,27 +279,19 @@ export const skills = [
   },
   {
     group: 'Backend / API',
-    items: ['Python', 'FastAPI', 'Pydantic', 'Java', 'Spring Boot', 'REST', 'Auth basics', 'SQL', 'MySQL'],
+    items: ['Python', 'FastAPI', 'Java', 'Spring Boot', 'REST', 'SQL'],
   },
   {
-    group: 'Frontend / UI',
-    items: ['React', 'Next.js', 'Tailwind CSS', 'Framer Motion', 'Streamlit', 'Responsive design'],
+    group: 'Machine Learning & Data',
+    items: ['scikit-learn', 'Pandas', 'NumPy', 'Regression', 'Clustering'],
   },
   {
-    group: 'Data Science',
-    items: ['Pandas', 'NumPy', 'Matplotlib', 'Clustering', 'Regression', 'Cross-validation'],
+    group: 'Frontend',
+    items: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS'],
   },
   {
     group: 'Computer Vision',
-    items: ['OpenCV', 'MediaPipe', 'Pose landmarks', 'Real-time pipelines'],
-  },
-  {
-    group: 'Tools & Deployment',
-    items: ['Git', 'Gradle', 'Docker basics', 'Linux', 'VS Code', 'Jupyter', 'JUnit'],
-  },
-  {
-    group: 'Product & UX Thinking',
-    items: ['Problem framing', 'Information design', 'Edge-case mapping', 'Stakeholder writing'],
+    items: ['OpenCV', 'MediaPipe', 'Real-time pipelines'],
   },
 ]
 

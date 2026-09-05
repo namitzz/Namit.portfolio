@@ -35,8 +35,8 @@ export default function Experience() {
           {timeline.map((t, i) => (
             <motion.article
               key={t.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ y: 30 }}
+              whileInView={{ y: 0 }}
               viewport={{ once: true, amount: 0 }}
               transition={{ duration: 0.45, delay: i * 0.04, ease: 'easeOut' }}
               className="group relative flex h-full flex-col border p-6 transition-colors md:p-8"

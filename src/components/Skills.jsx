@@ -9,7 +9,7 @@ import { skills } from '../data/content'
 export default function Skills() {
   return (
     <section id="skills" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.026)' }}>
+      style={{ background: 'rgba(244,244,245,0.030)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
@@ -34,8 +34,8 @@ export default function Skills() {
           {skills.map((s, i) => (
             <motion.article
               key={s.group}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ y: 24 }}
+              whileInView={{ y: 0 }}
               viewport={{ once: true, amount: 0 }}
               transition={{ duration: 0.45, delay: i * 0.04, ease: 'easeOut' }}
               className="group relative flex h-full flex-col overflow-hidden border p-6 transition-colors md:p-7"

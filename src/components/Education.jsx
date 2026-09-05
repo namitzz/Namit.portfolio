@@ -32,7 +32,7 @@ const institutions = [
 export default function Education() {
   return (
     <section id="education" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.016)' }}>
+      style={{ background: 'rgba(244,244,245,0.060)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-12 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
@@ -59,8 +59,8 @@ export default function Education() {
               href={inst.href}
               target="_blank"
               rel="noreferrer"
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ y: 16 }}
+              whileInView={{ y: 0 }}
               viewport={{ once: true, amount: 0 }}
               transition={{ duration: 0.45, delay: i * 0.08, ease: 'easeOut' }}
               className="group flex items-start gap-5 border p-6 transition-colors md:p-8"

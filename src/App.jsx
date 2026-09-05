@@ -34,15 +34,6 @@ const mockups = {
   tovo: <TovoMock />,
 }
 
-const accentLabels = {
-  uniwise: 'RAG · EdTech',
-  vision: 'Computer Vision',
-  cloud: 'Brand · Frontend',
-  crime: 'Data Science',
-  course: 'Spring Boot · MySQL',
-  tovo: 'React · Supabase',
-}
-
 export default function App() {
   const [themeKey, setThemeKey] = useState('base')
 
@@ -78,7 +69,6 @@ export default function App() {
               project={p}
               onActivate={activate}
               mockup={mockups[p.id]}
-              accentLabel={accentLabels[p.id]}
             />
           ))}
 

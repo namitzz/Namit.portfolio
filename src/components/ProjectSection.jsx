@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react'
  *
  * Pushes its `themeKey` up to the parent when scrolled into view.
  */
-export default function ProjectSection({ project, onActivate, mockup, accentLabel }) {
+export default function ProjectSection({ project, onActivate, mockup }) {
   const ref = useRef(null)
   const inView = useInView(ref, { amount: 0.35, margin: '-10% 0px -10% 0px' })
 
@@ -22,14 +22,14 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
     <section
       id={project.id}
       ref={ref}
-      className="relative z-10 py-20 md:py-28"
+      className="relative z-10 py-14 md:py-20"
     >
       {/* Full-viewport picture: the mockup takes the stage first. */}
       <div className="relative mx-auto flex w-full max-w-[1600px] flex-col items-center px-6 md:px-16">
         {/* Small header strip above the mockup */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ y: 12 }}
+          whileInView={{ y: 0 }}
           viewport={{ once: true, amount: 0 }}
           transition={{
             duration: 0.6,
@@ -38,7 +38,7 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
           className="mb-8 flex w-full flex-wrap items-center justify-between gap-3 border-b pb-4"
           style={{ borderColor: 'rgba(255,255,255,0.10)' }}
         >
-          <div className="flex items-baseline gap-3">
+          <div className="flex flex-wrap items-baseline gap-3">
             <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
               {project.index}
             </span>
@@ -48,16 +48,31 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
             >
               {project.title}
             </span>
+            {/* Status now sits inline here rather than as its own row */}
+            {project.status && (
+              <span
+                className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em]"
+                style={{ color: 'var(--accent)' }}
+              >
+                <span
+                  className="h-1 w-1 rounded-full"
+                  style={{ background: 'var(--accent)' }}
+                />
+                {project.status}
+              </span>
+            )}
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">
-            {accentLabel || project.themeKey}
+            {project.domain || project.themeKey}
           </span>
         </motion.div>
 
-        {/* Mockup — the dramatic picture reveal */}
+        {/* Mockup. Note: these have intrinsic heights and reflow taller
+            when narrowed, so constraining width makes them *bigger*.
+            Left full-width deliberately. */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ y: 16 }}
+          whileInView={{ y: 0 }}
           viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.55, ease: 'easeOut' }}
           className="relative w-full"
@@ -65,34 +80,14 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
           {mockup}
         </motion.div>
 
-        {/* Status pill */}
-        {project.status && (
-          <motion.span
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.25, duration: 0.4 }}
-            className="mt-8 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em]"
-            style={{
-              borderColor: 'var(--accent)',
-              color: 'var(--accent)',
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: 'var(--accent)' }}
-            />
-            {project.status}
-          </motion.span>
-        )}
       </div>
 
       {/* Wide editorial narrative row below the mockup */}
-      <div className="mx-auto mt-14 grid w-full max-w-[1600px] gap-12 px-6 md:mt-16 md:grid-cols-12 md:gap-12 md:px-16">
+      <div className="mx-auto mt-10 grid w-full max-w-[1600px] gap-12 px-6 md:mt-12 md:grid-cols-12 md:gap-12 md:px-16">
         {/* Left: tagline + narrative */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ y: 20 }}
+          whileInView={{ y: 0 }}
           viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.7 }}
           className="md:col-span-7"
@@ -104,9 +99,15 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
             {project.tagline}
           </p>
 
-          <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
-            <Block label="Problem" body={project.problem} />
-            <Block label="Solution" body={project.solution} />
+          {/* Problem + Solution merged into one Context block —
+              they read as a single idea and cost two headings before. */}
+          <div className="mt-10">
+            <Block label="Context">
+              <>
+                {project.problem}{' '}
+                <span className="text-white/90">{project.solution}</span>
+              </>
+            </Block>
           </div>
 
           <div className="mt-10">
@@ -114,35 +115,23 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
               Key features
             </p>
             <ul className="mt-4 space-y-2.5">
-              {project.features.map((f, i) => (
-                <motion.li
-                  key={f}
-                  initial={{ opacity: 0, x: -6 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.04, duration: 0.4 }}
-                  className="flex gap-3 text-[15px] text-white/80"
-                >
+              {project.features.slice(0, 4).map((f) => (
+                <li key={f} className="flex gap-3 text-[15px] text-white/80">
                   <span
                     className="mt-2 inline-block h-1 w-1 shrink-0 rounded-full"
                     style={{ background: 'var(--accent)' }}
                   />
                   <span>{f}</span>
-                </motion.li>
+                </li>
               ))}
             </ul>
           </div>
 
-          <div className="mt-12">
-            <Block label="Impact / what I learned" body={project.impact} />
+          <div className="mt-10">
+            <Block label="What I learned">{project.impact}</Block>
           </div>
 
           <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3">
-            {project.cta.caseStudy && (
-              <ProjectLink href={project.cta.caseStudy}>
-                Case study
-              </ProjectLink>
-            )}
             {project.cta.github && (
               <ProjectLink href={project.cta.github} external>
                 GitHub
@@ -161,8 +150,8 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
 
         {/* Right: tech stack sidebar */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ y: 20 }}
+          whileInView={{ y: 0 }}
           viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
           className="md:col-span-5"
@@ -175,17 +164,13 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
               Tech stack
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {project.stack.map((s, i) => (
-                <motion.span
+              {project.stack.map((s) => (
+                <span
                   key={s}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.02, duration: 0.3 }}
                   className="cursor-default rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[12px] text-white/75 transition-colors hover:border-white/30 hover:text-white"
                 >
                   {s}
-                </motion.span>
+                </span>
               ))}
             </div>
           </div>
@@ -195,13 +180,15 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
   )
 }
 
-function Block({ label, body }) {
+function Block({ label, children }) {
   return (
     <div>
       <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
         {label}
       </p>
-      <p className="mt-3 text-[15.5px] leading-relaxed text-white/80">{body}</p>
+      <p className="mt-3 max-w-2xl text-[15.5px] leading-relaxed text-white/70">
+        {children}
+      </p>
     </div>
   )
 }

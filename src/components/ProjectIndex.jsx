@@ -3,39 +3,21 @@ import { projects } from '../data/content'
 
 /**
  * Work index as an editorial list. Big serif project name per row,
- * small mono meta on the right, hairline dividers, huge line-height.
- * On hover the row's accent underline extends and the arrow slides.
- * Reference: karliekloss.com item rows scaled up.
+ * small mono meta on the right, hairline dividers.
+ *
+ * `domain` and `year` come from the project object in content.js —
+ * they used to live in local maps here that drifted out of sync with
+ * the labels App.jsx passed to ProjectSection.
  */
-const domains = {
-  uniwise: 'RAG · EdTech',
-  vision: 'Computer Vision',
-  cloud: 'Client site',
-  crime: 'Data Science',
-  course: 'Backend · MySQL',
-  tovo: 'React · Supabase',
-  agentforge: 'Agent orchestration',
-}
-
-const years = {
-  uniwise: '2026',
-  vision: '2025',
-  cloud: '2025',
-  crime: '2024',
-  course: '2024',
-  tovo: '2026',
-  agentforge: '—',
-}
-
 export default function ProjectIndex() {
   return (
     <section id="work" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.022)' }}>
+      style={{ background: 'rgba(244,244,245,0.045)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         {/* Section header */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ y: 12 }}
+          whileInView={{ y: 0 }}
           viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.7 }}
           className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
@@ -103,13 +85,13 @@ function ProjectRow({ project, index }) {
         className="mono-label hidden md:inline"
         style={{ color: 'var(--muted)' }}
       >
-        {domains[project.id] || '—'}
+        {project.domain || '—'}
       </span>
       <span
         className="mono-label hidden md:inline"
         style={{ color: 'var(--muted)' }}
       >
-        {years[project.id] || '—'}
+        {project.year || '—'}
       </span>
       <span
         aria-hidden="true"
@@ -125,8 +107,8 @@ function ProjectRow({ project, index }) {
 
   return (
     <motion.li
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ y: 40 }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true, amount: 0 }}
       transition={{ duration: 0.45, delay: index * 0.04, ease: 'easeOut' }}
       className="group border-b"

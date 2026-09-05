@@ -46,54 +46,6 @@ body {
   background: rgba(244, 244, 245, 0.20);
 }
 
-/* Buttons — haiman-inspired red-orange punch, mono uppercase. */
-.btn-primary {
-  background: #f4552a;
-  color: #fff;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.95rem 1.5rem;
-  border: 1px solid #f4552a;
-  border-radius: 4px;
-  transition: filter 0.15s ease, transform 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.btn-primary:hover {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--ink);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 0.78rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.9rem 1.4rem;
-  border: 1px solid var(--hairline);
-  border-radius: 4px;
-  transition: border-color 0.2s ease, background 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.btn-ghost:hover {
-  border-color: var(--ink);
-  background: rgba(244, 244, 245, 0.04);
-}
-
-/* Ghost outlined display type — haiman's big backdrop typography. */
-.text-outline {
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(244, 244, 245, 0.14);
-}
 .text-outline-strong {
   color: transparent;
   -webkit-text-stroke: 1.5px rgba(244, 244, 245, 0.22);
@@ -116,12 +68,6 @@ body {
   font-weight: 500;
 }
 
-.section-title {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-weight: 400;
-  letter-spacing: -0.015em;
-}
-
 .serif {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
@@ -134,12 +80,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: var(--muted);
-}
-
-.hr {
-  height: 1px;
-  width: 100%;
-  background: var(--hairline);
 }
 
 :focus-visible {

@@ -9,7 +9,7 @@ import { profile } from '../data/content'
 export default function About() {
   return (
     <section id="about" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.008)' }}>
+      style={{ background: 'rgba(244,244,245,0.015)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 border-b pb-6"
@@ -17,8 +17,8 @@ export default function About() {
         >
           <p className="eyebrow">About</p>
           <motion.h2
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ y: 12 }}
+            whileInView={{ y: 0 }}
             viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.7 }}
             className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
@@ -68,8 +68,8 @@ export default function About() {
           {/* Right column: body + highlights */}
           <div className="md:col-span-8">
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ y: 12 }}
+              whileInView={{ y: 0 }}
               viewport={{ once: true, amount: 0 }}
               transition={{ duration: 0.6 }}
               className="space-y-5 text-[19px] leading-relaxed"

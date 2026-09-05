@@ -14,11 +14,11 @@ export default function Writing() {
     <section
       id="writing"
       className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.032)' }}
+      style={{ background: 'rgba(244,244,245,0.055)' }}
     >
       <div className="mx-auto w-full max-w-[1600px]">
         <div
-          className="mb-14 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
+          className="mb-14 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
           <div>
@@ -30,16 +30,13 @@ export default function Writing() {
               Published work.
             </h2>
           </div>
-          <p className="mono-label" style={{ color: 'var(--muted)' }}>
-            {writing.length} {writing.length === 1 ? 'piece' : 'pieces'}
-          </p>
         </div>
 
         {writing.map((item, i) => (
           <motion.article
             key={item.id}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ y: 16 }}
+            whileInView={{ y: 0 }}
             viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.5, delay: i * 0.06, ease: 'easeOut' }}
             className="grid grid-cols-1 gap-8 border-b py-10 md:grid-cols-12 md:gap-12"
