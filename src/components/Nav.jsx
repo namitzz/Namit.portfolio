@@ -9,11 +9,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 const links = [
   { href: '#top', label: 'Home', num: '00' },
   { href: '#about', label: 'About', num: '01' },
-  { href: '#work', label: 'Work', num: '02' },
-  { href: '#experience', label: 'Experience', num: '03' },
-  { href: '#skills', label: 'Skills', num: '04' },
-  { href: '#writing', label: 'Writing', num: '05' },
-  { href: '#contact', label: 'Contact', num: '06' },
+  { href: '#highlights', label: 'Highlights', num: '02' },
+  { href: '#work', label: 'Work', num: '03' },
+  { href: '#experience', label: 'Experience', num: '04' },
+  { href: '#skills', label: 'Skills', num: '05' },
+  { href: '#writing', label: 'Writing', num: '06' },
+  { href: '#contact', label: 'Contact', num: '07' },
 ]
 
 export default function Nav() {

@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
 import { skills } from '../data/content'
+import Reveal from './Reveal'
 
 /**
  * Skills as a bento grid of catalogue cards — haiman FRAME 2025-style.
@@ -33,12 +33,12 @@ export default function Skills() {
         {/* Bento grid — haiman-style FRAME cards */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {skills.map((s, i) => (
-            <motion.article
+            <Reveal
+              as="article"
               key={s.group}
-              initial={{ y: 24 }}
-              whileInView={{ y: 0 }}
-              viewport={{ once: true, amount: 0 }}
-              transition={{ duration: 0.45, delay: i * 0.04, ease: 'easeOut' }}
+              y={16}
+              duration={0.45}
+              delay={i * 0.04}
               className="group relative flex h-full flex-col overflow-hidden border p-6 transition-colors md:p-7"
               style={{
                 borderColor: 'var(--hairline)',
@@ -96,7 +96,7 @@ export default function Skills() {
                   </span>
                 ))}
               </div>
-            </motion.article>
+            </Reveal>
           ))}
         </div>
       </div>

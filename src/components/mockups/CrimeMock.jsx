@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
+import { grow } from '../Reveal'
 
 /**
  * Analytics command centre. Top: London ward map with cluster colouring.
@@ -165,6 +166,7 @@ function Legend({ label, color }) {
  * one of the K=4 K-Means cluster profiles.
  */
 function LondonMap() {
+  const reduce = useReducedMotion()
   // Cluster index 0..3 → C1..C4 (matches the legend above)
   const clusters = ['#7CF5B8', '#FF4FA2', '#F5C36B', '#6BA8FF']
   const areas = [
@@ -251,10 +253,12 @@ function LondonMap() {
           strokeWidth="3"
           fill="none"
           strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 1.4, ease: 'easeOut' }}
+          {...grow(
+            reduce,
+            { pathLength: 0 },
+            { pathLength: 1 },
+            { duration: 1.4, ease: 'easeOut' },
+          )}
         />
 
         {/* Pin: hotspot */}
@@ -264,10 +268,7 @@ function LondonMap() {
             cy="175"
             r="4"
             fill="#FF4FA2"
-            initial={{ scale: 0 }}
-            whileInView={{ scale: 1 }}
-            viewport={{ once: true, amount: 0 }}
-            transition={{ delay: 0.6 }}
+            {...grow(reduce, { scale: 0 }, { scale: 1 }, { delay: 0.6 })}
           />
           <motion.circle
             cx="270"
@@ -293,6 +294,7 @@ function LondonMap() {
 }
 
 function LineChart() {
+  const reduce = useReducedMotion()
   const pts = [38, 32, 41, 48, 44, 52, 58, 56, 62, 68, 64, 72]
   const w = 360
   const h = 90
@@ -317,10 +319,12 @@ function LineChart() {
         fill="none"
         stroke="var(--accent)"
         strokeWidth="1.8"
-        initial={{ pathLength: 0 }}
-        whileInView={{ pathLength: 1 }}
-        viewport={{ once: true, amount: 0 }}
-        transition={{ duration: 1.2, ease: 'easeOut' }}
+        {...grow(
+          reduce,
+          { pathLength: 0 },
+          { pathLength: 1 },
+          { duration: 1.2, ease: 'easeOut' },
+        )}
       />
       {pts.map((v, i) => (
         <circle key={i} cx={i * step} cy={norm(v)} r="1.6" fill="var(--accent)" />
@@ -330,6 +334,7 @@ function LineChart() {
 }
 
 function BarChart() {
+  const reduce = useReducedMotion()
   const bars = [
     { l: 'Theft', v: 88 },
     { l: 'ASB', v: 72 },
@@ -342,10 +347,12 @@ function BarChart() {
       {bars.map((b, i) => (
         <div key={b.l} className="flex flex-1 flex-col items-center gap-1.5">
           <motion.div
-            initial={{ height: 0 }}
-            whileInView={{ height: `${b.v}%` }}
-            viewport={{ once: true, amount: 0 }}
-            transition={{ duration: 0.8, delay: i * 0.06 }}
+            {...grow(
+              reduce,
+              { height: 0 },
+              { height: `${b.v}%` },
+              { duration: 0.8, delay: i * 0.06 },
+            )}
             className="w-full rounded-sm"
             style={{
               background: 'linear-gradient(180deg, var(--accent), var(--accent-2))',

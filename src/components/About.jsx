@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
+import Reveal from './Reveal'
 import { profile } from '../data/content'
 
 /**
@@ -24,7 +25,7 @@ export default function About() {
   return (
     <section
       id="about"
-      className="relative px-6 py-24 md:px-16 md:py-36"
+      className="relative px-6 py-24 md:px-16 md:py-32"
       style={{
         background:
           'linear-gradient(180deg, rgba(244,85,42,0.085) 0%, rgba(244,85,42,0.012) 26%, rgba(244,244,245,0.014) 100%)',
@@ -32,7 +33,7 @@ export default function About() {
     >
       <div className="mx-auto w-full max-w-[1600px]">
         {/* ---------- Header ---------- */}
-        <Reveal reduce={reduce} y={10}>
+        <Reveal y={10}>
           <div
             className="mb-16 border-b pb-6 md:mb-24"
             style={{ borderColor: 'var(--hairline)' }}
@@ -50,7 +51,7 @@ export default function About() {
 
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-16">
           {/* ---------- Left: direction ---------- */}
-          <Reveal reduce={reduce} delay={0.06} className="md:col-span-4">
+          <Reveal delay={0.06} className="md:col-span-4">
             <p className="mono-label" style={{ color: 'var(--muted)' }}>
               Direction
             </p>
@@ -74,7 +75,7 @@ export default function About() {
 
           {/* ---------- Right: copy + links ---------- */}
           <div className="md:col-span-7">
-            <Reveal reduce={reduce} delay={0.12}>
+            <Reveal delay={0.12}>
               <div
                 className="max-w-[42ch] space-y-6 text-[clamp(1.02rem,1.32vw,1.28rem)] leading-[1.55]"
                 style={{ color: 'var(--ink)', letterSpacing: '-0.008em' }}
@@ -85,7 +86,7 @@ export default function About() {
               </div>
             </Reveal>
 
-            <Reveal reduce={reduce} delay={0.22}>
+            <Reveal delay={0.22}>
               <div className="mt-14 flex flex-wrap gap-4">
                 <EditorialLink
                   href={profile.links.github}
@@ -103,12 +104,16 @@ export default function About() {
         </div>
 
         {/* ---------- Hand-off ---------- */}
-        <Reveal reduce={reduce} delay={0.3}>
-          <div
-            className="mt-24 flex items-center gap-5 border-t pt-6 md:mt-32"
+        <Reveal delay={0.3}>
+          <a
+            href="#highlights"
+            className="group mt-24 flex items-center gap-5 border-t pt-6 md:mt-28"
             style={{ borderColor: 'var(--hairline)' }}
           >
-            <span className="mono-label" style={{ color: 'var(--muted)' }}>
+            <span
+              className="mono-label transition-colors duration-300 group-hover:text-[color:var(--ink)]"
+              style={{ color: 'var(--muted)' }}
+            >
               Highlights
             </span>
             {/* Leader rule: carries the eye across the empty space to the
@@ -123,12 +128,12 @@ export default function About() {
             />
             <span
               aria-hidden="true"
-              className="font-mono text-[13px] leading-none"
+              className="font-mono text-[13px] leading-none transition-transform duration-300 group-hover:translate-x-1"
               style={{ color: 'var(--accent)' }}
             >
               →
             </span>
-          </div>
+          </a>
         </Reveal>
       </div>
     </section>
@@ -136,23 +141,6 @@ export default function About() {
 }
 
 /* ------------------------------------------------------------------ */
-
-/** Staggered scroll reveal. Transform only, and inert under reduced motion. */
-function Reveal({ children, reduce, delay = 0, y = 14, className = '' }) {
-  return (
-    <motion.div
-      className={className}
-      initial={{ y: reduce ? 0 : y }}
-      whileInView={{ y: 0 }}
-      viewport={{ once: true, amount: 0 }}
-      transition={
-        reduce ? { duration: 0 } : { duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }
-      }
-    >
-      {children}
-    </motion.div>
-  )
-}
 
 const clamp = (v, max) => Math.max(-max, Math.min(max, v))
 

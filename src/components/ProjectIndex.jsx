@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
 import { projects } from '../data/content'
+import Reveal from './Reveal'
 
 /**
  * Work index as an editorial list. Big serif project name per row,
@@ -16,11 +16,7 @@ export default function ProjectIndex() {
           'linear-gradient(180deg, rgba(245,180,71,0.075) 0%, rgba(245,180,71,0.010) 26%, rgba(244,244,245,0.038) 100%)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         {/* Section header */}
-        <motion.div
-          initial={{ y: 12 }}
-          whileInView={{ y: 0 }}
-          viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 0.7 }}
+        <Reveal
           className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
@@ -39,7 +35,7 @@ export default function ProjectIndex() {
           >
             {projects.length} · 2024–2026
           </p>
-        </motion.div>
+        </Reveal>
 
         {/* Rows */}
         <ul>
@@ -107,11 +103,11 @@ function ProjectRow({ project, index }) {
   )
 
   return (
-    <motion.li
-      initial={{ y: 40 }}
-      whileInView={{ y: 0 }}
-      viewport={{ once: true, amount: 0 }}
-      transition={{ duration: 0.45, delay: index * 0.04, ease: 'easeOut' }}
+    <Reveal
+      as="li"
+      y={16}
+      duration={0.45}
+      delay={index * 0.04}
       className="group border-b"
       style={{ borderColor: 'var(--hairline)' }}
     >
@@ -126,6 +122,6 @@ function ProjectRow({ project, index }) {
       ) : (
         <div className="block opacity-70">{inner}</div>
       )}
-    </motion.li>
+    </Reveal>
   )
 }

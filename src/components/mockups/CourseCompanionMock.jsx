@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
+import { grow } from '../Reveal'
 
 /**
  * Faithful preview of the Course Companion app interior.
@@ -14,6 +15,7 @@ import { motion } from 'framer-motion'
  * search, leaderboard) that exist in the Thymeleaf templates.
  */
 export default function CourseCompanionMock() {
+  const reduce = useReducedMotion()
   return (
     <div className="relative">
       <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-white/40">
@@ -286,10 +288,12 @@ export default function CourseCompanionMock() {
                 {[40, 55, 50, 60, 55, 65, 60].map((v, i) => (
                   <motion.div
                     key={i}
-                    initial={{ height: 0 }}
-                    whileInView={{ height: `${v}%` }}
-                    viewport={{ once: true, amount: 0 }}
-                    transition={{ duration: 0.7, delay: i * 0.05 }}
+                    {...grow(
+                      reduce,
+                      { height: 0 },
+                      { height: `${v}%` },
+                      { duration: 0.7, delay: i * 0.05 },
+                    )}
                     className="w-full rounded-sm"
                     style={{
                       background:

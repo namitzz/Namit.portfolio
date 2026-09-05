@@ -1,5 +1,6 @@
-import { motion, useInView } from 'framer-motion'
+import { useInView } from 'framer-motion'
 import { useEffect, useRef } from 'react'
+import Reveal from './Reveal'
 
 /**
  * Conqr-style dramatic project section.
@@ -27,14 +28,9 @@ export default function ProjectSection({ project, onActivate, mockup }) {
       {/* Full-viewport picture: the mockup takes the stage first. */}
       <div className="relative mx-auto flex w-full max-w-[1600px] flex-col items-center px-6 md:px-16">
         {/* Small header strip above the mockup */}
-        <motion.div
-          initial={{ y: 12 }}
-          whileInView={{ y: 0 }}
-          viewport={{ once: true, amount: 0 }}
-          transition={{
-            duration: 0.6,
-            ease: [0.22, 1, 0.36, 1],
-          }}
+        <Reveal
+          y={12}
+          duration={0.6}
           className="mb-8 flex w-full flex-wrap items-center justify-between gap-3 border-b pb-4"
           style={{ borderColor: 'color-mix(in srgb, var(--accent) 34%, transparent)' }}
         >
@@ -71,33 +67,21 @@ export default function ProjectSection({ project, onActivate, mockup }) {
           >
             {project.domain || project.themeKey}
           </span>
-        </motion.div>
+        </Reveal>
 
         {/* Mockup. Note: these have intrinsic heights and reflow taller
             when narrowed, so constraining width makes them *bigger*.
             Left full-width deliberately. */}
-        <motion.div
-          initial={{ y: 16 }}
-          whileInView={{ y: 0 }}
-          viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
-          className="relative w-full"
-        >
+        <Reveal y={16} duration={0.55} className="relative w-full">
           {mockup}
-        </motion.div>
+        </Reveal>
 
       </div>
 
       {/* Wide editorial narrative row below the mockup */}
       <div className="mx-auto mt-10 grid w-full max-w-[1600px] gap-12 px-6 md:mt-12 md:grid-cols-12 md:gap-12 md:px-16">
         {/* Left: tagline + narrative */}
-        <motion.div
-          initial={{ y: 20 }}
-          whileInView={{ y: 0 }}
-          viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 0.7 }}
-          className="md:col-span-7"
-        >
+        <Reveal y={16} duration={0.7} className="md:col-span-7">
           <p
             className="serif text-[clamp(1.6rem,3.2vw,2.6rem)] leading-[1.15] tracking-[-0.015em]"
             style={{ color: '#fff' }}
@@ -155,16 +139,10 @@ export default function ProjectSection({ project, onActivate, mockup }) {
               </ProjectLink>
             )}
           </div>
-        </motion.div>
+        </Reveal>
 
         {/* Right: tech stack sidebar */}
-        <motion.div
-          initial={{ y: 20 }}
-          whileInView={{ y: 0 }}
-          viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="md:col-span-5"
-        >
+        <Reveal y={16} duration={0.7} delay={0.1} className="md:col-span-5">
           <div
             className="md:sticky md:top-32 md:border-l md:pl-10"
             style={{ borderColor: 'color-mix(in srgb, var(--accent) 28%, transparent)' }}
@@ -186,7 +164,7 @@ export default function ProjectSection({ project, onActivate, mockup }) {
               ))}
             </div>
           </div>
-        </motion.div>
+        </Reveal>
       </div>
     </section>
   )

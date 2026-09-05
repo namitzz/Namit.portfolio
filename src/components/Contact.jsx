@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
 import { profile } from '../data/content'
+import Reveal from './Reveal'
 
 /**
  * Contact as an editorial closing block. Big serif line on the left,
@@ -35,16 +35,14 @@ export default function Contact() {
           style={{ borderColor: 'var(--hairline)' }}
         >
           <p className="eyebrow">Contact</p>
-          <motion.h2
-            initial={{ y: 12 }}
-            whileInView={{ y: 0 }}
-            viewport={{ once: true, amount: 0 }}
-            transition={{ duration: 0.7 }}
+          <Reveal>
+          <h2
             className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
             style={{ color: 'var(--ink)' }}
           >
             Let&apos;s talk<span style={{ color: 'var(--accent)' }}>.</span>
-          </motion.h2>
+          </h2>
+          </Reveal>
         </div>
 
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-16">
@@ -73,12 +71,12 @@ export default function Contact() {
               style={{ borderColor: 'var(--hairline)' }}
             >
               {rows.map((r) => (
-                <motion.li
+                <Reveal
+                  as="li"
                   key={r.label}
-                  initial={{ x: -6 }}
-                  whileInView={{ x: 0 }}
-                  viewport={{ once: true, amount: 0 }}
-                  transition={{ duration: 0.35 }}
+                  x={-6}
+                  y={0}
+                  duration={0.4}
                   className="group border-b"
                   style={{ borderColor: 'var(--hairline)' }}
                 >
@@ -108,7 +106,7 @@ export default function Contact() {
                       →
                     </span>
                   </a>
-                </motion.li>
+                </Reveal>
               ))}
             </ul>
           </div>

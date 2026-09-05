@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
+import { grow } from '../Reveal'
 
 /**
  * Tovo mockup. Approximates the live onboarding screen at
@@ -7,6 +8,7 @@ import { motion } from 'framer-motion'
  * a continue button. Pure CSS, no external assets.
  */
 export default function TovoMock() {
+  const reduce = useReducedMotion()
   return (
     <div className="w-full">
       <div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-white/45">
@@ -49,10 +51,12 @@ export default function TovoMock() {
           {/* Onboarding progress: 3 segments, first active */}
           <div className="mt-5 flex gap-2">
             <motion.span
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true, amount: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
+              {...grow(
+                reduce,
+                { scaleX: 0 },
+                { scaleX: 1 },
+                { duration: 0.8, ease: 'easeOut' },
+              )}
               className="h-1 w-1/3 origin-left rounded-full"
               style={{ background: '#f4552a' }}
             />

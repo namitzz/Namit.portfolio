@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
+import { grow } from '../Reveal'
 
 /**
  * Operator console layout: large live feed with HUD on the left,
@@ -239,6 +240,7 @@ export default function VisionMock() {
 }
 
 function FpsGauge({ value, max }) {
+  const reduce = useReducedMotion()
   const pct = Math.min(1, value / max)
   const r = 28
   const c = 2 * Math.PI * r
@@ -262,10 +264,12 @@ function FpsGauge({ value, max }) {
         strokeWidth="6"
         strokeLinecap="round"
         strokeDasharray={`${dash} ${c}`}
-        initial={{ strokeDashoffset: c }}
-        whileInView={{ strokeDashoffset: 0 }}
-        viewport={{ once: true, amount: 0 }}
-        transition={{ duration: 1.1, ease: 'easeOut' }}
+        {...grow(
+          reduce,
+          { strokeDashoffset: c },
+          { strokeDashoffset: 0 },
+          { duration: 1.1, ease: 'easeOut' },
+        )}
       />
     </svg>
   )

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { writing } from '../data/content'
+import Reveal from './Reveal'
 
 /**
  * Writing section. Gives published work its own proper spread rather
@@ -35,12 +35,12 @@ export default function Writing() {
         </div>
 
         {writing.map((item, i) => (
-          <motion.article
+          <Reveal
+            as="article"
             key={item.id}
-            initial={{ y: 16 }}
-            whileInView={{ y: 0 }}
-            viewport={{ once: true, amount: 0 }}
-            transition={{ duration: 0.5, delay: i * 0.06, ease: 'easeOut' }}
+            y={16}
+            duration={0.5}
+            delay={i * 0.06}
             className="grid grid-cols-1 gap-8 border-b py-10 md:grid-cols-12 md:gap-12"
             style={{ borderColor: 'var(--hairline)' }}
           >
@@ -96,7 +96,7 @@ export default function Writing() {
 
               <ArticleReader url={item.url} title={item.title} />
             </div>
-          </motion.article>
+          </Reveal>
         ))}
       </div>
     </section>
