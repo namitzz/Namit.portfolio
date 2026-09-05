@@ -389,6 +389,18 @@ export const timeline = [
       'Led technical work in a cross-disciplinary team exploring responsible generative AI use in higher education. Built learning-assistant prototypes and supported non-CS teammates on engineering decisions and delivery.',
   },
   {
+    id: 'cloudseven',
+    kind: 'work',
+    year: '2025 – 2026',
+    short: 'Cloud Seven',
+    title: 'Freelance Web Developer, Cloud Seven Realty',
+    org: 'Solo client project',
+    markKey: 'project',
+    accent: '#C9A86A',
+    body:
+      'Designed, built and launched a production real estate site for a paying client, owning it from planning through delivery. Built a spreadsheet-driven listings workflow so non-technical staff can update property content without a developer, and handed over documentation.',
+  },
+  {
     id: 'classfutures',
     kind: 'work',
     year: '2025',

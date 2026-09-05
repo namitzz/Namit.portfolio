@@ -23,15 +23,18 @@ import Reveal from './Reveal'
  * spine with every detail already open, because there is no hover.
  */
 
-const COLS = 5
-// The gap between runs is set by the cards, not the line. A card is close
-// to 290px tall and has to open fully inside the section: measured at the
-// first attempt, a 210px gap pushed top-row cards past the section's
-// bottom edge and bottom-row cards up through the heading.
+// The gap between the two passes is set by the cards, not the line. A card
+// runs to about 290px tall and has to open fully inside the section:
+// measured at the first attempt, a 210px gap pushed upper-pass cards past
+// the section's bottom edge and lower-pass cards up through the heading.
 const ROW_GAP = 470
 const PAD_TOP = 100
 const CARD_W = 340
-const CARD_OFFSET = 96
+// Clears a stop's own label band, so a card never has to dodge the
+// neighbours sharing its pass.
+const CARD_OFFSET = 120
+const EDGE = 90
+const WAVE = 22
 
 export default function Experience() {
   const reduce = useReducedMotion()
@@ -39,8 +42,10 @@ export default function Experience() {
   const [box, setBox] = useState({ w: 0, h: 0 })
   const [active, setActive] = useState(null)
 
-  const rows = Math.ceil(timeline.length / COLS)
-  const height = PAD_TOP + (rows - 1) * ROW_GAP + PAD_TOP
+  const height = PAD_TOP + ROW_GAP + PAD_TOP
+
+  const pathRef = useRef(null)
+  const [points, setPoints] = useState([])
 
   useLayoutEffect(() => {
     const el = wrapRef.current
@@ -52,7 +57,14 @@ export default function Experience() {
     return () => ro.disconnect()
   }, [height])
 
-  const points = layoutStops(timeline.length, box.w, height)
+  // Placed after the path renders, since the positions come off the
+  // rendered geometry. useLayoutEffect, so it happens before paint and
+  // the stops never appear anywhere but on the line.
+  useLayoutEffect(() => {
+    if (!box.w) return
+    setPoints(stopsAlongPath(pathRef.current, timeline.length))
+  }, [box.w, height])
+
 
   return (
     <section
@@ -97,7 +109,8 @@ export default function Experience() {
               className="absolute left-0 top-0"
             >
               <path
-                d={routePath(points, box.w)}
+                ref={pathRef}
+                d={routePath(box.w)}
                 fill="none"
                 stroke="rgba(244,244,245,0.28)"
                 strokeWidth="2"
@@ -115,6 +128,8 @@ export default function Experience() {
                 key={entry.id}
                 entry={entry}
                 point={pt}
+                index={i}
+                points={points}
                 active={active === i}
                 dimmed={active !== null && active !== i}
                 onEnter={() => setActive(i)}
@@ -157,58 +172,161 @@ export default function Experience() {
 /* ------------------------------------------------------------------ */
 
 /**
- * Where each stop sits. Odd rows run right to left so the line never has
- * to jump back across the page: the route reads as one continuous walk.
+ * The waypoints the route is drawn through: an upper pass left to right,
+ * a turn that swings out past the last stop, and a lower pass back. Every
+ * pass carries a slow undulation, so no part of the line is straight.
  */
-function layoutStops(count, w, h) {
-  const rows = Math.ceil(count / COLS)
+function buildWaypoints(w) {
+  const left = EDGE
+  const right = w - EDGE
+  const topY = PAD_TOP
+  const botY = PAD_TOP + ROW_GAP
+  const N = 6
+  const wp = []
+
+  for (let k = 0; k <= N; k++) {
+    const t = k / N
+    wp.push({ x: left + (right - left) * t, y: topY + Math.sin(t * Math.PI * 2) * WAVE })
+  }
+  wp.push({ x: right + 58, y: topY + ROW_GAP * 0.28 })
+  wp.push({ x: right + 58, y: topY + ROW_GAP * 0.72 })
+  for (let k = 0; k <= N; k++) {
+    const t = k / N
+    wp.push({ x: right - (right - left) * t, y: botY - Math.sin(t * Math.PI * 2) * WAVE })
+  }
+
+  return wp
+}
+
+/**
+ * A Catmull-Rom spline through the waypoints, written out as cubic
+ * beziers. Straight segments joined by corner radii read as a diagram;
+ * one continuous curve reads as a route drawn by hand.
+ */
+function routePath(w) {
+  const p = buildWaypoints(w)
+  if (p.length < 2) return ''
+  let d = `M ${p[0].x.toFixed(2)} ${p[0].y.toFixed(2)}`
+
+  for (let i = 0; i < p.length - 1; i++) {
+    const p0 = p[i - 1] || p[i]
+    const p1 = p[i]
+    const p2 = p[i + 1]
+    const p3 = p[i + 2] || p2
+    const c1x = p1.x + (p2.x - p0.x) / 6
+    const c1y = p1.y + (p2.y - p0.y) / 6
+    const c2x = p2.x - (p3.x - p1.x) / 6
+    const c2y = p2.y - (p3.y - p1.y) / 6
+    d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+  }
+
+  return d
+}
+
+/**
+ * Stops sit at equal distances *along* the curve rather than on a grid,
+ * so they follow the line's rise and fall and stay evenly spaced around
+ * the turn. Read straight off the rendered path: nothing else knows where
+ * a spline actually goes.
+ */
+function stopsAlongPath(pathEl, count) {
+  if (!pathEl || count < 2) return []
+  const total = pathEl.getTotalLength()
   const out = []
   for (let i = 0; i < count; i++) {
-    const row = Math.floor(i / COLS)
-    const col = i % COLS
-    const reversed = row % 2 === 1
-    const slot = reversed ? COLS - 1 - col : col
-    const x = w ? ((slot + 0.5) / COLS) * w : 0
-    const y = rows > 1 ? PAD_TOP + row * ROW_GAP : h / 2
-    out.push({ x, y, row, reversed })
+    const at = pathEl.getPointAtLength((i / (count - 1)) * total)
+    out.push({ x: at.x, y: at.y })
   }
   return out
 }
 
-/** The dotted line through the stops, with a rounded turn at each end. */
-function routePath(points, w) {
-  if (!points.length || !w) return ''
-  const rows = [...new Set(points.map((p) => p.row))]
-  const inset = w / (COLS * 2)
-  let d = ''
+/**
+ * Where a card goes.
+ *
+ * A stop always lands partway round the turn: the turn is 520px of arc
+ * against 277px of stop spacing, so one has to. That stop sits at
+ * mid-height against the right edge, where a card opening up or down has
+ * nowhere to go without crossing its neighbours. It gets a card beside it
+ * instead, which is the only direction with room.
+ *
+ * Everywhere else the card opens away from its own pass and is capped so
+ * it cannot reach the other one. Without that cap a lower-pass card
+ * reached the upper pass's labels, which made all six of those stops
+ * blockers spanning the full width, left no clear slot at all, and
+ * dropped the card back onto the stop it was trying to avoid.
+ *
+ * The two passes' extents are read off the stops themselves rather than
+ * hardcoded, so the caps follow the curve if its shape changes.
+ */
+function passBounds(points, containerH) {
+  const upper = points.filter((p) => p.y < containerH * 0.35)
+  const lower = points.filter((p) => p.y > containerH * 0.65)
+  return {
+    upperBottom: upper.length ? Math.max(...upper.map((p) => p.y + 88)) : 0,
+    lowerTop: lower.length
+      ? Math.min(...lower.map((p) => p.y - 34))
+      : containerH,
+  }
+}
 
-  rows.forEach((row, idx) => {
-    const y = PAD_TOP + row * ROW_GAP
-    const leftX = inset
-    const rightX = w - inset
-    const goingRight = row % 2 === 0
-    const from = goingRight ? leftX : rightX
-    const to = goingRight ? rightX : leftX
+function zoneOf(point, containerH) {
+  if (point.y < containerH * 0.35) return 'below'
+  if (point.y > containerH * 0.65) return 'above'
+  return 'side'
+}
 
-    if (idx === 0) d += `M ${from} ${y} `
-    d += `L ${to} ${y} `
+/** The card's vertical box, and the CSS that puts it there. */
+function cardBox(point, points, containerH, zone) {
+  const { upperBottom, lowerTop } = passBounds(points, containerH)
 
-    if (idx < rows.length - 1) {
-      const nextY = PAD_TOP + (row + 1) * ROW_GAP
-      // A turn with real radius, so the run reads as an S rather than a
-      // rectangle folded in half.
-      const r = Math.min(70, (nextY - y) / 2)
-      const dir = goingRight ? 1 : -1
-      d += `C ${to + dir * r} ${y} ${to + dir * r} ${nextY} ${to} ${nextY} `
+  if (zone === 'below') {
+    const top = point.y + CARD_OFFSET
+    const maxHeight = Math.max(140, lowerTop - 10 - top)
+    return { top, bottom: top + maxHeight, css: { top, maxHeight } }
+  }
+
+  if (zone === 'above') {
+    const bottom = point.y - CARD_OFFSET
+    const maxHeight = Math.max(140, bottom - upperBottom - 10)
+    return {
+      top: bottom - maxHeight,
+      bottom,
+      css: {
+        bottom: `calc(100% - ${bottom}px)`,
+        maxHeight,
+      },
     }
-  })
+  }
 
-  return d
+  const maxHeight = containerH - 16
+  const top = clamp(point.y - 150, 8, Math.max(8, containerH - 308))
+  return { top, bottom: top + 300, css: { top, maxHeight } }
+}
+
+function placeCard(point, index, points, containerW, zone, band) {
+  const hi = Math.max(0, containerW - CARD_W)
+  if (zone === 'side') return clamp(point.x - CARD_W - 46, 0, hi)
+
+  const centred = point.x - CARD_W / 2
+  const blockers = points
+    .filter((_, j) => j !== index)
+    .map((p) => ({ x0: p.x - 82, x1: p.x + 82, y0: p.y - 34, y1: p.y + 88 }))
+    .filter((b) => band.bottom > b.y0 && band.top < b.y1)
+
+  for (let step = 0; step <= 40; step++) {
+    for (const dir of step === 0 ? [0] : [-1, 1]) {
+      const left = clamp(centred + dir * step * 18, 0, hi)
+      if (!blockers.some((b) => left + CARD_W > b.x0 && left < b.x1)) return left
+    }
+  }
+  return clamp(centred, 0, hi)
 }
 
 function Stop({
   entry,
   point,
+  index,
+  points,
   active,
   dimmed,
   onEnter,
@@ -216,15 +334,12 @@ function Stop({
   containerH,
   reduce,
 }) {
-  // Cards hang below a top-run stop and above a bottom-run one, so they
-  // always open into the section rather than out of it.
-  const below = point.row % 2 === 0
-  const left = clamp(point.x - CARD_W / 2, 0, Math.max(0, containerW - CARD_W))
-  // A hard ceiling as well as the geometry, so a longer entry can never
-  // reopen the overflow the row gap was widened to fix.
-  const maxHeight = below
-    ? containerH - (point.y + CARD_OFFSET) - 8
-    : point.y - CARD_OFFSET - 8
+  // Which way a card opens comes from where the stop actually sits on the
+  // curve, not from a row index: on a spline there are no rows, and a stop
+  // can land anywhere including partway round the turn.
+  const zone = zoneOf(point, containerH)
+  const band = cardBox(point, points, containerH, zone)
+  const left = placeCard(point, index, points, containerW, zone, band)
 
   return (
     <>
@@ -259,10 +374,7 @@ function Stop({
           style={{
             left,
             width: CARD_W,
-            [below ? 'top' : 'bottom']: below
-              ? point.y + CARD_OFFSET
-              : `calc(100% - ${point.y - CARD_OFFSET}px)`,
-            maxHeight,
+            ...band.css,
             overflow: 'hidden',
             borderColor: textColor(entry),
             background: '#0A0908',
