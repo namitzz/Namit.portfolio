@@ -103,38 +103,6 @@ export default function About() {
           </div>
         </div>
 
-        {/* ---------- Hand-off ---------- */}
-        <Reveal delay={0.3}>
-          <a
-            href="#highlights"
-            className="group mt-24 flex items-center gap-5 border-t pt-6 md:mt-28"
-            style={{ borderColor: 'var(--hairline)' }}
-          >
-            <span
-              className="mono-label transition-colors duration-300 group-hover:text-[color:var(--ink)]"
-              style={{ color: 'var(--muted)' }}
-            >
-              Highlights
-            </span>
-            {/* Leader rule: carries the eye across the empty space to the
-                arrow instead of leaving the label stranded. */}
-            <span
-              aria-hidden="true"
-              className="h-px flex-1"
-              style={{
-                background:
-                  'linear-gradient(90deg, var(--hairline), color-mix(in srgb, var(--accent) 45%, transparent))',
-              }}
-            />
-            <span
-              aria-hidden="true"
-              className="font-mono text-[13px] leading-none transition-transform duration-300 group-hover:translate-x-1"
-              style={{ color: 'var(--accent)' }}
-            >
-              →
-            </span>
-          </a>
-        </Reveal>
       </div>
     </section>
   )

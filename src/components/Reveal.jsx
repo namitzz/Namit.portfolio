@@ -28,6 +28,7 @@ export default function Reveal({
   duration = 0.55,
   className = '',
   style,
+  ...rest
 }) {
   const reduce = useReducedMotion()
   const Tag = motion[as] || motion.div
@@ -36,6 +37,7 @@ export default function Reveal({
     <Tag
       className={className}
       style={style}
+      {...rest}
       initial={reduce ? { x: 0, y: 0 } : { x, y }}
       whileInView={{ x: 0, y: 0 }}
       viewport={{ once: true, amount: 0 }}

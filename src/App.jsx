@@ -15,24 +15,15 @@ import Skills from './components/Skills'
 import Writing from './components/Writing'
 import Contact from './components/Contact'
 
-import UniWiseMock from './components/mockups/UniWiseMock'
-import VisionMock from './components/mockups/VisionMock'
-import CloudSevenMock from './components/mockups/CloudSevenMock'
-import CrimeMock from './components/mockups/CrimeMock'
-import CourseCompanionMock from './components/mockups/CourseCompanionMock'
-import TovoMock from './components/mockups/TovoMock'
+import { mockups } from './components/mockups'
 
 import { projects } from './data/content'
 import { themes } from './data/themes'
 
-// Each project id maps to a JSX mockup. Keeps ProjectSection generic.
-const mockups = {
-  uniwise: <UniWiseMock />,
-  vision: <VisionMock />,
-  cloud: <CloudSevenMock />,
-  crime: <CrimeMock />,
-  course: <CourseCompanionMock />,
-  tovo: <TovoMock />,
+// The shared map holds components; the detail sections want an element.
+function renderMockup(id) {
+  const Mock = mockups[id]
+  return Mock ? <Mock /> : null
 }
 
 export default function App() {
@@ -91,7 +82,7 @@ export default function App() {
               key={p.id}
               project={p}
               onActivate={activate}
-              mockup={mockups[p.id]}
+              mockup={renderMockup(p.id)}
             />
           ))}
 
