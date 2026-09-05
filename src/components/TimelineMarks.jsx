@@ -74,7 +74,18 @@ function PlacementMark(props) {
   )
 }
 
+/** Generic mark for a build: angle brackets. */
+function ProjectMark(props) {
+  return (
+    <svg {...base} {...props} strokeWidth="1.7">
+      <path d="M9 6.4 3.6 12 9 17.6" />
+      <path d="M15 6.4 20.4 12 15 17.6" />
+    </svg>
+  )
+}
+
 export const timelineMarks = {
+  project: ProjectMark,
   leicester: LeicesterMark,
   aston: AstonMark,
   classfutures: ClassFuturesMark,
