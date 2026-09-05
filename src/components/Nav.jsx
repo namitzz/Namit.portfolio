@@ -11,10 +11,9 @@ const links = [
   { href: '#about', label: 'About', num: '01' },
   { href: '#work', label: 'Work', num: '02' },
   { href: '#experience', label: 'Experience', num: '03' },
-  { href: '#education', label: 'Education', num: '04' },
-  { href: '#skills', label: 'Skills', num: '05' },
-  { href: '#writing', label: 'Writing', num: '06' },
-  { href: '#contact', label: 'Contact', num: '07' },
+  { href: '#skills', label: 'Skills', num: '04' },
+  { href: '#writing', label: 'Writing', num: '05' },
+  { href: '#contact', label: 'Contact', num: '06' },
 ]
 
 export default function Nav() {

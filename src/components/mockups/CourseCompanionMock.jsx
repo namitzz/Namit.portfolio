@@ -114,9 +114,9 @@ export default function CourseCompanionMock() {
                 ].map((c, i) => (
                   <motion.div
                     key={c.code}
-                    initial={{ opacity: 0, x: -6 }}
+                    initial={{ x: -6 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, amount: 0 }}
                     transition={{ duration: 0.35, delay: i * 0.06 }}
                     className="flex items-center justify-between rounded-lg border border-black/10 bg-white px-3 py-2.5"
                   >
@@ -164,9 +164,9 @@ export default function CourseCompanionMock() {
                   ].map((b, i) => (
                     <motion.div
                       key={b.l + i}
-                      initial={{ opacity: 0, scale: 0.85 }}
+                      initial={{ scale: 0.85 }}
                       whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
+                      viewport={{ once: true, amount: 0 }}
                       transition={{ delay: i * 0.04 }}
                       className="flex flex-col items-center gap-1"
                     >
@@ -288,7 +288,7 @@ export default function CourseCompanionMock() {
                     key={i}
                     initial={{ height: 0 }}
                     whileInView={{ height: `${v}%` }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, amount: 0 }}
                     transition={{ duration: 0.7, delay: i * 0.05 }}
                     className="w-full rounded-sm"
                     style={{

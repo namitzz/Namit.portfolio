@@ -154,9 +154,9 @@ export default function VisionMock() {
               ].map((e, i) => (
                 <motion.li
                   key={i}
-                  initial={{ opacity: 0, x: 8 }}
+                  initial={{ x: 8 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0 }}
                   transition={{ delay: i * 0.05 }}
                   className="flex items-start gap-2"
                 >
@@ -192,9 +192,9 @@ export default function VisionMock() {
         ].map((c, i) => (
           <motion.div
             key={c.l}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.4, delay: i * 0.06 }}
             className="glass rounded-xl px-3.5 py-3"
           >
@@ -211,9 +211,9 @@ export default function VisionMock() {
 
       {/* AI coaching summary — end-of-set */}
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ y: 8 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className="mt-3 rounded-2xl border p-4"
         style={{
@@ -264,7 +264,7 @@ function FpsGauge({ value, max }) {
         strokeDasharray={`${dash} ${c}`}
         initial={{ strokeDashoffset: c }}
         whileInView={{ strokeDashoffset: 0 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0 }}
         transition={{ duration: 1.1, ease: 'easeOut' }}
       />
     </svg>

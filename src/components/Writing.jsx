@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { writing } from '../data/content'
 
@@ -92,25 +93,94 @@ export default function Writing() {
                 </p>
               )}
 
-              <a
-                href={item.url}
-                target="_blank"
-                rel="noreferrer"
-                className="group mt-7 inline-flex items-center gap-2 border-b pb-1 font-mono text-[12px] uppercase tracking-[0.1em] transition-colors"
-                style={{
-                  color: 'var(--accent)',
-                  borderColor: 'var(--accent)',
-                }}
-              >
-                Read the guide
-                <span className="transition-transform group-hover:translate-x-0.5">
-                  ↗
-                </span>
-              </a>
+              <ArticleReader url={item.url} title={item.title} />
             </div>
           </motion.article>
         ))}
       </div>
     </section>
+  )
+}
+
+/**
+ * Lets the piece be read without leaving the page: a toggle that
+ * expands an embedded reader, plus a permanent link out.
+ *
+ * Publishers often send `X-Frame-Options` or a CSP `frame-ancestors`
+ * directive that blocks embedding, in which case the frame renders
+ * blank — so the external link is always present, and the fallback
+ * note sits directly under the frame rather than being hidden.
+ */
+function ArticleReader({ url, title }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="mt-7">
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="group inline-flex items-center gap-2 border-b pb-1 font-mono text-[12px] uppercase tracking-[0.1em] transition-colors"
+          style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}
+        >
+          {open ? 'Hide reader' : 'Read on this page'}
+          <span
+            aria-hidden="true"
+            className="transition-transform"
+            style={{ transform: open ? 'rotate(180deg)' : 'none' }}
+          >
+            ↓
+          </span>
+        </button>
+
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="group inline-flex items-center gap-1.5 border-b pb-1 font-mono text-[12px] uppercase tracking-[0.1em] transition-colors"
+          style={{
+            color: 'rgba(244,244,245,0.75)',
+            borderColor: 'rgba(244,244,245,0.25)',
+          }}
+        >
+          Open original
+          <span
+            aria-hidden="true"
+            className="transition-transform group-hover:translate-x-0.5"
+          >
+            ↗
+          </span>
+        </a>
+      </div>
+
+      {/* Plain conditional render, no height/opacity animation. An
+          auto-height transition here left the panel frozen at
+          `height: 0` whenever the animation did not run, which hides
+          the article outright. Visibility is never animated. */}
+      {open && (
+        <div className="mt-6">
+          <iframe
+            src={url}
+            title={title}
+            loading="lazy"
+            className="h-[70vh] w-full rounded-sm border bg-white"
+            style={{ borderColor: 'var(--hairline)' }}
+          />
+          <p className="mt-3 text-[12.5px]" style={{ color: 'var(--muted)' }}>
+            If the reader stays blank, the publisher blocks embedding.{' '}
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-[3px]"
+              style={{ color: 'var(--accent)' }}
+            >
+              Open it on classfutures.co.uk ↗
+            </a>
+          </p>
+        </div>
+      )}
+    </div>
   )
 }

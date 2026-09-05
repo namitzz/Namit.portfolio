@@ -115,9 +115,9 @@ export default function UniWiseMock() {
               ].map((e, i) => (
                 <motion.div
                   key={e.n}
-                  initial={{ opacity: 0, x: -6 }}
+                  initial={{ x: -6 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0 }}
                   transition={{ duration: 0.35, delay: i * 0.07 }}
                   className="rounded-xl p-3 text-[11.5px] leading-snug"
                   style={{
@@ -289,9 +289,9 @@ function Arrow() {
 function ScaffoldBlock({ label, body, accent }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      viewport={{ once: true, amount: 0 }}
       transition={{ duration: 0.4 }}
       className="rounded-2xl px-4 py-3"
       style={{
@@ -320,9 +320,9 @@ function ScaffoldBlock({ label, body, accent }) {
 function Misconception() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      viewport={{ once: true, amount: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
       className="rounded-2xl px-4 py-3"
       style={{

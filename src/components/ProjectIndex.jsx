@@ -118,7 +118,7 @@ function ProjectRow({ project, index }) {
         <a
           href={`#${project.id}`}
           aria-label={`Jump to ${project.title}`}
-          className="block transition-colors hover:bg-[rgba(26,24,20,0.03)]"
+          className="block transition-colors hover:bg-white/[0.02]"
         >
           {inner}
         </a>

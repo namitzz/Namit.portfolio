@@ -51,6 +51,16 @@ export const themes = {
     glow: 'rgba(255,79,162,0.22)',
     muted: 'rgba(240,220,255,0.6)',
   },
+  tovo: {
+    id: 'tovo',
+    name: 'Tovo',
+    bgFrom: '#1A0A05',
+    bgTo: '#140D06',
+    accent: '#F4552A',
+    accent2: '#F5B447',
+    glow: 'rgba(244,85,42,0.20)',
+    muted: 'rgba(255,232,214,0.62)',
+  },
   course: {
     id: 'course',
     name: 'Course Companion',

@@ -3,7 +3,7 @@ import { profile } from '../data/content'
 
 /**
  * Contact as an editorial closing block. Big serif line on the left,
- * neat list of channels on the right, warm cream throughout.
+ * list of channels on the right.
  */
 export default function Contact() {
   const rows = [
@@ -63,14 +63,6 @@ export default function Contact() {
               Applied AI, backend, data pipelines, or a frontend that has to
               feel right. Happy to talk about any of it.
             </p>
-
-            <p className="mono-label mt-8" style={{ color: 'var(--accent)' }}>
-              <span
-                className="mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle"
-                style={{ background: 'var(--accent)' }}
-              />
-              Currently available
-            </p>
           </div>
 
           {/* Right column: channels */}
@@ -93,7 +85,7 @@ export default function Contact() {
                     href={r.href}
                     target={r.href.startsWith('http') ? '_blank' : undefined}
                     rel={r.href.startsWith('http') ? 'noreferrer' : undefined}
-                    className="grid grid-cols-[6rem_1fr_2rem] items-center gap-4 py-5 transition-colors hover:bg-[rgba(26,24,20,0.03)]"
+                    className="grid grid-cols-[6rem_1fr_2rem] items-center gap-4 py-5 transition-colors hover:bg-white/[0.02]"
                   >
                     <span
                       className="mono-label"

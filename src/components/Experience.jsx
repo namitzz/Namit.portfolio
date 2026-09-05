@@ -2,22 +2,27 @@ import { motion } from 'framer-motion'
 import { timeline } from '../data/content'
 
 /**
- * Timeline as a karlie-style press-card grid. Each entry is a card
- * with a small tag/date, a large title, an org line, and body text.
- * Two columns on desktop, one on mobile.
- * The only karlie borrow in the whole site.
+ * One chronological timeline covering study and work together — these
+ * used to be two separate sections (Experience + Education), which
+ * split a single story in half.
+ *
+ * Education entries carry an institution monogram, a classification,
+ * and a link out. Work entries use the same row shape without them.
  */
 export default function Experience() {
   return (
-    <section id="experience" className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'rgba(244,244,245,0.030)' }}>
+    <section
+      id="experience"
+      className="relative px-6 py-24 md:px-16 md:py-32"
+      style={{ background: 'rgba(244,244,245,0.030)' }}
+    >
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-14 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
           <div>
-            <p className="eyebrow">Experience</p>
+            <p className="eyebrow">Experience &amp; Education</p>
             <h2
               className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
               style={{ color: 'var(--ink)' }}
@@ -26,69 +31,111 @@ export default function Experience() {
             </h2>
           </div>
           <p className="mono-label" style={{ color: 'var(--muted)' }}>
-            {timeline.length} entries
+            2023 – present
           </p>
         </div>
 
-        {/* Card grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+        <ol>
           {timeline.map((t, i) => (
-            <motion.article
+            <motion.li
               key={t.title}
-              initial={{ y: 30 }}
+              initial={{ y: 12 }}
               whileInView={{ y: 0 }}
               viewport={{ once: true, amount: 0 }}
               transition={{ duration: 0.45, delay: i * 0.04, ease: 'easeOut' }}
-              className="group relative flex h-full flex-col border p-6 transition-colors md:p-8"
-              style={{
-                borderColor: 'var(--hairline)',
-                background: 'rgba(244,244,245,0.02)',
-              }}
+              className="border-b"
+              style={{ borderColor: 'var(--hairline)' }}
             >
-              {/* Top row: year tag + expand arrow */}
-              <div className="mb-6 flex items-baseline justify-between">
-                <span
-                  className="mono-label"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  {t.year}
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="serif text-[1.4rem] leading-none opacity-30 transition-opacity duration-300 group-hover:opacity-100"
-                  style={{ color: 'var(--ink)' }}
-                >
-                  +
-                </span>
-              </div>
-
-              {/* Title */}
-              <h3
-                className="serif text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.05] tracking-[-0.015em]"
-                style={{ color: 'var(--ink)' }}
-              >
-                {t.title}
-              </h3>
-
-              {/* Org */}
-              <p
-                className="mt-3 text-[13px]"
-                style={{ color: 'var(--muted)' }}
-              >
-                {t.org}
-              </p>
-
-              {/* Body */}
-              <p
-                className="mt-5 text-[14.5px] leading-relaxed"
-                style={{ color: 'var(--ink-soft)' }}
-              >
-                {t.body}
-              </p>
-            </motion.article>
+              <TimelineRow entry={t} />
+            </motion.li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
+  )
+}
+
+function TimelineRow({ entry: t }) {
+  const isEducation = t.kind === 'education'
+
+  const inner = (
+    <div className="grid grid-cols-1 gap-4 py-8 md:grid-cols-[9rem_3.5rem_1fr] md:gap-8">
+      {/* Year */}
+      <span className="mono-label pt-1" style={{ color: 'var(--muted)' }}>
+        {t.year}
+      </span>
+
+      {/* Institution monogram — education entries only */}
+      <span className="hidden md:block">
+        {isEducation && (
+          <span
+            className="serif flex h-11 w-11 items-center justify-center rounded-sm text-[20px] leading-none"
+            style={{ background: t.accent, color: '#fff' }}
+            aria-hidden="true"
+          >
+            {t.monogram}
+          </span>
+        )}
+      </span>
+
+      {/* Body */}
+      <div className="min-w-0">
+        <div className="flex items-baseline justify-between gap-3">
+          <h3
+            className="serif text-[clamp(1.25rem,2.4vw,1.75rem)] leading-tight"
+            style={{ color: 'var(--ink)' }}
+          >
+            {t.title}
+          </h3>
+          {t.href && (
+            <span
+              aria-hidden="true"
+              className="serif shrink-0 text-[1.05rem] leading-none opacity-30 transition-opacity group-hover:opacity-100"
+              style={{ color: 'var(--ink)' }}
+            >
+              ↗
+            </span>
+          )}
+        </div>
+
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span className="mono-label" style={{ color: 'var(--muted)' }}>
+            {t.org}
+          </span>
+          {t.status && (
+            <span
+              className="mono-label flex items-center gap-1.5"
+              style={{ color: t.accent || 'var(--accent)' }}
+            >
+              <span
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ background: t.accent || 'var(--accent)' }}
+              />
+              {t.status}
+            </span>
+          )}
+        </div>
+
+        <p
+          className="mt-4 max-w-3xl text-[15px] leading-relaxed"
+          style={{ color: 'var(--ink-soft)' }}
+        >
+          {t.body}
+        </p>
+      </div>
+    </div>
+  )
+
+  if (!t.href) return <div className="group">{inner}</div>
+
+  return (
+    <a
+      href={t.href}
+      target="_blank"
+      rel="noreferrer"
+      className="group block transition-colors hover:bg-white/[0.015]"
+    >
+      {inner}
+    </a>
   )
 }

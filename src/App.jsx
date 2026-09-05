@@ -10,7 +10,6 @@ import About from './components/About'
 import ProjectIndex from './components/ProjectIndex'
 import ProjectSection from './components/ProjectSection'
 import Experience from './components/Experience'
-import Education from './components/Education'
 import Skills from './components/Skills'
 import Writing from './components/Writing'
 import Contact from './components/Contact'
@@ -74,10 +73,6 @@ export default function App() {
 
         <SectionTrigger onEnter={() => activate('base')}>
           <Experience />
-        </SectionTrigger>
-
-        <SectionTrigger onEnter={() => activate('base')}>
-          <Education />
         </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>

@@ -2,9 +2,9 @@ import { motion } from 'framer-motion'
 import { profile } from '../data/content'
 
 /**
- * About as a two-column editorial spread. Left column: eyebrow + big
- * serif title + tags. Right column: paragraphs + highlights list.
- * No cards, warm cream ground, hairline dividers.
+ * About as a two-column editorial spread. Left column: direction line.
+ * Right column: paragraphs + numbered highlights. No cards, hairline
+ * dividers only.
  */
 export default function About() {
   return (
@@ -40,29 +40,6 @@ export default function About() {
             >
               {profile.positioning}
             </p>
-
-            <div className="mt-8 flex flex-wrap gap-1.5">
-              {[
-                'AI integration',
-                'RAG systems',
-                'Backend / APIs',
-                'Full-stack',
-                'ML',
-                'Computer vision',
-                'Data science',
-              ].map((t) => (
-                <span
-                  key={t}
-                  className="rounded-full border px-3 py-1 text-[12px]"
-                  style={{
-                    borderColor: 'var(--hairline)',
-                    color: 'var(--ink-soft)',
-                  }}
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
           </div>
 
           {/* Right column: body + highlights */}
@@ -113,7 +90,6 @@ export default function About() {
                 </ol>
               </div>
             )}
-
           </div>
         </div>
       </div>

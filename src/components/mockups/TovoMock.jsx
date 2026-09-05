@@ -51,7 +51,7 @@ export default function TovoMock() {
             <motion.span
               initial={{ scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, amount: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               className="h-1 w-1/3 origin-left rounded-full"
               style={{ background: '#f4552a' }}
@@ -64,28 +64,22 @@ export default function TovoMock() {
         {/* Greeting + field */}
         <div className="flex-1 flex flex-col justify-center">
           <motion.h4
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
             className="text-[36px] font-semibold leading-tight tracking-tight text-white md:text-[42px]"
           >
             Hallo! <span aria-hidden="true">👋</span>
           </motion.h4>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.35 }}
-            className="mt-2 text-[15px] text-white/60"
-          >
+          <p className="mt-2 text-[15px] text-white/60">
             What should we call you?
-          </motion.p>
+          </p>
 
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
             className="mt-8 flex h-14 items-center rounded-2xl border border-white/15 bg-white/[0.04] px-5 md:h-16"
           >
@@ -100,9 +94,9 @@ export default function TovoMock() {
 
         {/* Continue button */}
         <motion.div
-          initial={{ opacity: 0, y: 6 }}
+          initial={{ y: 6 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.4, delay: 0.6 }}
           className="flex h-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] md:h-16"
         >

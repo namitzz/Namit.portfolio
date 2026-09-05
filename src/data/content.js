@@ -224,7 +224,7 @@ export const projects = [
   },
   {
     id: 'tovo',
-    themeKey: 'course',
+    themeKey: 'tovo',
     index: '06',
     domain: 'React · Supabase',
     year: '2026',
@@ -295,27 +295,57 @@ export const skills = [
   },
 ]
 
+// One chronological timeline covering both study and work. `kind` is
+// 'education' | 'work' so the component can mark them differently
+// without needing two separate sections.
 export const timeline = [
   {
+    kind: 'education',
+    year: '2026 – present',
+    title: 'MSc AI for Business Transformation',
+    org: 'Aston University · Birmingham',
+    monogram: 'A',
+    status: 'In progress',
+    accent: '#c8102e',
+    href: 'https://www.aston.ac.uk/study/courses/ai-business-transformation-msc',
+    body:
+      'How organisations actually adopt AI: strategy, deployment, governance, and measurable impact. A continuation of the applied AI direction from my undergraduate work.',
+  },
+  {
+    kind: 'work',
     year: '2025',
     title: 'Contributor, ClassFutures Generative AI guidance',
     org: 'ClassFutures',
     body:
-      'Contributor to ClassFutures guidance on responsible Generative AI use in studies, focusing on academic integrity, critical thinking, and ethical adoption.',
+      'Contributor to published guidance on responsible Generative AI use in studies, focusing on academic integrity, critical thinking, and ethical adoption.',
   },
   {
+    kind: 'work',
     year: '2025',
     title: 'AI in Education, applied work',
     org: 'Independent / micro-internship',
     body:
-      'Worked on AI education strategy and digital transformation framing: how universities should adopt LLM tooling without eroding learning outcomes. Fed directly into UniWise.',
+      'AI education strategy and digital transformation framing: how universities should adopt LLM tooling without eroding learning outcomes. Fed directly into UniWise.',
   },
   {
+    kind: 'education',
+    year: '2023 – 2026',
+    title: 'BSc (Hons) Computer Science',
+    org: 'University of Leicester',
+    monogram: 'L',
+    status: 'First Class Honours',
+    accent: '#d5203d',
+    href: 'https://le.ac.uk/',
+    body:
+      'Coursework across AI, software engineering, databases, HCI, and applied data science. Dissertation: UniWise, a source-grounded RAG assistant for higher education.',
+  },
+  {
+    kind: 'work',
     year: '2024 – present',
     title: 'Independent and group projects',
     org: 'Self-directed and university',
     body:
-      'Built Posture AI, Cloud Seven Realty, and the Crime Prediction Dashboard as deliberate practice across computer vision, frontend and brand work, and applied data science. Also contributed to the Course Companion Web App as a group coursework project for CO2302 at Leicester.',
+      'Built Posture AI, Cloud Seven Realty, and the Crime Prediction Dashboard as deliberate practice across computer vision, frontend work, and applied data science. Also contributed to the Course Companion Web App as a group coursework project for CO2302.',
   },
 ]
 

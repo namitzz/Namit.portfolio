@@ -96,9 +96,9 @@ export default function CrimeMock() {
               ].map(([m, r, e, a], i) => (
                 <motion.tr
                   key={m}
-                  initial={{ opacity: 0, x: -6 }}
+                  initial={{ x: -6 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0 }}
                   transition={{ delay: i * 0.06 }}
                   className="border-t border-white/5"
                 >
@@ -128,9 +128,9 @@ export default function CrimeMock() {
         ].map((c, i) => (
           <motion.div
             key={c.c}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ delay: i * 0.05 }}
             className="rounded-lg border border-white/10 bg-white/[0.02] p-2.5"
           >
@@ -232,13 +232,9 @@ function LondonMap() {
         ))}
 
         {areas.map((w, i) => (
-          <motion.polygon
+          <polygon
             key={i}
             points={w.p}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.02, duration: 0.5 }}
             fill={clusters[w.c]}
             fillOpacity="0.28"
             stroke={clusters[w.c]}
@@ -257,7 +253,7 @@ function LondonMap() {
           strokeLinecap="round"
           initial={{ pathLength: 0 }}
           whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0 }}
           transition={{ duration: 1.4, ease: 'easeOut' }}
         />
 
@@ -270,7 +266,7 @@ function LondonMap() {
             fill="#FF4FA2"
             initial={{ scale: 0 }}
             whileInView={{ scale: 1 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ delay: 0.6 }}
           />
           <motion.circle
@@ -323,7 +319,7 @@ function LineChart() {
         strokeWidth="1.8"
         initial={{ pathLength: 0 }}
         whileInView={{ pathLength: 1 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0 }}
         transition={{ duration: 1.2, ease: 'easeOut' }}
       />
       {pts.map((v, i) => (
@@ -348,7 +344,7 @@ function BarChart() {
           <motion.div
             initial={{ height: 0 }}
             whileInView={{ height: `${b.v}%` }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.8, delay: i * 0.06 }}
             className="w-full rounded-sm"
             style={{

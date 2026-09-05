@@ -115,9 +115,9 @@ export default function CloudSevenMock() {
             ].map((p, i) => (
               <motion.div
                 key={p.t}
-                initial={{ opacity: 0, y: 14 }}
+                initial={{ y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0 }}
                 transition={{ duration: 0.55, delay: i * 0.08 }}
                 className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm"
               >
