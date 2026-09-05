@@ -41,13 +41,28 @@ export default function Nav() {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="fixed top-0 left-0 right-0 z-[60]"
       >
-        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between px-6 py-6 md:px-10 md:py-8">
+        {/* Padding matches the hero's own band (px-6 / md:px-16) so the
+            wordmark and the hamburger land on the same left and right
+            edges as the metadata, headline and rule below them. */}
+        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between px-6 py-6 md:px-16 md:py-8">
           <a
             href="#top"
-            className="serif text-[22px] leading-none tracking-tight md:text-[24px]"
+            className="serif group relative text-[22px] leading-none tracking-tight md:text-[24px]"
             style={{ color: 'var(--ink)' }}
           >
-            namit<span style={{ color: 'var(--accent)' }}>.</span>
+            namit
+            <span
+              className="inline-block transition-transform duration-300 group-hover:translate-x-[2px]"
+              style={{ color: 'var(--accent)' }}
+            >
+              .
+            </span>
+            {/* Rule draws in from the left on hover. */}
+            <span
+              aria-hidden="true"
+              className="absolute -bottom-1 left-0 h-px w-0 transition-[width] duration-300 ease-out group-hover:w-full"
+              style={{ background: 'var(--accent)' }}
+            />
           </a>
 
           <button
@@ -56,27 +71,38 @@ export default function Nav() {
             aria-label={open ? 'Close menu' : 'Open menu'}
             aria-expanded={open}
             className="group relative z-[70] flex h-11 w-11 items-center justify-center"
-            style={{ color: 'var(--ink)' }}
+            // The 44px hit area is wider than the 24px bars; the offset
+            // sets the bars' right edge on the grid, not the button's.
+            style={{ color: 'var(--ink)', marginRight: '-10px' }}
           >
+            {/* Closed, the lower bar is short and evens up on hover (the
+                `!` is needed to beat the inline width); open, they cross. */}
             <span
-              className="absolute h-[2px] w-6 transition-transform duration-300"
+              className="absolute h-[1.5px] transition-all duration-300"
               style={{
                 background: 'currentColor',
-                transform: open ? 'rotate(45deg) translateY(0)' : 'translateY(-5px)',
+                width: '24px',
+                transform: open
+                  ? 'rotate(45deg) translateY(0)'
+                  : 'translateY(-4px)',
               }}
             />
             <span
-              className="absolute h-[2px] w-6 transition-opacity duration-300"
+              className="absolute h-[1.5px] transition-all duration-300"
               style={{
                 background: 'currentColor',
                 opacity: open ? 0 : 1,
+                width: '24px',
               }}
             />
             <span
-              className="absolute h-[2px] w-6 transition-transform duration-300"
+              className="absolute h-[1.5px] transition-all duration-300 group-hover:!w-6"
               style={{
                 background: 'currentColor',
-                transform: open ? 'rotate(-45deg) translateY(0)' : 'translateY(5px)',
+                width: open ? '24px' : '15px',
+                transform: open
+                  ? 'rotate(-45deg) translateY(0)'
+                  : 'translateY(4px)',
               }}
             />
           </button>
