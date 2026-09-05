@@ -1,4 +1,11 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { useEffect } from 'react'
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from 'framer-motion'
 import HeroField from './HeroField'
 
 /**
@@ -28,6 +35,7 @@ const BAND = 'mx-auto w-full max-w-[1600px]'
 
 export default function Hero() {
   const reduce = useReducedMotion()
+  const { x: nameX, y: nameY } = usePointerDrift(reduce)
 
   return (
     <section
@@ -59,6 +67,31 @@ export default function Hero() {
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E\")",
         }}
       />
+
+      {/* Register marks at the four corners of the content band, inset to
+          exactly the section's own padding. Printer's crop marks: they
+          state the grid everything else is set on, which is the whole
+          point of the alignment work, and at this weight you only find
+          them if you go looking. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-6 bottom-8 top-28 md:inset-x-16 md:bottom-11 md:top-32"
+      >
+        <div className={`${BAND} relative h-full`}>
+          {[
+            ['top-0 left-0', 'border-l border-t'],
+            ['top-0 right-0', 'border-r border-t'],
+            ['bottom-0 left-0', 'border-l border-b'],
+            ['bottom-0 right-0', 'border-r border-b'],
+          ].map(([pos, edges]) => (
+            <span
+              key={pos}
+              className={`absolute h-2.5 w-2.5 ${pos} ${edges}`}
+              style={{ borderColor: 'rgba(244,244,245,0.17)' }}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* ---------- Masthead ---------- */}
       <motion.div
@@ -95,34 +128,36 @@ export default function Hero() {
 
       {/* ---------- Name ---------- */}
       <div className={`${BAND} relative z-10 flex flex-1 items-center py-10`}>
-        <h1
-          className="serif relative w-full whitespace-nowrap leading-[1.02]"
-          style={{
-            color: 'var(--ink)',
-            // Tuned so the name holds ~63% of the measure at every desktop
-            // width, which keeps it dominant while leaving the right of the
-            // composition to the field. Measured, not guessed.
-            fontSize: 'clamp(1.72rem, 9.2vw, 9rem)',
-            letterSpacing: '-0.033em',
-            // Instrument Serif sets the cap's ink 1px right of the text
-            // origin at 104px. This pulls the N's stem back onto the grid
-            // line; anything larger overshoots into the margin.
-            marginLeft: '-0.0105em',
-          }}
-        >
-          <NameLine delay={0.15} reduce={reduce}>
-            <>
-              Namit Singh Sarna
-              <span
-                className="ml-[0.015em] inline-block align-baseline"
-                style={{ color: 'var(--accent)' }}
-              >
-                .
-              </span>
-              <Caret reduce={reduce} />
-            </>
-          </NameLine>
-        </h1>
+        <motion.div className="w-full" style={{ x: nameX, y: nameY }}>
+          <h1
+            className="serif relative w-full whitespace-nowrap leading-[1.02]"
+            style={{
+              color: 'var(--ink)',
+              // Tuned so the name holds ~63% of the measure at every desktop
+              // width, which keeps it dominant while leaving the right of the
+              // composition to the field. Measured, not guessed.
+              fontSize: 'clamp(1.72rem, 9.2vw, 9rem)',
+              letterSpacing: '-0.033em',
+              // Instrument Serif sets the cap's ink 1px right of the text
+              // origin at 104px. This pulls the N's stem back onto the grid
+              // line; anything larger overshoots into the margin.
+              marginLeft: '-0.0105em',
+            }}
+          >
+            <NameLine delay={0.15} reduce={reduce}>
+              <>
+                Namit Singh Sarna
+                <span
+                  className="ml-[0.015em] inline-block align-baseline"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  .
+                </span>
+                <Caret reduce={reduce} />
+              </>
+            </NameLine>
+          </h1>
+        </motion.div>
       </div>
 
       {/* ---------- Rule + caption ---------- */}
@@ -134,15 +169,36 @@ export default function Hero() {
       >
         <GridRule />
 
-        <div className="flex items-end justify-between gap-8 pt-6">
-          <p
-            className="serif max-w-[34ch] text-[clamp(1rem,1.42vw,1.35rem)] leading-[1.3]"
-            style={{ color: 'rgba(244,244,245,0.80)', letterSpacing: '-0.011em' }}
-          >
-            Software engineer at the edge of AI and the web.
-          </p>
+        {/* Mobile gives the caption the full measure and drops the cue to
+            its own row. Side by side, the standfirst wrapped to three lines
+            of tracked-out mono, which reads as a wall rather than a note. */}
+        <div className="flex flex-col gap-7 pt-6 md:flex-row md:items-end md:justify-between md:gap-8">
+          <div className="min-w-0">
+            <p
+              className="serif max-w-[34ch] text-[clamp(1rem,1.42vw,1.35rem)] leading-[1.3]"
+              style={{
+                color: 'rgba(244,244,245,0.80)',
+                letterSpacing: '-0.011em',
+              }}
+            >
+              Applied AI, and how organisations actually adopt it.
+            </p>
 
-          <ScrollCue reduce={reduce} />
+            {/* The standfirst: what the caption is currently grounded in.
+                Set in mono against the serif above it so it reads as a
+                note on the line, not a second headline. */}
+            <p
+              className="mt-3.5 font-mono text-[10.5px] uppercase leading-[1.75] tracking-[0.14em] md:tracking-[0.18em]"
+              style={{ color: 'rgba(244,244,245,0.52)' }}
+            >
+              <span style={{ color: 'var(--accent)' }}>Currently</span>
+              {'  ·  MSc AI for Business Transformation, Aston University'}
+            </p>
+          </div>
+
+          <div className="self-end md:self-auto">
+            <ScrollCue reduce={reduce} />
+          </div>
         </div>
       </motion.div>
     </section>
@@ -150,6 +206,42 @@ export default function Hero() {
 }
 
 /* ------------------------------------------------------------------ */
+
+/**
+ * A few pixels of counter-drift on the headline, sprung so it trails the
+ * pointer rather than tracking it. The range is deliberately smaller than
+ * the eye reads as movement: it registers as the page having weight, not
+ * as an effect.
+ *
+ * Driven through motion values, so pointer movement never re-renders the
+ * component. Off entirely under reduced motion and on touch, where there
+ * is no pointer to answer to.
+ */
+function usePointerDrift(reduce) {
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+
+  useEffect(() => {
+    if (reduce) return undefined
+    if (!window.matchMedia('(pointer: fine)').matches) return undefined
+
+    const onMove = (e) => {
+      mx.set((e.clientX / window.innerWidth) * 2 - 1)
+      my.set((e.clientY / window.innerHeight) * 2 - 1)
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [reduce, mx, my])
+
+  const spring = { stiffness: 40, damping: 24, mass: 0.7 }
+  const sx = useSpring(mx, spring)
+  const sy = useSpring(my, spring)
+
+  return {
+    x: useTransform(sx, [-1, 1], [7, -7]),
+    y: useTransform(sy, [-1, 1], [4, -4]),
+  }
+}
 
 function MetaBlock({ children, align = 'left', className = '' }) {
   return (
