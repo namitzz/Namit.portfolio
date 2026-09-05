@@ -295,57 +295,79 @@ export const skills = [
   },
 ]
 
-// One chronological timeline covering both study and work. `kind` is
-// 'education' | 'work' so the component can mark them differently
-// without needing two separate sections.
+// One chronological route: study and work interleaved, earliest first, so
+// the timeline reads left to right as a journey. `logo` is an optional path
+// under public/logos/; when it is null the component draws a typographic
+// mark in the entry's accent instead.
 export const timeline = [
   {
-    kind: 'education',
-    year: '2026 – present',
-    title: 'MSc AI for Business Transformation',
-    org: 'Aston University · Birmingham',
-    monogram: 'A',
-    status: 'In progress',
-    accent: '#c8102e',
-    href: 'https://www.aston.ac.uk/study/courses/ai-business-transformation-msc',
-    body:
-      'How organisations actually adopt AI: strategy, deployment, governance, and measurable impact. A continuation of the applied AI direction from my undergraduate work.',
-  },
-  {
-    kind: 'work',
-    year: '2025',
-    title: 'Contributor, ClassFutures Generative AI guidance',
-    org: 'ClassFutures',
-    body:
-      'Contributor to published guidance on responsible Generative AI use in studies, focusing on academic integrity, critical thinking, and ethical adoption.',
-  },
-  {
-    kind: 'work',
-    year: '2025',
-    title: 'AI in Education, applied work',
-    org: 'Independent / micro-internship',
-    body:
-      'AI education strategy and digital transformation framing: how universities should adopt LLM tooling without eroding learning outcomes. Fed directly into UniWise.',
-  },
-  {
+    id: 'leicester',
     kind: 'education',
     year: '2023 – 2026',
+    short: 'Leicester',
     title: 'BSc (Hons) Computer Science',
     org: 'University of Leicester',
-    monogram: 'L',
+    monogram: 'UL',
     status: 'First Class Honours',
     accent: '#d5203d',
+    tint: '#E8455F',
+    logo: null,
     href: 'https://le.ac.uk/',
     body:
       'Coursework across AI, software engineering, databases, HCI, and applied data science. Dissertation: UniWise, a source-grounded RAG assistant for higher education.',
   },
   {
+    id: 'projects',
     kind: 'work',
     year: '2024 – present',
+    short: 'Projects',
     title: 'Independent and group projects',
     org: 'Self-directed and university',
+    accent: '#F5B447',
+    logo: null,
     body:
       'Built Posture AI, Cloud Seven Realty, and the Crime Prediction Dashboard as deliberate practice across computer vision, frontend work, and applied data science. Also contributed to the Course Companion Web App as a group coursework project for CO2302.',
+  },
+  {
+    id: 'ai-education',
+    kind: 'work',
+    year: '2025',
+    short: 'AI in Education',
+    title: 'AI in Education, applied work',
+    org: 'Independent / micro-internship',
+    accent: '#34F5C5',
+    logo: null,
+    body:
+      'AI education strategy and digital transformation framing: how universities should adopt LLM tooling without eroding learning outcomes. Fed directly into UniWise.',
+  },
+  {
+    id: 'classfutures',
+    kind: 'work',
+    year: '2025',
+    short: 'ClassFutures',
+    title: 'Contributor, ClassFutures Generative AI guidance',
+    org: 'ClassFutures',
+    accent: '#F4552A',
+    logo: null,
+    href: 'https://classfutures.co.uk/resources/ai/generative-ai-studies-guide',
+    body:
+      'Contributor to published guidance on responsible Generative AI use in studies, focusing on academic integrity, critical thinking, and ethical adoption.',
+  },
+  {
+    id: 'aston',
+    kind: 'education',
+    year: '2026 – present',
+    short: 'Aston',
+    title: 'MSc AI for Business Transformation',
+    org: 'Aston University · Birmingham',
+    monogram: 'A',
+    status: 'In progress',
+    accent: '#c8102e',
+    tint: '#EE3B55',
+    logo: null,
+    href: 'https://www.aston.ac.uk/study/courses/ai-business-transformation-msc',
+    body:
+      'How organisations actually adopt AI: strategy, deployment, governance, and measurable impact. A continuation of the applied AI direction from my undergraduate work.',
   },
 ]
 
