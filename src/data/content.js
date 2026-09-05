@@ -10,19 +10,26 @@ export const profile = {
     linkedin: 'https://www.linkedin.com/in/namit-singh-sarna-55a021323',
     cv: '/Namit_Singh_Sarna_CV.pdf',
   },
-  positioning:
-    'Practical AI and software engineering. RAG, backend, ML, and full-stack.',
+  // Rendered as metadata in About's left column, so it is written as
+  // terms rather than a sentence. The separator is what About splits on.
+  positioning: 'AI · Software · Transformation',
+
+  // NOT CURRENTLY RENDERED. About used to list these under a Highlights
+  // heading; that list is gone and the heading is now only the marker
+  // handing over to the next section. Kept because the claims are still
+  // true and worth a home, not because anything reads them today.
   highlights: [
-    'First Class Honours (conferred, July 2026).',
     'Built UniWise: a source-grounded RAG study assistant with reranking, citations, and an evaluation harness.',
     'Shipped Cloud Seven Realty, a live production frontend for a paying client.',
     'Modelled ~1M+ Met Police records for LSOA-level regression and area profiling.',
     'Contributor to ClassFutures guidance on responsible Generative AI use.',
   ],
+
+  // About carries no education: the timeline is where study belongs, and
+  // saying it twice made the section longer without making it stronger.
   about: [
-    "I'm Namit, a Computer Science graduate from the University of Leicester (First Class Honours, conferred July 2026), currently reading MSc AI for Business Transformation at Aston University.",
-    'I build systems that have to survive real use, not just a demo. Ones that ground themselves in evidence, explain themselves, and can cite their sources.',
-    'The projects below span RAG, computer vision, data science, and full-stack. Different domains, same discipline: smallest system that solves the problem, then make it trustworthy.',
+    'I build practical AI and software systems that solve real problems.',
+    'Interested in the space where technology, data and business meet.',
   ],
 }
 
