@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { timeline } from '../data/content'
 import { markFor } from './TimelineMarks'
@@ -60,8 +60,26 @@ export default function Experience() {
     return () => ro.disconnect()
   }, [height])
 
-  const points = box.w ? buildStops(timeline.length, box.w, height) : []
-  const d = points.length ? routePath(points) : ''
+  // Memoised on width alone. All of this used to be rebuilt on every
+  // render, and every hover is a render, so moving the pointer between
+  // stops was re-running the spline and re-solving all eleven card
+  // placements: about eighteen thousand operations per move.
+  const points = useMemo(
+    () => (box.w ? buildStops(timeline.length, box.w, height) : []),
+    [box.w, height],
+  )
+  const d = useMemo(() => (points.length ? routePath(points) : ''), [points])
+  const inkStops = useMemo(() => gradientStops(points, box.w), [points, box.w])
+
+  // Only the stop being pointed at needs a placement, so this solves one
+  // rather than eleven.
+  const card = useMemo(() => {
+    if (active === null || !points[active]) return null
+    return {
+      entry: timeline[active],
+      ...placeCard(points[active], active, points, box.w, height),
+    }
+  }, [active, points, box.w, height])
 
   // How far along the route each stop sits, so the glow can be drawn up
   // to exactly that point. Read off the rendered path: nothing else knows
@@ -148,7 +166,7 @@ export default function Experience() {
                   x2={box.w}
                   y2="0"
                 >
-                  {gradientStops(points, box.w)}
+                  {inkStops}
                 </linearGradient>
               </defs>
 
@@ -172,7 +190,7 @@ export default function Experience() {
                     opacity: travelled > 0 ? 0.9 : 0,
                     transition: reduce
                       ? 'none'
-                      : 'stroke-dashoffset 620ms cubic-bezier(0.22,1,0.36,1), opacity 260ms ease',
+                      : 'stroke-dashoffset 460ms cubic-bezier(0.22,1,0.36,1), opacity 220ms ease',
                   }}
                 />
               )}
@@ -199,17 +217,40 @@ export default function Experience() {
                 key={entry.id}
                 entry={entry}
                 point={pt}
-                index={i}
-                points={points}
                 active={active === i}
                 dimmed={active !== null && active !== i}
                 onEnter={() => setActive(i)}
-                containerW={box.w}
-                containerH={height}
-                reduce={reduce}
               />
             )
           })}
+
+          {/* One card for the whole route, moved and refilled rather than
+              unmounted and remounted per stop. Remounting made it blink
+              between neighbours; keeping it lets the border colour and the
+              position ease across instead. */}
+          {card && (
+            <div
+              id="route-card"
+              className="absolute z-20 border p-5"
+              style={{
+                left: card.left,
+                top: card.top,
+                width: CARD_W,
+                maxHeight: height - card.top - 8,
+                overflow: 'hidden',
+                borderColor: textColor(card.entry),
+                background: '#0A0908',
+                boxShadow: '0 30px 70px -40px rgba(0,0,0,0.95)',
+                // Position is not transitioned. Stops sit hundreds of
+                // pixels apart, so easing between them sent the card
+                // flying across the section on every move; it lands where
+                // it belongs instead. Only the colour crosses over.
+                transition: reduce ? 'none' : 'border-color 260ms ease',
+              }}
+            >
+              <Detail entry={card.entry} compact />
+            </div>
+          )}
         </div>
 
         {/* ---------- Touch: vertical spine ---------- */}
@@ -462,69 +503,30 @@ function placeCard(point, index, points, cw, ch) {
   }
 }
 
-function Stop({
-  entry,
-  point,
-  index,
-  points,
-  active,
-  dimmed,
-  onEnter,
-  containerW,
-  containerH,
-  reduce,
-}) {
-  // Which way a card opens comes from where the stop actually sits on the
-  // curve, not from a row index: on a spline there are no rows, and a stop
-  // can land anywhere including partway round the turn.
-  const pos = placeCard(point, index, points, containerW, containerH)
-
+function Stop({ entry, point, active, dimmed, onEnter }) {
   return (
-    <>
-      <button
-        type="button"
-        onMouseEnter={onEnter}
-        onFocus={onEnter}
-        onBlur={() => {}}
-        aria-describedby={active ? `stop-${entry.id}` : undefined}
-        className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity duration-300"
-        style={{ left: point.x, top: point.y, opacity: dimmed ? 0.45 : 1 }}
+    <button
+      type="button"
+      onMouseEnter={onEnter}
+      onFocus={onEnter}
+      aria-describedby={active ? 'route-card' : undefined}
+      className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity duration-300"
+      style={{ left: point.x, top: point.y, opacity: dimmed ? 0.45 : 1 }}
+    >
+      <StopMark entry={entry} isActive={active} />
+      <span
+        className="mono-label mt-3 whitespace-nowrap transition-colors duration-300"
+        style={{ color: active ? textColor(entry) : 'var(--muted)' }}
       >
-        <StopMark entry={entry} isActive={active} />
-        <span
-          className="mono-label mt-3 whitespace-nowrap transition-colors duration-300"
-          style={{ color: active ? textColor(entry) : 'var(--muted)' }}
-        >
-          {entry.year}
-        </span>
-        <span
-          className="mt-1 whitespace-nowrap text-[12.5px] leading-snug transition-colors duration-300"
-          style={{ color: active ? 'var(--ink)' : 'rgba(244,244,245,0.55)' }}
-        >
-          {entry.short}
-        </span>
-      </button>
-
-      {active && (
-        <div
-          id={`stop-${entry.id}`}
-          className="absolute z-20 border p-5"
-          style={{
-            left: pos.left,
-            top: pos.top,
-            width: CARD_W,
-            maxHeight: containerH - pos.top - 8,
-            overflow: 'hidden',
-            borderColor: textColor(entry),
-            background: '#0A0908',
-            boxShadow: '0 30px 70px -40px rgba(0,0,0,0.95)',
-            transition: reduce ? 'none' : 'opacity 200ms ease',
-          }}
-        >
-          <Detail entry={entry} compact />
-        </div>
-      )}
-    </>
+        {entry.year}
+      </span>
+      <span
+        className="mt-1 whitespace-nowrap text-[12.5px] leading-snug transition-colors duration-300"
+        style={{ color: active ? 'var(--ink)' : 'rgba(244,244,245,0.55)' }}
+      >
+        {entry.short}
+      </span>
+    </button>
   )
 }
 

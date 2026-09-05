@@ -33,7 +33,7 @@ export default function Highlights() {
                 className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
                 style={{ color: 'var(--ink)' }}
               >
-                What backs it up
+                The short list
                 <span style={{ color: 'var(--accent)' }}>.</span>
               </h2>
             </div>
