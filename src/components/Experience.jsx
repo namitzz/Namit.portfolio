@@ -34,7 +34,9 @@ const CARD_W = 340
 // neighbours sharing its pass.
 const CARD_OFFSET = 120
 const EDGE = 90
-const WAVE = 22
+// How far a stop may sit off its band, and how many ride the upper one.
+const JITTER = 64
+const STOPS_TOP = 6
 
 export default function Experience() {
   const reduce = useReducedMotion()
@@ -43,9 +45,6 @@ export default function Experience() {
   const [active, setActive] = useState(null)
 
   const height = PAD_TOP + ROW_GAP + PAD_TOP
-
-  const pathRef = useRef(null)
-  const [points, setPoints] = useState([])
 
   useLayoutEffect(() => {
     const el = wrapRef.current
@@ -57,14 +56,7 @@ export default function Experience() {
     return () => ro.disconnect()
   }, [height])
 
-  // Placed after the path renders, since the positions come off the
-  // rendered geometry. useLayoutEffect, so it happens before paint and
-  // the stops never appear anywhere but on the line.
-  useLayoutEffect(() => {
-    if (!box.w) return
-    setPoints(stopsAlongPath(pathRef.current, timeline.length))
-  }, [box.w, height])
-
+  const points = box.w ? buildStops(timeline.length, box.w) : []
 
   return (
     <section
@@ -109,8 +101,7 @@ export default function Experience() {
               className="absolute left-0 top-0"
             >
               <path
-                ref={pathRef}
-                d={routePath(box.w)}
+                d={routePath(points, box.w)}
                 fill="none"
                 stroke="rgba(244,244,245,0.28)"
                 strokeWidth="2"
@@ -172,28 +163,84 @@ export default function Experience() {
 /* ------------------------------------------------------------------ */
 
 /**
- * The waypoints the route is drawn through: an upper pass left to right,
- * a turn that swings out past the last stop, and a lower pass back. Every
- * pass carries a slow undulation, so no part of the line is straight.
+ * Where the stops sit.
+ *
+ * Two loose bands, so a card always has a half of the section to open
+ * into, but each stop is nudged off its band by a fixed amount of jitter.
+ * A perfectly level row of stops is what made the old line read as a
+ * diagram; a route's stops sit where the route found them.
+ *
+ * Seeded, so the wander is the same shape on every load. Regenerating it
+ * per visit would make it decoration.
  */
-function buildWaypoints(w) {
+function buildStops(count, w) {
+  const rand = seededRandom(0x2545f491)
   const left = EDGE
   const right = w - EDGE
   const topY = PAD_TOP
   const botY = PAD_TOP + ROW_GAP
-  const N = 6
+  const topN = Math.min(STOPS_TOP, count)
+  const botN = count - topN
+  const out = []
+
+  for (let i = 0; i < topN; i++) {
+    const t = topN > 1 ? i / (topN - 1) : 0
+    out.push({ x: left + (right - left) * t, y: topY + (rand() - 0.5) * JITTER })
+  }
+  for (let i = 0; i < botN; i++) {
+    const t = botN > 1 ? i / (botN - 1) : 0
+    // Inset from the right so the first stop of the lower band does not
+    // sit directly under the last of the upper one.
+    const span = right - left - 40
+    out.push({ x: right - 40 - span * t, y: botY + (rand() - 0.5) * JITTER })
+  }
+  return out
+}
+
+/**
+ * The route through the stops: each stop is a waypoint, with a wandering
+ * point inserted between every pair. The line leaves a stop, drifts off
+ * the straight line to the next, and comes back to meet it.
+ *
+ * Because the stops are waypoints, the curve passes exactly through them.
+ * The previous version placed stops onto a measured path with
+ * getPointAtLength, which needed a second layout pass and put stops
+ * wherever the arc happened to land rather than where a card could open.
+ */
+function buildWaypoints(stops, w) {
+  if (!stops.length) return []
+  const rand = seededRandom(0x9e3779b9)
   const wp = []
 
-  for (let k = 0; k <= N; k++) {
-    const t = k / N
-    wp.push({ x: left + (right - left) * t, y: topY + Math.sin(t * Math.PI * 2) * WAVE })
+  // A short tail before the first stop, as a drawn line would have.
+  wp.push({ x: stops[0].x - 46, y: stops[0].y + 26 })
+
+  for (let i = 0; i < stops.length; i++) {
+    wp.push(stops[i])
+    const next = stops[i + 1]
+    if (!next) break
+
+    const a = stops[i]
+    const dx = next.x - a.x
+    const dy = next.y - a.y
+    const len = Math.hypot(dx, dy) || 1
+    // Perpendicular to the direct line between the two stops.
+    let px = -dy / len
+    let py = dx / len
+    // On the descent the two stops sit above each other, so push the
+    // wander outward rather than back across the section.
+    const descending = Math.abs(dy) > Math.abs(dx)
+    const sign = descending ? (a.x > w / 2 ? 1 : -1) : i % 2 === 0 ? -1 : 1
+    const amp = (46 + rand() * 34) * sign * (descending ? 1.5 : 1)
+
+    wp.push({
+      x: (a.x + next.x) / 2 + px * amp,
+      y: (a.y + next.y) / 2 + py * amp,
+    })
   }
-  wp.push({ x: right + 58, y: topY + ROW_GAP * 0.28 })
-  wp.push({ x: right + 58, y: topY + ROW_GAP * 0.72 })
-  for (let k = 0; k <= N; k++) {
-    const t = k / N
-    wp.push({ x: right - (right - left) * t, y: botY - Math.sin(t * Math.PI * 2) * WAVE })
-  }
+
+  const last = stops[stops.length - 1]
+  wp.push({ x: last.x - 44, y: last.y + 30 })
 
   return wp
 }
@@ -201,10 +248,10 @@ function buildWaypoints(w) {
 /**
  * A Catmull-Rom spline through the waypoints, written out as cubic
  * beziers. Straight segments joined by corner radii read as a diagram;
- * one continuous curve reads as a route drawn by hand.
+ * one continuous curve reads as a route someone drew.
  */
-function routePath(w) {
-  const p = buildWaypoints(w)
+function routePath(stops, w) {
+  const p = buildWaypoints(stops, w)
   if (p.length < 2) return ''
   let d = `M ${p[0].x.toFixed(2)} ${p[0].y.toFixed(2)}`
 
@@ -223,21 +270,12 @@ function routePath(w) {
   return d
 }
 
-/**
- * Stops sit at equal distances *along* the curve rather than on a grid,
- * so they follow the line's rise and fall and stay evenly spaced around
- * the turn. Read straight off the rendered path: nothing else knows where
- * a spline actually goes.
- */
-function stopsAlongPath(pathEl, count) {
-  if (!pathEl || count < 2) return []
-  const total = pathEl.getTotalLength()
-  const out = []
-  for (let i = 0; i < count; i++) {
-    const at = pathEl.getPointAtLength((i / (count - 1)) * total)
-    out.push({ x: at.x, y: at.y })
+function seededRandom(seed) {
+  let s = seed >>> 0
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0
+    return s / 4294967296
   }
-  return out
 }
 
 /**
