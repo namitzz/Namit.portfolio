@@ -23,20 +23,24 @@ import Reveal from './Reveal'
  * spine with every detail already open, because there is no hover.
  */
 
-// The gap between the two passes is set by the cards, not the line. A card
-// runs to about 290px tall and has to open fully inside the section:
-// measured at the first attempt, a 210px gap pushed upper-pass cards past
-// the section's bottom edge and lower-pass cards up through the heading.
-const ROW_GAP = 470
-const PAD_TOP = 100
+// The section is sized to the route, not the other way round. Two level
+// passes with a void between them wasted most of the height; the stops
+// now use it, so the whole thing can be shorter.
+const TRACK_H = 600
 const CARD_W = 340
-// Clears a stop's own label band, so a card never has to dodge the
-// neighbours sharing its pass.
-const CARD_OFFSET = 120
-const EDGE = 90
-// How far a stop may sit off its band, and how many ride the upper one.
-const JITTER = 64
-const STOPS_TOP = 6
+// Must clear a stop's own box (90 below the centre, 80 either side) or
+// every candidate overlaps the stop it belongs to, gets rejected, and the
+// placement falls through to an untested fallback.
+const CARD_GAP = 104
+const CARD_SIDE = 96
+// Placement reserves this much height. It is an upper bound, not a cap:
+// the card is then allowed the rest of the section below it, so a longer
+// entry grows instead of being cut off.
+const CARD_H = 280
+const EDGE = 96
+// Consecutive stops must differ in height by at least this much, which is
+// what stops their labels colliding when they are close in x.
+const MIN_DY = 118
 
 export default function Experience() {
   const reduce = useReducedMotion()
@@ -44,7 +48,7 @@ export default function Experience() {
   const [box, setBox] = useState({ w: 0, h: 0 })
   const [active, setActive] = useState(null)
 
-  const height = PAD_TOP + ROW_GAP + PAD_TOP
+  const height = TRACK_H
 
   useLayoutEffect(() => {
     const el = wrapRef.current
@@ -56,7 +60,7 @@ export default function Experience() {
     return () => ro.disconnect()
   }, [height])
 
-  const points = box.w ? buildStops(timeline.length, box.w) : []
+  const points = box.w ? buildStops(timeline.length, box.w, height) : []
 
   return (
     <section
@@ -165,55 +169,59 @@ export default function Experience() {
 /**
  * Where the stops sit.
  *
- * Two loose bands, so a card always has a half of the section to open
- * into, but each stop is nudged off its band by a fixed amount of jitter.
- * A perfectly level row of stops is what made the old line read as a
- * diagram; a route's stops sit where the route found them.
+ * One pass left to right, but the height is a random walk rather than a
+ * band: each stop steps up or down from the last by a real distance, so
+ * the route uses the whole box instead of hugging two lines with nothing
+ * between them.
  *
- * Seeded, so the wander is the same shape on every load. Regenerating it
- * per visit would make it decoration.
+ * The step has a floor (MIN_DY) for a practical reason, not a visual one.
+ * Eleven stops across this width sit about 110px apart, and a label like
+ * "Micro-internship" is that wide on its own; separating consecutive
+ * stops vertically is what keeps their labels from running together.
+ *
+ * Seeded, so the walk is the same shape on every load. Regenerating it
+ * per visit would make it decoration rather than a route.
  */
-function buildStops(count, w) {
-  const rand = seededRandom(0x2545f491)
+function buildStops(count, w, h) {
+  const rand = seededRandom(0x6d2b79f5)
   const left = EDGE
   const right = w - EDGE
-  const topY = PAD_TOP
-  const botY = PAD_TOP + ROW_GAP
-  const topN = Math.min(STOPS_TOP, count)
-  const botN = count - topN
+  const lo = 88
+  const hi = h - 96
   const out = []
+  let y = lo + rand() * 60
+  let dir = 1
 
-  for (let i = 0; i < topN; i++) {
-    const t = topN > 1 ? i / (topN - 1) : 0
-    out.push({ x: left + (right - left) * t, y: topY + (rand() - 0.5) * JITTER })
+  for (let i = 0; i < count; i++) {
+    const t = count > 1 ? i / (count - 1) : 0
+    // A little slack on x lets the route drift back on itself the way a
+    // drawn line does, without ever losing left-to-right reading order.
+    const x = left + (right - left) * t + (rand() - 0.5) * 46
+
+    if (i > 0) {
+      const step = MIN_DY + rand() * 130
+      if (y + dir * step > hi || y + dir * step < lo) dir *= -1
+      y = clamp(y + dir * step, lo, hi)
+      if (rand() > 0.62) dir *= -1
+    }
+
+    out.push({ x: clamp(x, left - 20, right + 20), y })
   }
-  for (let i = 0; i < botN; i++) {
-    const t = botN > 1 ? i / (botN - 1) : 0
-    // Inset from the right so the first stop of the lower band does not
-    // sit directly under the last of the upper one.
-    const span = right - left - 40
-    out.push({ x: right - 40 - span * t, y: botY + (rand() - 0.5) * JITTER })
-  }
+
   return out
 }
 
 /**
  * The route through the stops: each stop is a waypoint, with a wandering
- * point inserted between every pair. The line leaves a stop, drifts off
- * the straight line to the next, and comes back to meet it.
+ * point inserted between every pair, so the line leaves a stop, drifts
+ * off the direct line to the next, and comes back to meet it.
  *
- * Because the stops are waypoints, the curve passes exactly through them.
- * The previous version placed stops onto a measured path with
- * getPointAtLength, which needed a second layout pass and put stops
- * wherever the arc happened to land rather than where a card could open.
+ * Because the stops are waypoints the curve passes exactly through them.
  */
-function buildWaypoints(stops, w) {
+function buildWaypoints(stops) {
   if (!stops.length) return []
   const rand = seededRandom(0x9e3779b9)
-  const wp = []
-
-  // A short tail before the first stop, as a drawn line would have.
-  wp.push({ x: stops[0].x - 46, y: stops[0].y + 26 })
+  const wp = [{ x: stops[0].x - 44, y: stops[0].y - 30 }]
 
   for (let i = 0; i < stops.length; i++) {
     wp.push(stops[i])
@@ -224,24 +232,16 @@ function buildWaypoints(stops, w) {
     const dx = next.x - a.x
     const dy = next.y - a.y
     const len = Math.hypot(dx, dy) || 1
-    // Perpendicular to the direct line between the two stops.
-    let px = -dy / len
-    let py = dx / len
-    // On the descent the two stops sit above each other, so push the
-    // wander outward rather than back across the section.
-    const descending = Math.abs(dy) > Math.abs(dx)
-    const sign = descending ? (a.x > w / 2 ? 1 : -1) : i % 2 === 0 ? -1 : 1
-    const amp = (46 + rand() * 34) * sign * (descending ? 1.5 : 1)
+    const amp = (34 + rand() * 40) * (i % 2 === 0 ? -1 : 1)
 
     wp.push({
-      x: (a.x + next.x) / 2 + px * amp,
-      y: (a.y + next.y) / 2 + py * amp,
+      x: (a.x + next.x) / 2 + (-dy / len) * amp,
+      y: (a.y + next.y) / 2 + (dx / len) * amp,
     })
   }
 
   const last = stops[stops.length - 1]
-  wp.push({ x: last.x - 44, y: last.y + 30 })
-
+  wp.push({ x: last.x + 42, y: last.y + 32 })
   return wp
 }
 
@@ -250,8 +250,8 @@ function buildWaypoints(stops, w) {
  * beziers. Straight segments joined by corner radii read as a diagram;
  * one continuous curve reads as a route someone drew.
  */
-function routePath(stops, w) {
-  const p = buildWaypoints(stops, w)
+function routePath(stops) {
+  const p = buildWaypoints(stops)
   if (p.length < 2) return ''
   let d = `M ${p[0].x.toFixed(2)} ${p[0].y.toFixed(2)}`
 
@@ -260,13 +260,8 @@ function routePath(stops, w) {
     const p1 = p[i]
     const p2 = p[i + 1]
     const p3 = p[i + 2] || p2
-    const c1x = p1.x + (p2.x - p0.x) / 6
-    const c1y = p1.y + (p2.y - p0.y) / 6
-    const c2x = p2.x - (p3.x - p1.x) / 6
-    const c2y = p2.y - (p3.y - p1.y) / 6
-    d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+    d += ` C ${(p1.x + (p2.x - p0.x) / 6).toFixed(2)} ${(p1.y + (p2.y - p0.y) / 6).toFixed(2)}, ${(p2.x - (p3.x - p1.x) / 6).toFixed(2)} ${(p2.y - (p3.y - p1.y) / 6).toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
   }
-
   return d
 }
 
@@ -281,83 +276,60 @@ function seededRandom(seed) {
 /**
  * Where a card goes.
  *
- * A stop always lands partway round the turn: the turn is 520px of arc
- * against 277px of stop spacing, so one has to. That stop sits at
- * mid-height against the right edge, where a card opening up or down has
- * nowhere to go without crossing its neighbours. It gets a card beside it
- * instead, which is the only direction with room.
+ * The stops are on a random walk, so there is no free half of the section
+ * to open into, and often no clear rectangle at all: a card covers a
+ * seventh of the box and eleven stops are scattered through it.
  *
- * Everywhere else the card opens away from its own pass and is capped so
- * it cannot reach the other one. Without that cap a lower-pass card
- * reached the upper pass's labels, which made all six of those stops
- * blockers spanning the full width, left no clear slot at all, and
- * dropped the card back onto the stop it was trying to avoid.
+ * Two attempts got this wrong in opposite ways. Demanding a fully clear
+ * placement found none and fell back to one overlapping several stops.
+ * Then scoring it with a heavy penalty for coverage sent cards up to
+ * 531px from the stop they belong to, chasing empty space across the
+ * section.
  *
- * The two passes' extents are read off the stops themselves rather than
- * hardcoded, so the caps follow the curve if its shape changes.
+ * So distance leads and coverage is a tiebreak worth about a hundred
+ * pixels. A card sits beside its own stop and may cover a neighbour,
+ * which is what a panel opening over a map does anyway. What it may not
+ * do is leave the section, cover its own stop, or clip its text.
  */
-function passBounds(points, containerH) {
-  const upper = points.filter((p) => p.y < containerH * 0.35)
-  const lower = points.filter((p) => p.y > containerH * 0.65)
-  return {
-    upperBottom: upper.length ? Math.max(...upper.map((p) => p.y + 88)) : 0,
-    lowerTop: lower.length
-      ? Math.min(...lower.map((p) => p.y - 34))
-      : containerH,
-  }
-}
-
-function zoneOf(point, containerH) {
-  if (point.y < containerH * 0.35) return 'below'
-  if (point.y > containerH * 0.65) return 'above'
-  return 'side'
-}
-
-/** The card's vertical box, and the CSS that puts it there. */
-function cardBox(point, points, containerH, zone) {
-  const { upperBottom, lowerTop } = passBounds(points, containerH)
-
-  if (zone === 'below') {
-    const top = point.y + CARD_OFFSET
-    const maxHeight = Math.max(140, lowerTop - 10 - top)
-    return { top, bottom: top + maxHeight, css: { top, maxHeight } }
-  }
-
-  if (zone === 'above') {
-    const bottom = point.y - CARD_OFFSET
-    const maxHeight = Math.max(140, bottom - upperBottom - 10)
-    return {
-      top: bottom - maxHeight,
-      bottom,
-      css: {
-        bottom: `calc(100% - ${bottom}px)`,
-        maxHeight,
-      },
-    }
-  }
-
-  const maxHeight = containerH - 16
-  const top = clamp(point.y - 150, 8, Math.max(8, containerH - 308))
-  return { top, bottom: top + 300, css: { top, maxHeight } }
-}
-
-function placeCard(point, index, points, containerW, zone, band) {
-  const hi = Math.max(0, containerW - CARD_W)
-  if (zone === 'side') return clamp(point.x - CARD_W - 46, 0, hi)
-
-  const centred = point.x - CARD_W / 2
+function placeCard(point, index, points, cw, ch) {
   const blockers = points
     .filter((_, j) => j !== index)
-    .map((p) => ({ x0: p.x - 82, x1: p.x + 82, y0: p.y - 34, y1: p.y + 88 }))
-    .filter((b) => band.bottom > b.y0 && band.top < b.y1)
+    .map((p) => ({ x0: p.x - 80, x1: p.x + 80, y0: p.y - 32, y1: p.y + 90 }))
+  const own = { x0: point.x - 80, x1: point.x + 80, y0: point.y - 32, y1: point.y + 90 }
+  const hits = (r, b) =>
+    r.left + CARD_W > b.x0 && r.left < b.x1 && r.top + CARD_H > b.y0 && r.top < b.y1
 
-  for (let step = 0; step <= 40; step++) {
-    for (const dir of step === 0 ? [0] : [-1, 1]) {
-      const left = clamp(centred + dir * step * 18, 0, hi)
-      if (!blockers.some((b) => left + CARD_W > b.x0 && left < b.x1)) return left
+  const cx = point.x - CARD_W / 2
+  const cy = point.y - CARD_H / 2
+  const preferDown = point.y < ch / 2
+
+  let best = null
+  const consider = (left, top) => {
+    if (left < 0 || top < 0 || left + CARD_W > cw || top + CARD_H > ch) return
+    const r = { left, top }
+    if (hits(r, own)) return
+    const covered = blockers.filter((b) => hits(r, b)).length
+    const dist = Math.hypot(left + CARD_W / 2 - point.x, top + CARD_H / 2 - point.y)
+    const score = dist + covered * 110
+    if (!best || score < best.score) best = { left, top, score }
+  }
+
+  for (let step = 0; step <= 20; step++) {
+    for (const off of step === 0 ? [0] : [-step * 24, step * 24]) {
+      const near = preferDown ? point.y + CARD_GAP : point.y - CARD_GAP - CARD_H
+      const far = preferDown ? point.y - CARD_GAP - CARD_H : point.y + CARD_GAP
+      consider(cx + off, near)
+      consider(cx + off, far)
+      consider(point.x + CARD_SIDE, cy + off)
+      consider(point.x - CARD_W - CARD_SIDE, cy + off)
     }
   }
-  return clamp(centred, 0, hi)
+
+  if (best) return best
+  return {
+    left: clamp(cx, 0, Math.max(0, cw - CARD_W)),
+    top: clamp(point.y + CARD_GAP, 0, Math.max(0, ch - CARD_H)),
+  }
 }
 
 function Stop({
@@ -375,9 +347,7 @@ function Stop({
   // Which way a card opens comes from where the stop actually sits on the
   // curve, not from a row index: on a spline there are no rows, and a stop
   // can land anywhere including partway round the turn.
-  const zone = zoneOf(point, containerH)
-  const band = cardBox(point, points, containerH, zone)
-  const left = placeCard(point, index, points, containerW, zone, band)
+  const pos = placeCard(point, index, points, containerW, containerH)
 
   return (
     <>
@@ -410,9 +380,10 @@ function Stop({
           id={`stop-${entry.id}`}
           className="absolute z-20 border p-5"
           style={{
-            left,
+            left: pos.left,
+            top: pos.top,
             width: CARD_W,
-            ...band.css,
+            maxHeight: containerH - pos.top - 8,
             overflow: 'hidden',
             borderColor: textColor(entry),
             background: '#0A0908',
