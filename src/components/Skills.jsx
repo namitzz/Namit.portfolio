@@ -8,7 +8,8 @@ import { skills } from '../data/content'
  */
 export default function Skills() {
   return (
-    <section id="skills" className="relative px-6 py-24 md:px-16 md:py-32">
+    <section id="skills" className="relative px-6 py-24 md:px-16 md:py-32"
+      style={{ background: 'rgba(244,244,245,0.026)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"

@@ -137,34 +137,24 @@ export default function ProjectSection({ project, onActivate, mockup, accentLabe
             <Block label="Impact / what I learned" body={project.impact} />
           </div>
 
-          <div className="mt-10 flex flex-wrap gap-3">
+          <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3">
             {project.cta.caseStudy && (
-              <a href={project.cta.caseStudy} className="btn-primary">
-                View Case Study →
-              </a>
+              <ProjectLink href={project.cta.caseStudy}>
+                Case study
+              </ProjectLink>
             )}
             {project.cta.github && (
-              <a
-                href={project.cta.github}
-                className="btn-ghost"
-                target="_blank"
-                rel="noreferrer"
-              >
-                GitHub ↗
-              </a>
+              <ProjectLink href={project.cta.github} external>
+                GitHub
+              </ProjectLink>
             )}
             {!project.cta.github && project.cta.githubPrivate && (
               <PrivateRepoNote reason={project.cta.githubPrivate.reason} />
             )}
             {project.cta.demo && (
-              <a
-                href={project.cta.demo}
-                className="btn-ghost"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Live Demo ↗
-              </a>
+              <ProjectLink href={project.cta.demo} external accent>
+                Live demo
+              </ProjectLink>
             )}
           </div>
         </motion.div>
@@ -216,20 +206,53 @@ function Block({ label, body }) {
   )
 }
 
+/**
+ * Small inline project link. Replaces the old oversized pill buttons —
+ * reads as editorial text with a hairline underline, not a CTA slab.
+ */
+function ProjectLink({ href, children, external, accent }) {
+  return (
+    <a
+      href={href}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noreferrer' : undefined}
+      className="group inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[12px] uppercase tracking-[0.1em] transition-colors"
+      style={{
+        color: accent ? 'var(--accent)' : 'rgba(255,255,255,0.85)',
+        borderColor: accent ? 'var(--accent)' : 'rgba(255,255,255,0.25)',
+      }}
+    >
+      {children}
+      <span
+        aria-hidden="true"
+        className="transition-transform group-hover:translate-x-0.5"
+      >
+        {external ? '↗' : '→'}
+      </span>
+    </a>
+  )
+}
+
+/** Inline "repo is private" affordance, sized to match ProjectLink. */
 function PrivateRepoNote({ reason }) {
   return (
-    <details className="group rounded-full border border-white/15 bg-white/[0.03] open:rounded-2xl open:bg-white/[0.04] open:px-4 open:py-3">
-      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white/80 transition group-open:px-0 group-open:py-0 hover:text-white">
+    <details className="group inline-block">
+      <summary
+        className="inline-flex cursor-pointer list-none items-center gap-1.5 border-b pb-0.5 font-mono text-[12px] uppercase tracking-[0.1em] text-white/55 transition-colors hover:text-white/80"
+        style={{ borderColor: 'rgba(255,255,255,0.18)' }}
+      >
         <LockIcon />
-        GitHub · Private
+        Repo private
         <span
-          className="text-[11px] text-white/45 transition group-open:hidden"
+          className="text-white/35 transition group-open:hidden"
           aria-hidden="true"
         >
           (why?)
         </span>
       </summary>
-      <p className="mt-2 text-sm leading-relaxed text-white/70">{reason}</p>
+      <p className="mt-3 max-w-md text-[13.5px] leading-relaxed text-white/60">
+        {reason}
+      </p>
     </details>
   )
 }

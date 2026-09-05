@@ -110,13 +110,13 @@ export default function Hero() {
             style={{ color: 'var(--ink-soft)' }}
           >
             <li>
-              <a href="#work" className="hover:opacity-70">
-                01 · Selected work
+              <a href="#about" className="hover:opacity-70">
+                01 · About
               </a>
             </li>
             <li>
-              <a href="#about" className="hover:opacity-70">
-                02 · About
+              <a href="#work" className="hover:opacity-70">
+                02 · Selected work
               </a>
             </li>
             <li>

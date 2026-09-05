@@ -6,12 +6,13 @@ import ScrollProgress from './components/ScrollProgress'
 import IntroOverlay from './components/IntroOverlay'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
+import About from './components/About'
 import ProjectIndex from './components/ProjectIndex'
 import ProjectSection from './components/ProjectSection'
-import About from './components/About'
-import Skills from './components/Skills'
-import Education from './components/Education'
 import Experience from './components/Experience'
+import Education from './components/Education'
+import Skills from './components/Skills'
+import Writing from './components/Writing'
 import Contact from './components/Contact'
 
 import UniWiseMock from './components/mockups/UniWiseMock'
@@ -62,6 +63,10 @@ export default function App() {
         </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>
+          <About />
+        </SectionTrigger>
+
+        <SectionTrigger onEnter={() => activate('base')}>
           <ProjectIndex />
         </SectionTrigger>
 
@@ -78,11 +83,7 @@ export default function App() {
           ))}
 
         <SectionTrigger onEnter={() => activate('base')}>
-          <About />
-        </SectionTrigger>
-
-        <SectionTrigger onEnter={() => activate('base')}>
-          <Skills />
+          <Experience />
         </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>
@@ -90,7 +91,11 @@ export default function App() {
         </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>
-          <Experience />
+          <Skills />
+        </SectionTrigger>
+
+        <SectionTrigger onEnter={() => activate('base')}>
+          <Writing />
         </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>

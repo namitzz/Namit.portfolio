@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { profile, writing } from '../data/content'
+import { profile } from '../data/content'
 
 /**
  * About as a two-column editorial spread. Left column: eyebrow + big
@@ -8,7 +8,8 @@ import { profile, writing } from '../data/content'
  */
 export default function About() {
   return (
-    <section id="about" className="relative px-6 py-24 md:px-16 md:py-32">
+    <section id="about" className="relative px-6 py-24 md:px-16 md:py-32"
+      style={{ background: 'rgba(244,244,245,0.008)' }}>
       <div className="mx-auto w-full max-w-[1600px]">
         <div
           className="mb-16 border-b pb-6"
@@ -113,24 +114,6 @@ export default function About() {
               </div>
             )}
 
-            {writing?.[0] && (
-              <p
-                className="mt-8 text-[14px]"
-                style={{ color: 'var(--muted)' }}
-              >
-                Published:{' '}
-                <a
-                  href={writing[0].url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline underline-offset-[4px] transition-colors hover:opacity-80"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  {writing[0].publisher} · {writing[0].title} ↗
-                </a>{' '}
-                ({writing[0].role})
-              </p>
-            )}
           </div>
         </div>
       </div>
