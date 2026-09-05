@@ -397,6 +397,7 @@ export const timeline = [
     org: 'Solo client project',
     markKey: 'project',
     accent: '#C9A86A',
+    href: 'https://www.cloudsevenrealty.com/',
     body:
       'Designed, built and launched a production real estate site for a paying client, owning it from planning through delivery. Built a spreadsheet-driven listings workflow so non-technical staff can update property content without a developer, and handed over documentation.',
   },
@@ -422,6 +423,7 @@ export const timeline = [
     org: 'Retrieval-augmented academic assistant',
     markKey: 'project',
     accent: '#F4552A',
+    href: 'https://github.com/namitzz/UniWise',
     body:
       'A multi-backend RAG system over ChromaDB with cross-encoder reranking and a confidence-based refusal mechanism, behind a Streamlit interface with three response modes. 52 tests, 84% coverage.',
   },

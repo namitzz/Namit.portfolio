@@ -436,6 +436,15 @@ function lengthAt(el, target, total) {
   return best
 }
 
+/** Names the destination, rather than guessing from the kind of stop. */
+function linkLabel(href = '') {
+  if (href.includes('github.com')) return 'Repository'
+  if (href.includes('le.ac.uk') || href.includes('aston.ac.uk')) return 'Course page'
+  if (href.includes('linkedin.com')) return 'The post'
+  if (href.includes('classfutures')) return 'Read it'
+  return 'Visit'
+}
+
 function seededRandom(seed) {
   let s = seed >>> 0
   return () => {
@@ -514,15 +523,23 @@ function Stop({ entry, point, active, dimmed, onEnter }) {
       style={{ left: point.x, top: point.y, opacity: dimmed ? 0.45 : 1 }}
     >
       <StopMark entry={entry} isActive={active} />
+
+      {/* Idle, the route is the marks and the line and nothing else.
+          Eleven labels standing over it turned a drawn route into a
+          diagram; the name arrives with the card, for whichever stop is
+          being pointed at.
+
+          Kept mounted rather than conditional, so the button's accessible
+          name is always its stop and the label never reflows the row. */}
       <span
-        className="mono-label mt-3 whitespace-nowrap transition-colors duration-300"
-        style={{ color: active ? textColor(entry) : 'var(--muted)' }}
+        className="mono-label mt-3 whitespace-nowrap transition-opacity duration-300"
+        style={{ color: textColor(entry), opacity: active ? 1 : 0 }}
       >
         {entry.year}
       </span>
       <span
-        className="mt-1 whitespace-nowrap text-[12.5px] leading-snug transition-colors duration-300"
-        style={{ color: active ? 'var(--ink)' : 'rgba(244,244,245,0.55)' }}
+        className="mt-1 whitespace-nowrap text-[12.5px] leading-snug transition-opacity duration-300"
+        style={{ color: 'var(--ink)', opacity: active ? 1 : 0 }}
       >
         {entry.short}
       </span>
@@ -572,7 +589,7 @@ function Detail({ entry, compact = false }) {
           className="mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
           style={{ color: textColor(entry), borderColor: textColor(entry) }}
         >
-          {entry.kind === 'education' ? 'Course page' : 'Read it'}
+          {linkLabel(entry.href)}
           <span aria-hidden="true">↗</span>
         </a>
       )}
