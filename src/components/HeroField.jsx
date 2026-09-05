@@ -39,6 +39,7 @@ export default function HeroField() {
     let height = 0
     let nodes = []
     let links = []
+    let guards = []
     let frame = 0
     let running = true
 
@@ -65,18 +66,42 @@ export default function HeroField() {
       canvas.height = Math.round(height * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      const guards = collectGuards(canvas)
+      guards = collectGuards(canvas)
       nodes = buildNodes(width, height)
         .map((n) => ({ ...n, vis: visibility(n.x, n.y, guards, FEATHER) }))
         .filter((n) => n.vis > 0.02)
 
       // Links are fixed to the lattice, not recomputed per frame: the
       // structure should hold still while the nodes breathe inside it.
+      //
+      // A link also carries its own visibility, sampled along its length
+      // rather than taken from its endpoints. Two nodes can both sit clear
+      // of the type with the segment between them running straight across
+      // it, which is how faint lines were still crossing the caption.
       links = []
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
-          const d = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y)
-          if (d < LINK_DIST) links.push([i, j, 1 - d / LINK_DIST])
+          const a = nodes[i]
+          const b = nodes[j]
+          const d = Math.hypot(a.x - b.x, a.y - b.y)
+          if (d >= LINK_DIST) continue
+
+          let vis = Math.min(a.vis, b.vis)
+          for (let k = 1; k < 4 && vis > 0; k++) {
+            const t = k / 4
+            vis = Math.min(
+              vis,
+              visibility(
+                a.x + (b.x - a.x) * t,
+                a.y + (b.y - a.y) * t,
+                guards,
+                FEATHER,
+              ),
+            )
+          }
+          if (vis <= 0) continue
+
+          links.push([i, j, 1 - d / LINK_DIST, vis])
         }
       }
     }
@@ -111,12 +136,11 @@ export default function HeroField() {
       }
 
       // Hairlines first, so nodes sit on top of their own structure.
-      for (const [i, j, closeness] of links) {
+      for (const [i, j, closeness, vis] of links) {
         const a = nodes[i]
         const b = nodes[j]
         const lift = Math.max(a.lift, b.lift)
-        const vis = Math.min(a.vis, b.vis)
-        const alpha = (closeness * 0.032 + lift * 0.11) * vis
+        const alpha = (closeness * 0.058 + lift * 0.17) * vis
         if (alpha < 0.0025) continue
         ctx.strokeStyle = `rgba(244,244,245,${alpha.toFixed(4)})`
         ctx.lineWidth = 1
@@ -132,7 +156,7 @@ export default function HeroField() {
           const beat = reduced
             ? 0.6
             : 0.42 + (Math.sin(t * 0.5 + n.phase) * 0.5 + 0.5) * 0.5
-          const a = ((0.24 + n.lift * 0.4) * beat + 0.09) * n.vis
+          const a = ((0.36 + n.lift * 0.45) * beat + 0.14) * n.vis
           ctx.fillStyle = `rgba(${accentRGB.r},${accentRGB.g},${accentRGB.b},${a.toFixed(3)})`
           ctx.beginPath()
           ctx.arc(n.px, n.py, 1.9 + n.lift * 1.1, 0, Math.PI * 2)
@@ -145,7 +169,7 @@ export default function HeroField() {
             ctx.font = '9px "JetBrains Mono", ui-monospace, monospace'
             ctx.fillStyle = `rgba(${accentRGB.r},${accentRGB.g},${
               accentRGB.b
-            },${((0.06 + n.lift * 0.14) * n.vis).toFixed(3)})`
+            },${((0.11 + n.lift * 0.2) * n.vis).toFixed(3)})`
             ctx.fillText(
               `${Math.round(n.px).toString().padStart(4, '0')}.${Math.round(
                 n.py,
@@ -157,7 +181,7 @@ export default function HeroField() {
             )
           }
         } else {
-          const a = (0.10 + n.lift * 0.34) * n.vis
+          const a = (0.17 + n.lift * 0.45) * n.vis
           ctx.fillStyle = `rgba(244,244,245,${a.toFixed(3)})`
           ctx.beginPath()
           ctx.arc(n.px, n.py, 1.15 + n.lift * 0.8, 0, Math.PI * 2)
