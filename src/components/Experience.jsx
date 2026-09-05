@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { timeline } from '../data/content'
+import { markFor } from './TimelineMarks'
 
 /**
  * Small text needs 4.5:1; a filled mark and a dotted rule only need 3:1.
@@ -37,9 +38,8 @@ function onFill(hex) {
  * Below `md` the track turns vertical and every detail is shown at once,
  * since there is no hover on touch.
  *
- * Stop marks: set `logo` on a timeline entry to a file under public/logos
- * (an SVG or a transparent PNG) and it is used directly. Left null, the
- * stop draws a typographic mark in the entry's own accent colour.
+ * Stop marks are outline drawings from TimelineMarks, resolved on the
+ * entry's `markKey` or `id`, and fall back to a monogram.
  */
 export default function Experience() {
   // Defaults to the most recent stop so the detail panel is never empty.
@@ -298,7 +298,7 @@ function Stop({ entry, isActive, onSelect }) {
 function StopMark({ entry, isActive }) {
   const accent = entry.accent || 'var(--accent)'
   const ink = isActive ? onFill(entry.accent) : textColor(entry)
-  const isEducation = entry.kind === 'education'
+  const Mark = markFor(entry)
 
   return (
     <span
@@ -307,51 +307,25 @@ function StopMark({ entry, isActive }) {
         // Opaque, so the dotted track reads as running behind the stop.
         background: isActive ? accent : '#0A0908',
         border: `2px solid ${accent}`,
+        color: ink,
         transform: isActive ? 'scale(1.06)' : 'scale(1)',
         boxShadow: isActive ? `0 0 0 6px ${accent}22` : 'none',
         // Only the motion is transitioned. Fill and ink switch together on
         // the same frame; letting them ease independently can leave the
-        // glyph sitting on the colour it was picked against.
+        // mark sitting on the colour it was picked against.
         transition: 'transform 300ms ease, box-shadow 300ms ease',
       }}
     >
-      {entry.logo ? (
-        <img
-          src={entry.logo}
-          alt=""
-          className="h-8 w-8 object-contain"
-          loading="lazy"
-        />
-      ) : isEducation ? (
+      {Mark ? (
+        <Mark width="27" height="27" />
+      ) : (
         <span
           className="serif text-[17px] leading-none tracking-tight"
           style={{ color: ink }}
         >
           {entry.monogram}
         </span>
-      ) : (
-        <WorkGlyph color={ink} />
       )}
     </span>
-  )
-}
-
-/** Neutral mark for work stops, so they read differently to a degree. */
-function WorkGlyph({ color }) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={color}
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M9 7 L4.5 12 L9 17" />
-      <path d="M15 7 L19.5 12 L15 17" />
-    </svg>
   )
 }

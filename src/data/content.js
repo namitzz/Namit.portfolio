@@ -295,10 +295,12 @@ export const skills = [
   },
 ]
 
-// One chronological route: study and work interleaved, earliest first, so
-// the timeline reads left to right as a journey. `logo` is an optional path
-// under public/logos/; when it is null the component draws a typographic
-// mark in the entry's accent instead.
+// One chronological route: study, internships and competitions on a single
+// line, earliest first, so the timeline reads left to right as a journey.
+// `accent` is the organisation's own colour and `tint` a lighter variant for
+// small text where the real one is too dark to read on the dark ground.
+// Each stop draws an outline mark from TimelineMarks, matched on `id` or on
+// `markKey` for the shared ones ('placement', 'competition').
 export const timeline = [
   {
     id: 'leicester',
@@ -311,34 +313,9 @@ export const timeline = [
     status: 'First Class Honours',
     accent: '#d5203d',
     tint: '#E8455F',
-    logo: null,
     href: 'https://le.ac.uk/',
     body:
       'Coursework across AI, software engineering, databases, HCI, and applied data science. Dissertation: UniWise, a source-grounded RAG assistant for higher education.',
-  },
-  {
-    id: 'projects',
-    kind: 'work',
-    year: '2024 – present',
-    short: 'Projects',
-    title: 'Independent and group projects',
-    org: 'Self-directed and university',
-    accent: '#F5B447',
-    logo: null,
-    body:
-      'Built Posture AI, Cloud Seven Realty, and the Crime Prediction Dashboard as deliberate practice across computer vision, frontend work, and applied data science. Also contributed to the Course Companion Web App as a group coursework project for CO2302.',
-  },
-  {
-    id: 'ai-education',
-    kind: 'work',
-    year: '2025',
-    short: 'AI in Education',
-    title: 'AI in Education, applied work',
-    org: 'Independent / micro-internship',
-    accent: '#34F5C5',
-    logo: null,
-    body:
-      'AI education strategy and digital transformation framing: how universities should adopt LLM tooling without eroding learning outcomes. Fed directly into UniWise.',
   },
   {
     id: 'classfutures',
@@ -347,8 +324,7 @@ export const timeline = [
     short: 'ClassFutures',
     title: 'Contributor, ClassFutures Generative AI guidance',
     org: 'ClassFutures',
-    accent: '#F4552A',
-    logo: null,
+    accent: '#7FC8A0',
     href: 'https://classfutures.co.uk/resources/ai/generative-ai-studies-guide',
     body:
       'Contributor to published guidance on responsible Generative AI use in studies, focusing on academic integrity, critical thinking, and ethical adoption.',
@@ -362,9 +338,8 @@ export const timeline = [
     org: 'Aston University · Birmingham',
     monogram: 'A',
     status: 'In progress',
-    accent: '#c8102e',
-    tint: '#EE3B55',
-    logo: null,
+    accent: '#7D2B62',
+    tint: '#C561A6',
     href: 'https://www.aston.ac.uk/study/courses/ai-business-transformation-msc',
     body:
       'How organisations actually adopt AI: strategy, deployment, governance, and measurable impact. A continuation of the applied AI direction from my undergraduate work.',
