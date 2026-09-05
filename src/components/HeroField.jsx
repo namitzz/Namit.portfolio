@@ -116,7 +116,11 @@ export default function HeroField() {
       pointer.y += (pointer.ty - pointer.y) * 0.055
 
       for (const n of nodes) {
-        const drift = reduced ? 0 : 1
+        // Visibility is sampled at a node's resting position, so a node
+        // sitting just clear of the type could drift into it. Scaling the
+        // amplitude by visibility holds the field taut where it meets the
+        // type and lets it move freely further out.
+        const drift = reduced ? 0 : n.vis
         n.px = n.x + Math.sin(t * n.speed + n.phase) * n.amp * drift
         n.py = n.y + Math.cos(t * n.speed * 0.82 + n.phase) * n.amp * 0.72 * drift
         n.lift = 0
@@ -140,7 +144,12 @@ export default function HeroField() {
         const a = nodes[i]
         const b = nodes[j]
         const lift = Math.max(a.lift, b.lift)
-        const alpha = (closeness * 0.058 + lift * 0.17) * vis
+        // Closeness gives a link its weight, but as a bare multiplier it
+        // crushed the field: most pairs sit near the distance limit, so
+        // closeness runs 0.1-0.3 and every line came out under 3% opacity
+        // no matter how far the coefficient was raised. It varies the line
+        // around a floor now instead of scaling it from zero.
+        const alpha = ((0.5 + closeness * 0.5) * 0.15 + lift * 0.3) * vis
         if (alpha < 0.0025) continue
         ctx.strokeStyle = `rgba(244,244,245,${alpha.toFixed(4)})`
         ctx.lineWidth = 1
@@ -156,10 +165,10 @@ export default function HeroField() {
           const beat = reduced
             ? 0.6
             : 0.42 + (Math.sin(t * 0.5 + n.phase) * 0.5 + 0.5) * 0.5
-          const a = ((0.36 + n.lift * 0.45) * beat + 0.14) * n.vis
+          const a = ((0.5 + n.lift * 0.45) * beat + 0.2) * n.vis
           ctx.fillStyle = `rgba(${accentRGB.r},${accentRGB.g},${accentRGB.b},${a.toFixed(3)})`
           ctx.beginPath()
-          ctx.arc(n.px, n.py, 1.9 + n.lift * 1.1, 0, Math.PI * 2)
+          ctx.arc(n.px, n.py, 2.2 + n.lift * 1.2, 0, Math.PI * 2)
           ctx.fill()
 
           // Faint coordinate readout, the only text in the field. Drawn
@@ -169,7 +178,7 @@ export default function HeroField() {
             ctx.font = '9px "JetBrains Mono", ui-monospace, monospace'
             ctx.fillStyle = `rgba(${accentRGB.r},${accentRGB.g},${
               accentRGB.b
-            },${((0.11 + n.lift * 0.2) * n.vis).toFixed(3)})`
+            },${((0.19 + n.lift * 0.24) * n.vis).toFixed(3)})`
             ctx.fillText(
               `${Math.round(n.px).toString().padStart(4, '0')}.${Math.round(
                 n.py,
@@ -181,10 +190,10 @@ export default function HeroField() {
             )
           }
         } else {
-          const a = (0.17 + n.lift * 0.45) * n.vis
+          const a = (0.3 + n.lift * 0.5) * n.vis
           ctx.fillStyle = `rgba(244,244,245,${a.toFixed(3)})`
           ctx.beginPath()
-          ctx.arc(n.px, n.py, 1.15 + n.lift * 0.8, 0, Math.PI * 2)
+          ctx.arc(n.px, n.py, 1.5 + n.lift * 0.9, 0, Math.PI * 2)
           ctx.fill()
         }
       }
