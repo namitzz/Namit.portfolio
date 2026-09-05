@@ -47,6 +47,7 @@ export default function Nav() {
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between px-6 py-6 md:px-16 md:py-8">
           <a
             href="#top"
+            data-field-guard
             className="serif group relative text-[22px] leading-none tracking-tight md:text-[24px]"
             style={{ color: 'var(--ink)' }}
           >
@@ -70,6 +71,7 @@ export default function Nav() {
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? 'Close menu' : 'Open menu'}
             aria-expanded={open}
+            data-field-guard
             className="group relative z-[70] flex h-11 w-11 items-center justify-center"
             // The 44px hit area is wider than the 24px bars; the offset
             // sets the bars' right edge on the grid, not the button's.

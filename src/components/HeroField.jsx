@@ -51,7 +51,9 @@ export default function HeroField() {
       getComputedStyle(canvas).getPropertyValue('--accent').trim() || '#F4552A'
     const accentRGB = hexToRgb(accent) || { r: 244, g: 85, b: 42 }
 
-    const LINK_DIST = 168
+    const LINK_DIST = 138
+    // How far the field keeps off the type, in px.
+    const FEATHER = 52
     const POINTER_DIST = 230
 
     function layout() {
@@ -63,7 +65,10 @@ export default function HeroField() {
       canvas.height = Math.round(height * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
+      const guards = collectGuards(canvas)
       nodes = buildNodes(width, height)
+        .map((n) => ({ ...n, vis: visibility(n.x, n.y, guards, FEATHER) }))
+        .filter((n) => n.vis > 0.02)
 
       // Links are fixed to the lattice, not recomputed per frame: the
       // structure should hold still while the nodes breathe inside it.
@@ -110,8 +115,9 @@ export default function HeroField() {
         const a = nodes[i]
         const b = nodes[j]
         const lift = Math.max(a.lift, b.lift)
-        const alpha = closeness * 0.05 + lift * 0.14
-        if (alpha < 0.004) continue
+        const vis = Math.min(a.vis, b.vis)
+        const alpha = (closeness * 0.032 + lift * 0.11) * vis
+        if (alpha < 0.0025) continue
         ctx.strokeStyle = `rgba(244,244,245,${alpha.toFixed(4)})`
         ctx.lineWidth = 1
         ctx.beginPath()
@@ -126,27 +132,32 @@ export default function HeroField() {
           const beat = reduced
             ? 0.6
             : 0.42 + (Math.sin(t * 0.5 + n.phase) * 0.5 + 0.5) * 0.5
-          const a = (0.30 + n.lift * 0.5) * beat + 0.14
+          const a = ((0.24 + n.lift * 0.4) * beat + 0.09) * n.vis
           ctx.fillStyle = `rgba(${accentRGB.r},${accentRGB.g},${accentRGB.b},${a.toFixed(3)})`
           ctx.beginPath()
           ctx.arc(n.px, n.py, 1.9 + n.lift * 1.1, 0, Math.PI * 2)
           ctx.fill()
 
-          // Faint coordinate readout, the only text in the field.
-          ctx.font = '9px "JetBrains Mono", ui-monospace, monospace'
-          ctx.fillStyle = `rgba(${accentRGB.r},${accentRGB.g},${accentRGB.b},${(
-            0.10 +
-            n.lift * 0.22
-          ).toFixed(3)})`
-          ctx.fillText(
-            `${Math.round(n.px).toString().padStart(4, '0')}.${Math.round(n.py)
-              .toString()
-              .padStart(4, '0')}`,
-            n.px + 9,
-            n.py + 3.5,
-          )
+          // Faint coordinate readout, the only text in the field. Drawn
+          // only well inside the safe area: near an edge it collided with
+          // the hamburger and the scroll cue.
+          if (n.vis > 0.62 && n.px + 78 < width) {
+            ctx.font = '9px "JetBrains Mono", ui-monospace, monospace'
+            ctx.fillStyle = `rgba(${accentRGB.r},${accentRGB.g},${
+              accentRGB.b
+            },${((0.06 + n.lift * 0.14) * n.vis).toFixed(3)})`
+            ctx.fillText(
+              `${Math.round(n.px).toString().padStart(4, '0')}.${Math.round(
+                n.py,
+              )
+                .toString()
+                .padStart(4, '0')}`,
+              n.px + 9,
+              n.py + 3.5,
+            )
+          }
         } else {
-          const a = 0.13 + n.lift * 0.42
+          const a = (0.10 + n.lift * 0.34) * n.vis
           ctx.fillStyle = `rgba(244,244,245,${a.toFixed(3)})`
           ctx.beginPath()
           ctx.arc(n.px, n.py, 1.15 + n.lift * 0.8, 0, Math.PI * 2)
@@ -186,6 +197,15 @@ export default function HeroField() {
     })
     ro.observe(canvas)
 
+    // The headline's ink box is only final once Instrument Serif has
+    // loaded; measured against the fallback the guard sits wrong.
+    let cancelled = false
+    document.fonts?.ready.then(() => {
+      if (cancelled || !running) return
+      layout()
+      render(performance.now())
+    })
+
     if (!reduced) frame = requestAnimationFrame(loop)
 
     // No pointer wiring on touch, and none under reduced motion either:
@@ -198,6 +218,7 @@ export default function HeroField() {
 
     return () => {
       running = false
+      cancelled = true
       cancelAnimationFrame(frame)
       ro.disconnect()
       window.removeEventListener('pointermove', onPointerMove)
@@ -215,6 +236,83 @@ export default function HeroField() {
 }
 
 /**
+ * Where the type actually is, in canvas coordinates.
+ *
+ * Every element carrying `data-field-guard` is measured and kept clear.
+ * Text is measured by its ink (the union of its line boxes) rather than
+ * its element box, so a full-width `h1` guards only the letters, not the
+ * empty half of the line it sits on.
+ *
+ * This replaced a mask written as fractions of the hero, which was tuned
+ * at desktop and so ran straight through the caption on mobile, where the
+ * bottom band is three rows taller. Reading the real layout costs one
+ * measurement per resize and cannot drift out of step with it.
+ */
+function collectGuards(canvas) {
+  const base = canvas.getBoundingClientRect()
+  return [...document.querySelectorAll('[data-field-guard]')].map((el) =>
+    inkRect(el, base),
+  )
+}
+
+function inkRect(el, base) {
+  const range = document.createRange()
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+  let x0 = Infinity
+  let y0 = Infinity
+  let x1 = -Infinity
+  let y1 = -Infinity
+  let found = false
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode
+    if (!node.textContent.trim()) continue
+    range.selectNodeContents(node)
+    for (const r of range.getClientRects()) {
+      if (!r.width || !r.height) continue
+      found = true
+      x0 = Math.min(x0, r.left)
+      y0 = Math.min(y0, r.top)
+      x1 = Math.max(x1, r.right)
+      y1 = Math.max(y1, r.bottom)
+    }
+  }
+
+  if (!found) {
+    // No text: an icon or a rule. Its own box is the right guard.
+    const r = el.getBoundingClientRect()
+    x0 = r.left
+    y0 = r.top
+    x1 = r.right
+    y1 = r.bottom
+  }
+
+  return {
+    x0: x0 - base.left,
+    y0: y0 - base.top,
+    x1: x1 - base.left,
+    y1: y1 - base.top,
+  }
+}
+
+/** Full strength clear of every guard, feathering to nothing at each. */
+function visibility(x, y, guards, feather) {
+  let v = 1
+  for (const g of guards) {
+    const dx = Math.max(g.x0 - x, 0, x - g.x1)
+    const dy = Math.max(g.y0 - y, 0, y - g.y1)
+    v = Math.min(v, smooth(Math.hypot(dx, dy) / feather))
+    if (v <= 0) return 0
+  }
+  return v
+}
+
+function smooth(t) {
+  const c = t < 0 ? 0 : t > 1 ? 1 : t
+  return c * c * (3 - 2 * c)
+}
+
+/**
  * A jittered lattice, thinned out on the left so the field never competes
  * with the name. Seeded, so the architecture is identical on every load.
  */
@@ -225,18 +323,18 @@ function buildNodes(w, h) {
     return seed / 4294967296
   }
 
-  const cols = Math.max(4, Math.round(w / 138))
-  const rows = Math.max(3, Math.round(h / 138))
+  const cols = Math.max(5, Math.round(w / 112))
+  const rows = Math.max(4, Math.round(h / 112))
   const nodes = []
 
   for (let cx = 0; cx < cols; cx++) {
     for (let cy = 0; cy < rows; cy++) {
       const bias = cols > 1 ? cx / (cols - 1) : 1
       // Keep roughly a quarter of the left-hand cells and most of the right.
-      if (rand() > 0.24 + bias * 0.66) continue
+      if (rand() > 0.3 + bias * 0.6) continue
       nodes.push({
-        x: ((cx + 0.5) / cols) * w + (rand() - 0.5) * 52,
-        y: ((cy + 0.5) / rows) * h + (rand() - 0.5) * 52,
+        x: ((cx + 0.5) / cols) * w + (rand() - 0.5) * 44,
+        y: ((cy + 0.5) / rows) * h + (rand() - 0.5) * 44,
         phase: rand() * Math.PI * 2,
         speed: 0.1 + rand() * 0.16,
         amp: 3 + rand() * 7,
@@ -249,16 +347,27 @@ function buildNodes(w, h) {
     }
   }
 
+  // Hard cap. Links are drawn every frame and grow with the square of the
+  // node count, so an ultrawide or 4K hero would otherwise pay for a few
+  // hundred nodes it gains nothing from. Trimmed by rank, which is stable
+  // for a given seed.
+  const MAX_NODES = 90
+  const kept =
+    nodes.length > MAX_NODES
+      ? nodes.sort((a, b) => b.rank - a.rank).slice(0, MAX_NODES)
+      : nodes
+
   // Three live nodes, taken from the right-hand two thirds so the accent
-  // never lands on top of the headline.
-  const candidates = nodes
+  // never lands near the headline.
+  kept
     .filter((n) => n.x > w * 0.42)
     .sort((a, b) => b.rank - a.rank)
-  candidates.slice(0, 3).forEach((n) => {
-    n.live = true
-  })
+    .slice(0, 3)
+    .forEach((n) => {
+      n.live = true
+    })
 
-  return nodes
+  return kept
 }
 
 function hexToRgb(hex) {

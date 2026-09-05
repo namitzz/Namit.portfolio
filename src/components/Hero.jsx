@@ -130,6 +130,7 @@ export default function Hero() {
       <div className={`${BAND} relative z-10 flex flex-1 items-center py-10`}>
         <motion.div className="w-full" style={{ x: nameX, y: nameY }}>
           <h1
+            data-field-guard
             className="serif relative w-full whitespace-nowrap leading-[1.02]"
             style={{
               color: 'var(--ink)',
@@ -175,7 +176,8 @@ export default function Hero() {
         <div className="flex flex-col gap-7 pt-6 md:flex-row md:items-end md:justify-between md:gap-8">
           <div className="min-w-0">
             <p
-              className="serif max-w-[34ch] text-[clamp(1rem,1.42vw,1.35rem)] leading-[1.3]"
+              data-field-guard
+              className="serif text-[clamp(1rem,1.42vw,1.35rem)] leading-[1.3] md:max-w-[34rem]"
               style={{
                 color: 'rgba(244,244,245,0.80)',
                 letterSpacing: '-0.011em',
@@ -188,6 +190,7 @@ export default function Hero() {
                 Set in mono against the serif above it so it reads as a
                 note on the line, not a second headline. */}
             <p
+              data-field-guard
               className="mt-3.5 font-mono text-[10.5px] uppercase leading-[1.75] tracking-[0.14em] md:tracking-[0.18em]"
               style={{ color: 'rgba(244,244,245,0.52)' }}
             >
@@ -246,6 +249,7 @@ function usePointerDrift(reduce) {
 function MetaBlock({ children, align = 'left', className = '' }) {
   return (
     <div
+      data-field-guard
       className={`flex flex-col gap-[0.42rem] ${
         align === 'right' ? 'items-end text-right' : 'items-start'
       } ${className}`}
@@ -296,11 +300,14 @@ function Caret({ reduce }) {
   return (
     <motion.span
       aria-hidden="true"
-      className="ml-[0.14em] inline-block w-[0.022em] align-baseline"
+      className="ml-[0.085em] inline-block w-[0.018em] align-baseline"
       style={{
-        height: '0.78em',
+        // Just under the cap height and sitting on the baseline. At 0.78em
+        // it stood proud of the caps and read as a selection bar rather
+        // than a cursor.
+        height: '0.62em',
         background: 'var(--accent)',
-        transform: 'translateY(0.04em)',
+        transform: 'translateY(0.02em)',
       }}
       animate={reduce ? undefined : { opacity: [1, 0.22, 1] }}
       transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
@@ -344,6 +351,7 @@ function ScrollCue({ reduce }) {
   return (
     <a
       href="#about"
+      data-field-guard
       className="group flex shrink-0 items-center gap-3 transition-colors"
       style={{ color: 'rgba(244,244,245,0.60)' }}
     >
