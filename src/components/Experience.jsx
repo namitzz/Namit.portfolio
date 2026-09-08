@@ -178,7 +178,7 @@ export default function Experience() {
       className="relative px-6 py-24 md:px-16 md:py-32"
       style={{
         background:
-          'linear-gradient(180deg, rgba(244,85,42,0.075) 0%, rgba(244,85,42,0.010) 30%, rgba(244,244,245,0.028) 100%)',
+          'linear-gradient(180deg, #050505 0%, #080706 45%, #050505 100%)',
       }}
     >
       <div className="mx-auto w-full max-w-[1600px]">
@@ -281,7 +281,7 @@ export default function Experience() {
               aria-hidden="true"
               width={box.w}
               height={height}
-              className="absolute left-0 top-0 z-[1]"
+              className="absolute left-0 top-0 z-[3]"
             >
               <defs>
 
@@ -497,9 +497,9 @@ function AnimatedMapBackground() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      className="pointer-events-none absolute inset-0 z-[2] overflow-hidden"
       style={{
-        opacity: 0.42,
+        opacity: 0.85,
       }}
     >
       <svg
@@ -524,7 +524,7 @@ function AnimatedMapBackground() {
             <path
               d="M 72 0 L 0 0 0 72"
               fill="none"
-              stroke="rgba(244,244,245,0.055)"
+              stroke="rgba(244,244,245,0.09)"
               strokeWidth="1"
             />
 
@@ -532,7 +532,7 @@ function AnimatedMapBackground() {
               cx="0"
               cy="0"
               r="1.5"
-              fill="rgba(244,244,245,0.10)"
+              fill="rgba(244,244,245,0.16)"
             />
           </pattern>
 
@@ -548,12 +548,17 @@ function AnimatedMapBackground() {
           >
             <stop
               offset="0%"
-              stopColor="rgba(244,85,42,0.07)"
+              stopColor="rgba(244,85,42,0.13)"
             />
 
             <stop
-              offset="55%"
-              stopColor="rgba(244,85,42,0.025)"
+              offset="45%"
+              stopColor="rgba(244,85,42,0.055)"
+            />
+
+            <stop
+              offset="75%"
+              stopColor="rgba(244,85,42,0.018)"
             />
 
             <stop
@@ -575,6 +580,22 @@ function AnimatedMapBackground() {
           >
             <feGaussianBlur
               stdDeviation="5"
+            />
+          </filter>
+
+          {/* ======================================================== */}
+          {/* ROUTE-LIKE MAP GLOW                                     */}
+          {/* ======================================================== */}
+
+          <filter
+            id="softMapGlow"
+            x="-20%"
+            y="-20%"
+            width="140%"
+            height="140%"
+          >
+            <feGaussianBlur
+              stdDeviation="2"
             />
           </filter>
         </defs>
@@ -605,7 +626,7 @@ function AnimatedMapBackground() {
 
         <g
           fill="none"
-          stroke="rgba(244,244,245,0.075)"
+          stroke="rgba(244,244,245,0.14)"
           strokeWidth="1"
         >
           <path d="M-80 100 C120 20 190 160 370 105 S620 25 820 105 S1060 170 1280 80" />
@@ -629,7 +650,7 @@ function AnimatedMapBackground() {
 
         <g
           fill="none"
-          stroke="rgba(244,244,245,0.045)"
+          stroke="rgba(244,244,245,0.08)"
           strokeWidth="1"
         >
           <path d="M130 -40 C190 90 95 180 170 290 S220 430 170 570" />
@@ -649,7 +670,7 @@ function AnimatedMapBackground() {
 
         <g
           fill="none"
-          stroke="rgba(244,244,245,0.09)"
+          stroke="rgba(244,244,245,0.14)"
           strokeWidth="1"
         >
           <circle
@@ -706,7 +727,7 @@ function AnimatedMapBackground() {
         {/* ========================================================== */}
 
         <g
-          fill="rgba(244,244,245,0.25)"
+          fill="rgba(244,244,245,0.38)"
         >
           <circle
             cx="170"
@@ -752,13 +773,30 @@ function AnimatedMapBackground() {
         </g>
 
         {/* ========================================================== */}
+        {/* EXTRA NETWORK CONNECTIONS                                 */}
+        {/* ========================================================== */}
+
+        <g
+          fill="none"
+          stroke="rgba(244,85,42,0.16)"
+          strokeWidth="1"
+          filter="url(#softMapGlow)"
+        >
+          <path d="M170 145 L305 90 L475 335" />
+
+          <path d="M475 335 L680 425 L890 185" />
+
+          <path d="M890 185 L1010 120 L1080 370" />
+        </g>
+
+        {/* ========================================================== */}
         {/* MOVING SIGNAL                                             */}
         {/* ========================================================== */}
 
         <g>
           <circle
-            r="10"
-            fill="rgba(244,85,42,0.18)"
+            r="12"
+            fill="rgba(244,85,42,0.22)"
             filter="url(#mapSignalGlow)"
           >
             <animateMotion
@@ -769,8 +807,8 @@ function AnimatedMapBackground() {
           </circle>
 
           <circle
-            r="2.5"
-            fill="rgba(244,85,42,0.55)"
+            r="3"
+            fill="rgba(244,85,42,0.75)"
           >
             <animateMotion
               dur="18s"
@@ -789,7 +827,7 @@ function AnimatedMapBackground() {
           y1="0"
           x2="-100"
           y2="520"
-          stroke="rgba(244,85,42,0.10)"
+          stroke="rgba(244,85,42,0.16)"
           strokeWidth="1"
         >
           <animate
@@ -816,7 +854,7 @@ function AnimatedMapBackground() {
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(circle at center, transparent 20%, rgba(10,9,8,0.28) 70%, rgba(10,9,8,0.72) 100%)',
+            'radial-gradient(circle at center, transparent 15%, rgba(5,5,5,0.12) 55%, rgba(5,5,5,0.55) 100%)',
         }}
       />
 
@@ -824,7 +862,7 @@ function AnimatedMapBackground() {
         className="absolute inset-x-0 top-0 h-24"
         style={{
           background:
-            'linear-gradient(180deg, rgba(10,9,8,0.7), transparent)',
+            'linear-gradient(180deg, rgba(5,5,5,0.65), transparent)',
         }}
       />
 
@@ -832,1202 +870,9 @@ function AnimatedMapBackground() {
         className="absolute inset-x-0 bottom-0 h-24"
         style={{
           background:
-            'linear-gradient(0deg, rgba(10,9,8,0.7), transparent)',
+            'linear-gradient(0deg, rgba(5,5,5,0.65), transparent)',
         }}
       />
     </div>
-  )
-}
-
-/* ================================================================== */
-/* ROUTE STOPS                                                       */
-/* ================================================================== */
-
-/*
- * Controlled wave rather than random wandering.
- *
- * The previous route deliberately used a random walk. It looked
- * interesting, but it also produced large empty areas and made the
- * timeline feel more like a network diagram.
- *
- * This version keeps the organic feel while giving the route a much
- * stronger visual rhythm.
- */
-
-function buildStops(
-  count,
-  width,
-  height,
-) {
-  const out = []
-
-  const left = EDGE
-  const right = width - EDGE
-
-  const center =
-    height / 2
-
-  const amplitude =
-    Math.min(
-      145,
-      height * 0.28,
-    )
-
-  for (
-    let i = 0;
-    i < count;
-    i++
-  ) {
-    const progress =
-      count > 1
-        ? i / (count - 1)
-        : 0
-
-    const x =
-      left +
-      (right - left) *
-        progress
-
-    const wave =
-      Math.sin(
-        progress *
-          Math.PI *
-          2.15,
-      )
-
-    const secondary =
-      Math.sin(
-        progress *
-          Math.PI *
-          5.1 +
-          0.7,
-      ) * 18
-
-    const y =
-      center +
-      wave * amplitude +
-      secondary
-
-    out.push({
-      x,
-
-      y: clamp(
-        y,
-        78,
-        height - 78,
-      ),
-    })
-  }
-
-  return out
-}
-
-/* ================================================================== */
-/* ROUTE WAYPOINTS                                                   */
-/* ================================================================== */
-
-function buildWaypoints(
-  stops,
-) {
-  if (!stops.length) {
-    return []
-  }
-
-  const waypoints = []
-
-  waypoints.push({
-    x:
-      stops[0].x - 42,
-
-    y:
-      stops[0].y - 24,
-  })
-
-  for (
-    let i = 0;
-    i < stops.length;
-    i++
-  ) {
-    const current =
-      stops[i]
-
-    waypoints.push(
-      current,
-    )
-
-    const next =
-      stops[i + 1]
-
-    if (!next) {
-      break
-    }
-
-    const dx =
-      next.x -
-      current.x
-
-    const dy =
-      next.y -
-      current.y
-
-    const length =
-      Math.hypot(
-        dx,
-        dy,
-      ) || 1
-
-    const direction =
-      i % 2 === 0
-        ? -1
-        : 1
-
-    const amplitude =
-      28 +
-      (i % 3) * 8
-
-    waypoints.push({
-      x:
-        (current.x +
-          next.x) /
-          2 +
-        (-dy / length) *
-          amplitude *
-          direction,
-
-      y:
-        (current.y +
-          next.y) /
-          2 +
-        (dx / length) *
-          amplitude *
-          direction,
-    })
-  }
-
-  const last =
-    stops[
-      stops.length - 1
-    ]
-
-  waypoints.push({
-    x:
-      last.x + 42,
-
-    y:
-      last.y + 24,
-  })
-
-  return waypoints
-}
-
-/* ================================================================== */
-/* CURVED ROUTE                                                      */
-/* ================================================================== */
-
-function routePath(
-  stops,
-) {
-  const points =
-    buildWaypoints(
-      stops,
-    )
-
-  if (
-    points.length < 2
-  ) {
-    return ''
-  }
-
-  let d =
-    `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`
-
-  for (
-    let i = 0;
-    i <
-    points.length - 1;
-    i++
-  ) {
-    const p0 =
-      points[i - 1] ||
-      points[i]
-
-    const p1 =
-      points[i]
-
-    const p2 =
-      points[i + 1]
-
-    const p3 =
-      points[i + 2] ||
-      p2
-
-    const c1x =
-      p1.x +
-      (p2.x - p0.x) /
-        6
-
-    const c1y =
-      p1.y +
-      (p2.y - p0.y) /
-        6
-
-    const c2x =
-      p2.x -
-      (p3.x - p1.x) /
-        6
-
-    const c2y =
-      p2.y -
-      (p3.y - p1.y) /
-        6
-
-    d +=
-      ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ` +
-      `${c2x.toFixed(2)} ${c2y.toFixed(2)}, ` +
-      `${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
-  }
-
-  return d
-}
-
-/* ================================================================== */
-/* ROUTE GRADIENT                                                    */
-/* ================================================================== */
-
-function gradientStops(
-  points,
-  width,
-) {
-  let last = 0
-
-  return points.map(
-    (point, index) => {
-      const entry =
-        timeline[index] ||
-        {}
-
-      const offset =
-        Math.max(
-          last,
-
-          clamp(
-            point.x /
-              (width || 1),
-            0,
-            1,
-          ),
-        )
-
-      last = offset
-
-      return (
-        <stop
-          key={
-            entry.id ||
-            index
-          }
-          offset={offset}
-          stopColor={textColor(
-            entry,
-          )}
-        />
-      )
-    },
-  )
-}
-
-/* ================================================================== */
-/* ROUTE DISTANCE                                                    */
-/* ================================================================== */
-
-function lengthAt(
-  element,
-  target,
-  total,
-) {
-  let best = 0
-
-  let bestDistance =
-    Infinity
-
-  const steps = 260
-
-  for (
-    let i = 0;
-    i <= steps;
-    i++
-  ) {
-    const distance =
-      (i / steps) *
-      total
-
-    const point =
-      element.getPointAtLength(
-        distance,
-      )
-
-    const difference =
-      (point.x -
-        target.x) **
-        2 +
-      (point.y -
-        target.y) **
-        2
-
-    if (
-      difference <
-      bestDistance
-    ) {
-      bestDistance =
-        difference
-
-      best =
-        distance
-    }
-  }
-
-  const span =
-    total / steps
-
-  for (
-    let i = -20;
-    i <= 20;
-    i++
-  ) {
-    const distance =
-      clamp(
-        best +
-          (i / 20) *
-            span,
-        0,
-        total,
-      )
-
-    const point =
-      element.getPointAtLength(
-        distance,
-      )
-
-    const difference =
-      (point.x -
-        target.x) **
-        2 +
-      (point.y -
-        target.y) **
-        2
-
-    if (
-      difference <
-      bestDistance
-    ) {
-      bestDistance =
-        difference
-
-      best =
-        distance
-    }
-  }
-
-  return best
-}
-
-/* ================================================================== */
-/* CARD PLACEMENT                                                    */
-/* ================================================================== */
-
-function placeCard(
-  point,
-  index,
-  points,
-  width,
-  height,
-) {
-  const blockers =
-    points
-      .filter(
-        (_, i) =>
-          i !== index,
-      )
-      .map((p) => ({
-        x0:
-          p.x - 78,
-
-        x1:
-          p.x + 78,
-
-        y0:
-          p.y - 32,
-
-        y1:
-          p.y + 84,
-      }))
-
-  const own = {
-    x0:
-      point.x - 78,
-
-    x1:
-      point.x + 78,
-
-    y0:
-      point.y - 32,
-
-    y1:
-      point.y + 84,
-  }
-
-  const overlaps = (
-    rect,
-    obstacle,
-  ) =>
-    rect.left +
-      CARD_W >
-      obstacle.x0 &&
-    rect.left <
-      obstacle.x1 &&
-    rect.top +
-      CARD_H >
-      obstacle.y0 &&
-    rect.top <
-      obstacle.y1
-
-  const centerLeft =
-    point.x -
-    CARD_W / 2
-
-  const centerTop =
-    point.y -
-    CARD_H / 2
-
-  const preferDown =
-    point.y <
-    height / 2
-
-  let best = null
-
-  const consider = (
-    left,
-    top,
-  ) => {
-    if (
-      left < 0 ||
-      top < 0 ||
-      left + CARD_W >
-        width ||
-      top + CARD_H >
-        height
-    ) {
-      return
-    }
-
-    const rect = {
-      left,
-      top,
-    }
-
-    if (
-      overlaps(
-        rect,
-        own,
-      )
-    ) {
-      return
-    }
-
-    const covered =
-      blockers.filter(
-        (obstacle) =>
-          overlaps(
-            rect,
-            obstacle,
-          ),
-      ).length
-
-    const distance =
-      Math.hypot(
-        left +
-          CARD_W / 2 -
-          point.x,
-
-        top +
-          CARD_H / 2 -
-          point.y,
-      )
-
-    const score =
-      distance +
-      covered * 100
-
-    if (
-      !best ||
-      score <
-        best.score
-    ) {
-      best = {
-        left,
-        top,
-        score,
-      }
-    }
-  }
-
-  for (
-    let step = 0;
-    step <= 18;
-    step++
-  ) {
-    const offset =
-      step * 22
-
-    const down =
-      point.y +
-      CARD_GAP
-
-    const up =
-      point.y -
-      CARD_GAP -
-      CARD_H
-
-    if (preferDown) {
-      consider(
-        centerLeft,
-        down,
-      )
-
-      consider(
-        centerLeft -
-          offset,
-        down,
-      )
-
-      consider(
-        centerLeft +
-          offset,
-        down,
-      )
-
-      consider(
-        centerLeft,
-        up,
-      )
-    } else {
-      consider(
-        centerLeft,
-        up,
-      )
-
-      consider(
-        centerLeft -
-          offset,
-        up,
-      )
-
-      consider(
-        centerLeft +
-          offset,
-        up,
-      )
-
-      consider(
-        centerLeft,
-        down,
-      )
-    }
-
-    consider(
-      point.x + 72,
-      centerTop,
-    )
-
-    consider(
-      point.x -
-        CARD_W -
-        72,
-      centerTop,
-    )
-  }
-
-  if (best) {
-    return best
-  }
-
-  return {
-    left: clamp(
-      centerLeft,
-      0,
-      Math.max(
-        0,
-        width - CARD_W,
-      ),
-    ),
-
-    top: clamp(
-      fallbackTop(
-        point,
-        height,
-      ),
-      0,
-      Math.max(
-        0,
-        height - CARD_H,
-      ),
-    ),
-  }
-}
-
-function fallbackTop(
-  point,
-  height,
-) {
-  if (
-    point.y +
-      CARD_GAP +
-      CARD_H <=
-    height
-  ) {
-    return (
-      point.y +
-      CARD_GAP
-    )
-  }
-
-  return (
-    point.y -
-    CARD_GAP -
-    CARD_H
-  )
-}
-
-/* ================================================================== */
-/* DESKTOP STOP                                                      */
-/* ================================================================== */
-
-function Stop({
-  entry,
-  point,
-  active,
-  dimmed,
-  onEnter,
-}) {
-  /*
-   * Alternate labels above and below the route.
-   *
-   * This keeps the route readable while avoiding eleven
-   * labels sitting on top of each other.
-   */
-
-  const labelAbove =
-    point.y > 255
-
-  return (
-    <button
-      type="button"
-      onMouseEnter={onEnter}
-      onFocus={onEnter}
-      aria-describedby={
-        active
-          ? 'route-card'
-          : undefined
-      }
-      aria-label={`${entry.year} — ${
-        entry.short ||
-        entry.title
-      }`}
-      className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity duration-300"
-      style={{
-        left: point.x,
-        top: point.y,
-        opacity:
-          dimmed ? 0.42 : 1,
-      }}
-    >
-
-      {/* ========================================================== */}
-      {/* LABEL ABOVE                                                */}
-      {/* ========================================================== */}
-
-      {labelAbove && (
-        <StopLabel
-          entry={entry}
-          active={active}
-          above
-        />
-      )}
-
-      {/* ========================================================== */}
-      {/* NODE                                                       */}
-      {/* ========================================================== */}
-
-      <StopMark
-        entry={entry}
-        isActive={active}
-      />
-
-      {/* ========================================================== */}
-      {/* LABEL BELOW                                                */}
-      {/* ========================================================== */}
-
-      {!labelAbove && (
-        <StopLabel
-          entry={entry}
-          active={active}
-        />
-      )}
-    </button>
-  )
-}
-
-/* ================================================================== */
-/* STOP LABEL                                                        */
-/* ================================================================== */
-
-function StopLabel({
-  entry,
-  active,
-  above = false,
-}) {
-  return (
-    <span
-      className={
-        above
-          ? 'mb-3 flex flex-col items-center'
-          : 'mt-3 flex flex-col items-center'
-      }
-    >
-      <span
-        className="mono-label whitespace-nowrap text-[10px] tracking-[0.14em] transition-opacity duration-300"
-        style={{
-          color:
-            textColor(entry),
-
-          opacity:
-            active ? 1 : 0.78,
-        }}
-      >
-        {entry.year}
-      </span>
-
-      <span
-        className="mt-1 max-w-[160px] whitespace-nowrap text-center text-[11.5px] leading-tight transition-opacity duration-300"
-        style={{
-          color:
-            'var(--ink)',
-
-          opacity:
-            active ? 1 : 0.68,
-        }}
-      >
-        {entry.short ||
-          entry.title}
-      </span>
-
-      {/* Current indicator */}
-
-      {entry.id ===
-        'aston' && (
-        <span
-          className="mt-1 font-mono text-[8px] uppercase tracking-[0.16em]"
-          style={{
-            color:
-              textColor(
-                entry,
-              ),
-            opacity:
-              active ? 1 : 0.9,
-          }}
-        >
-          Now
-        </span>
-      )}
-    </span>
-  )
-}
-
-/* ================================================================== */
-/* DETAIL                                                            */
-/* ================================================================== */
-
-function Detail({
-  entry,
-  compact = false,
-}) {
-  return (
-    <>
-      <p
-        className="mono-label"
-        style={{
-          color:
-            textColor(entry),
-        }}
-      >
-        {entry.year}
-      </p>
-
-      <h3
-        className={`serif mt-1.5 leading-tight ${
-          compact
-            ? 'text-[1.15rem]'
-            : 'text-[1.3rem]'
-        }`}
-        style={{
-          color:
-            'var(--ink)',
-        }}
-      >
-        {entry.title}
-      </h3>
-
-      <p
-        className="mono-label mt-2"
-        style={{
-          color:
-            'var(--muted)',
-        }}
-      >
-        {entry.org}
-      </p>
-
-      {entry.status && (
-        <p
-          className="mono-label mt-2 flex items-center gap-1.5"
-          style={{
-            color:
-              textColor(entry),
-          }}
-        >
-          <span
-            className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{
-              background:
-                textColor(
-                  entry,
-                ),
-            }}
-          />
-
-          {entry.status}
-        </p>
-      )}
-
-      <p
-        className={`mt-3 leading-relaxed ${
-          compact
-            ? 'text-[13px]'
-            : 'text-[15px]'
-        }`}
-        style={{
-          color:
-            'var(--ink-soft)',
-        }}
-      >
-        {entry.body}
-      </p>
-
-      {entry.href && (
-        <a
-          href={entry.href}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
-          style={{
-            color:
-              textColor(entry),
-
-            borderColor:
-              textColor(entry),
-          }}
-        >
-          {linkLabel(
-            entry.href,
-          )}
-
-          <span
-            aria-hidden="true"
-          >
-            ↗
-          </span>
-        </a>
-      )}
-    </>
-  )
-}
-
-/* ================================================================== */
-/* LINK LABEL                                                        */
-/* ================================================================== */
-
-function linkLabel(
-  href = '',
-) {
-  if (
-    href.includes(
-      'github.com',
-    )
-  ) {
-    return 'Repository'
-  }
-
-  if (
-    href.includes(
-      'le.ac.uk',
-    ) ||
-    href.includes(
-      'aston.ac.uk',
-    )
-  ) {
-    return 'Course page'
-  }
-
-  if (
-    href.includes(
-      'linkedin.com',
-    )
-  ) {
-    return 'The post'
-  }
-
-  if (
-    href.includes(
-      'classfutures',
-    )
-  ) {
-    return 'Read it'
-  }
-
-  return 'Visit'
-}
-
-/* ================================================================== */
-/* STOP MARK                                                         */
-/* ================================================================== */
-
-function StopMark({
-  entry,
-  isActive,
-}) {
-  const accent =
-    entry.accent ||
-    'var(--accent)'
-
-  const ink = isActive
-    ? onFill(
-        entry.accent,
-      )
-    : textColor(entry)
-
-  const Mark =
-    markFor(entry)
-
-  const isCurrent =
-    entry.id === 'aston'
-
-  return (
-    <span
-      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
-      style={{
-        background:
-          isActive
-            ? accent
-            : '#0A0908',
-
-        border:
-          `2px solid ${accent}`,
-
-        color: ink,
-
-        transform:
-          isActive
-            ? 'scale(1.06)'
-            : 'scale(1)',
-
-        boxShadow:
-          isActive
-            ? `0 0 0 6px ${accent}22`
-            : isCurrent
-              ? `0 0 0 5px ${accent}12`
-              : 'none',
-
-        transition:
-          'transform 300ms ease, box-shadow 300ms ease',
-      }}
-    >
-
-      {/* ========================================================== */}
-      {/* CURRENT ASTON PULSE                                        */}
-      {/* ========================================================== */}
-
-      {isCurrent && (
-        <>
-          <span
-            className="absolute inset-[-10px] rounded-full border"
-            style={{
-              borderColor:
-                `${accent}30`,
-              animation:
-                'timelinePulse 3.2s ease-out infinite',
-            }}
-          />
-
-          <span
-            className="absolute -right-3 -top-3 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.12em]"
-            style={{
-              color:
-                accent,
-
-              background:
-                '#0A0908',
-
-              border:
-                `1px solid ${accent}55`,
-            }}
-          >
-            NOW
-          </span>
-        </>
-      )}
-
-      {/* ========================================================== */}
-      {/* ICON                                                       */}
-      {/* ========================================================== */}
-
-      {Mark ? (
-        <Mark
-          width="27"
-          height="27"
-        />
-      ) : (
-        <span
-          className="serif text-[17px] leading-none tracking-tight"
-          style={{
-            color: ink,
-          }}
-        >
-          {entry.monogram}
-        </span>
-      )}
-    </span>
-  )
-}
-
-/* ================================================================== */
-/* COLOUR HELPERS                                                    */
-/* ================================================================== */
-
-const textColor = (
-  entry,
-) =>
-  entry.tint ||
-  entry.accent ||
-  'var(--accent)'
-
-function onFill(hex) {
-  if (
-    !hex ||
-    hex[0] !== '#'
-  ) {
-    return '#fff'
-  }
-
-  const rgb = [1, 3, 5].map(
-    (index) => {
-      const value =
-        parseInt(
-          hex.substr(
-            index,
-            2,
-          ),
-          16,
-        ) / 255
-
-      return value <=
-        0.03928
-        ? value / 12.92
-        : Math.pow(
-            (value + 0.055) /
-              1.055,
-            2.4,
-          )
-    },
-  )
-
-  const luminance =
-    0.2126 * rgb[0] +
-    0.7152 * rgb[1] +
-    0.0722 * rgb[2]
-
-  return luminance >
-    0.187
-    ? '#0B0A09'
-    : '#fff'
-}
-
-/* ================================================================== */
-/* CLAMP                                                             */
-/* ================================================================== */
-
-const clamp = (
-  value,
-  min,
-  max,
-) =>
-  Math.max(
-    min,
-    Math.min(
-      value,
-      max,
-    ),
-  )
-
-/* ================================================================== */
-/* CURRENT-NODE ANIMATION                                            */
-/* ================================================================== */
-
-/*
- * Injected once because this animation is local to the timeline and
- * doesn't need to affect the rest of the site.
- */
-
-if (
-  typeof document !==
-    'undefined' &&
-  !document.getElementById(
-    'timeline-pulse-style',
-  )
-) {
-  const style =
-    document.createElement(
-      'style',
-    )
-
-  style.id =
-    'timeline-pulse-style'
-
-  style.textContent = `
-    @keyframes timelinePulse {
-      0% {
-        transform: scale(0.82);
-        opacity: 0.65;
-      }
-
-      70% {
-        transform: scale(1.18);
-        opacity: 0;
-      }
-
-      100% {
-        transform: scale(1.18);
-        opacity: 0;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .timeline-map-motion {
-        animation: none !important;
-      }
-    }
-  `
-
-  document.head.appendChild(
-    style,
   )
 }
