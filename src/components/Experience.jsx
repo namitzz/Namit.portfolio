@@ -5,18 +5,20 @@ import { markFor } from './TimelineMarks'
 import Reveal from './Reveal'
 
 /*
- * Experience / Education timeline
+ * EXPERIENCE / EDUCATION TIMELINE
  *
  * Desktop:
- * - A continuous curved route
- * - Permanent small year + title labels
- * - Coloured timeline marks
- * - Hover/focus reveals the detailed card
- * - Route lights up towards the active stop
+ * - Animated cartographic background
+ * - Curved progression route
+ * - Permanent year + event labels
+ * - Interactive coloured nodes
+ * - Current Aston position highlighted as NOW
+ * - Hover/focus opens detailed information card
+ * - Route lights up towards the selected event
  *
  * Mobile:
  * - Clean vertical timeline
- * - All details visible
+ * - Full details visible
  */
 
 const TRACK_H = 520
@@ -30,18 +32,27 @@ export default function Experience() {
   const wrapRef = useRef(null)
   const pathRef = useRef(null)
 
-  const [box, setBox] = useState({ w: 0, h: TRACK_H })
+  const [box, setBox] = useState({
+    w: 0,
+    h: TRACK_H,
+  })
+
   const [active, setActive] = useState(null)
-  const [arc, setArc] = useState({ total: 0, at: [] })
+
+  const [arc, setArc] = useState({
+    total: 0,
+    at: [],
+  })
 
   const height = TRACK_H
 
-  /* -------------------------------------------------------------- */
-  /* Measure the route container                                    */
-  /* -------------------------------------------------------------- */
+  /* ================================================================ */
+  /* MEASURE CONTAINER                                                */
+  /* ================================================================ */
 
   useLayoutEffect(() => {
     const el = wrapRef.current
+
     if (!el) return undefined
 
     const measure = () => {
@@ -59,34 +70,54 @@ export default function Experience() {
     return () => ro.disconnect()
   }, [height])
 
-  /* -------------------------------------------------------------- */
-  /* Build route geometry                                            */
-  /* -------------------------------------------------------------- */
+  /* ================================================================ */
+  /* ROUTE GEOMETRY                                                   */
+  /* ================================================================ */
 
   const points = useMemo(
-    () => (box.w ? buildStops(timeline.length, box.w, height) : []),
+    () =>
+      box.w
+        ? buildStops(
+            timeline.length,
+            box.w,
+            height,
+          )
+        : [],
     [box.w, height],
   )
 
   const d = useMemo(
-    () => (points.length ? routePath(points) : ''),
+    () =>
+      points.length
+        ? routePath(points)
+        : '',
     [points],
   )
 
   const inkStops = useMemo(
-    () => gradientStops(points, box.w),
+    () =>
+      gradientStops(
+        points,
+        box.w,
+      ),
     [points, box.w],
   )
 
-  /* -------------------------------------------------------------- */
-  /* Active card                                                     */
-  /* -------------------------------------------------------------- */
+  /* ================================================================ */
+  /* ACTIVE CARD                                                      */
+  /* ================================================================ */
 
   const card = useMemo(() => {
-    if (active === null || !points[active]) return null
+    if (
+      active === null ||
+      !points[active]
+    ) {
+      return null
+    }
 
     return {
       entry: timeline[active],
+
       ...placeCard(
         points[active],
         active,
@@ -95,23 +126,41 @@ export default function Experience() {
         height,
       ),
     }
-  }, [active, points, box.w, height])
+  }, [
+    active,
+    points,
+    box.w,
+    height,
+  ])
 
-  /* -------------------------------------------------------------- */
-  /* Measure route distance for the travelling glow                  */
-  /* -------------------------------------------------------------- */
+  /* ================================================================ */
+  /* MEASURE ROUTE LENGTH                                             */
+  /* ================================================================ */
 
   useLayoutEffect(() => {
     const el = pathRef.current
 
-    if (!el || !d || !points.length) return
+    if (
+      !el ||
+      !d ||
+      !points.length
+    ) {
+      return
+    }
 
-    const total = el.getTotalLength()
+    const total =
+      el.getTotalLength()
 
     setArc({
       total,
-      at: points.map((point) =>
-        lengthAt(el, point, total),
+
+      at: points.map(
+        (point) =>
+          lengthAt(
+            el,
+            point,
+            total,
+          ),
       ),
     })
   }, [d, points])
@@ -121,7 +170,7 @@ export default function Experience() {
       ? arc.at[active] || 0
       : 0
 
-  /* -------------------------------------------------------------- */
+  /* ================================================================ */
 
   return (
     <section
@@ -134,14 +183,15 @@ export default function Experience() {
     >
       <div className="mx-auto w-full max-w-[1600px]">
 
-        {/* -------------------------------------------------------- */}
-        {/* Section heading                                          */}
-        {/* -------------------------------------------------------- */}
+        {/* ========================================================== */}
+        {/* SECTION HEADING                                             */}
+        {/* ========================================================== */}
 
         <Reveal
           className="mb-12 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
           style={{
-            borderColor: 'var(--hairline)',
+            borderColor:
+              'var(--hairline)',
           }}
         >
           <div>
@@ -156,25 +206,54 @@ export default function Experience() {
               }}
             >
               The route so far
-              <span style={{ color: 'var(--accent)' }}>
+              <span
+                style={{
+                  color:
+                    'var(--accent)',
+                }}
+              >
                 .
               </span>
             </h2>
           </div>
 
-          <p
-            className="mono-label"
-            style={{
-              color: 'var(--muted)',
-            }}
-          >
-            {timeline.length} stops · 2023 – present
-          </p>
+          <div className="flex flex-col items-start gap-2 md:items-end">
+            <p
+              className="mono-label"
+              style={{
+                color:
+                  'var(--muted)',
+              }}
+            >
+              {timeline.length} stops · 2023 – present
+            </p>
+
+            {/* Small legend */}
+            <div
+              className="hidden items-center gap-3 font-mono text-[9px] uppercase tracking-[0.12em] md:flex"
+              style={{
+                color:
+                  'var(--muted)',
+              }}
+            >
+              <span>
+                ● EDUCATION
+              </span>
+
+              <span>
+                ● PROJECT
+              </span>
+
+              <span>
+                ● EXPERIENCE
+              </span>
+            </div>
+          </div>
         </Reveal>
 
-        {/* ======================================================== */}
-        {/* DESKTOP                                                  */}
-        {/* ======================================================== */}
+        {/* ========================================================== */}
+        {/* DESKTOP TIMELINE                                           */}
+        {/* ========================================================== */}
 
         <div
           ref={wrapRef}
@@ -182,20 +261,33 @@ export default function Experience() {
           style={{
             height,
           }}
-          onMouseLeave={() => setActive(null)}
+          onMouseLeave={() =>
+            setActive(null)
+          }
         >
+
+          {/* ======================================================== */}
+          {/* ANIMATED MAP BACKGROUND                                  */}
+          {/* ======================================================== */}
+
+          <AnimatedMapBackground />
+
+          {/* ======================================================== */}
+          {/* ROUTE SVG                                                */}
+          {/* ======================================================== */}
+
           {box.w > 0 && (
             <svg
               aria-hidden="true"
               width={box.w}
               height={height}
-              className="absolute left-0 top-0"
+              className="absolute left-0 top-0 z-[1]"
             >
               <defs>
 
-                {/* ---------------------------------------------- */}
-                {/* Route glow                                     */}
-                {/* ---------------------------------------------- */}
+                {/* ================================================== */}
+                {/* ROUTE GLOW                                          */}
+                {/* ================================================== */}
 
                 <filter
                   id="routeGlow"
@@ -204,12 +296,14 @@ export default function Experience() {
                   width="120%"
                   height="140%"
                 >
-                  <feGaussianBlur stdDeviation="7" />
+                  <feGaussianBlur
+                    stdDeviation="7"
+                  />
                 </filter>
 
-                {/* ---------------------------------------------- */}
-                {/* Multi-colour route gradient                    */}
-                {/* ---------------------------------------------- */}
+                {/* ================================================== */}
+                {/* ROUTE COLOUR GRADIENT                              */}
+                {/* ================================================== */}
 
                 <linearGradient
                   id="routeInk"
@@ -224,9 +318,9 @@ export default function Experience() {
 
               </defs>
 
-              {/* ------------------------------------------------ */}
-              {/* Travelling glow                                 */}
-              {/* ------------------------------------------------ */}
+              {/* ==================================================== */}
+              {/* TRAVELLING ROUTE GLOW                               */}
+              {/* ==================================================== */}
 
               {arc.total > 0 && (
                 <path
@@ -237,11 +331,18 @@ export default function Experience() {
                   strokeLinecap="round"
                   filter="url(#routeGlow)"
                   style={{
-                    strokeDasharray: arc.total,
+                    strokeDasharray:
+                      arc.total,
+
                     strokeDashoffset:
-                      arc.total - travelled,
+                      arc.total -
+                      travelled,
+
                     opacity:
-                      travelled > 0 ? 0.9 : 0,
+                      travelled > 0
+                        ? 0.9
+                        : 0,
+
                     transition: reduce
                       ? 'none'
                       : 'stroke-dashoffset 460ms cubic-bezier(0.22,1,0.36,1), opacity 220ms ease',
@@ -249,9 +350,9 @@ export default function Experience() {
                 />
               )}
 
-              {/* ------------------------------------------------ */}
-              {/* Main dotted route                                */}
-              {/* ------------------------------------------------ */}
+              {/* ==================================================== */}
+              {/* MAIN DOTTED ROUTE                                   */}
+              {/* ==================================================== */}
 
               <path
                 ref={pathRef}
@@ -265,33 +366,42 @@ export default function Experience() {
             </svg>
           )}
 
-          {/* ==================================================== */}
-          {/* Timeline stops                                      */}
-          {/* ==================================================== */}
+          {/* ======================================================== */}
+          {/* TIMELINE STOPS                                          */}
+          {/* ======================================================== */}
 
-          {points.map((point, index) => {
-            const entry = timeline[index]
+          {points.map(
+            (point, index) => {
+              const entry =
+                timeline[index]
 
-            if (!entry) return null
+              if (!entry) {
+                return null
+              }
 
-            return (
-              <Stop
-                key={entry.id}
-                entry={entry}
-                point={point}
-                active={active === index}
-                dimmed={
-                  active !== null &&
-                  active !== index
-                }
-                onEnter={() => setActive(index)}
-              />
-            )
-          })}
+              return (
+                <Stop
+                  key={entry.id}
+                  entry={entry}
+                  point={point}
+                  active={
+                    active === index
+                  }
+                  dimmed={
+                    active !== null &&
+                    active !== index
+                  }
+                  onEnter={() =>
+                    setActive(index)
+                  }
+                />
+              )
+            },
+          )}
 
-          {/* ==================================================== */}
-          {/* Detail card                                          */}
-          {/* ==================================================== */}
+          {/* ======================================================== */}
+          {/* DETAIL CARD                                              */}
+          {/* ======================================================== */}
 
           {card && (
             <div
@@ -301,14 +411,25 @@ export default function Experience() {
                 left: card.left,
                 top: card.top,
                 width: CARD_W,
+
                 maxHeight:
-                  height - card.top - 8,
+                  height -
+                  card.top -
+                  8,
+
                 overflow: 'hidden',
+
                 borderColor:
-                  textColor(card.entry),
-                background: '#0A0908',
+                  textColor(
+                    card.entry,
+                  ),
+
+                background:
+                  '#0A0908',
+
                 boxShadow:
                   '0 30px 70px -40px rgba(0,0,0,0.95)',
+
                 transition: reduce
                   ? 'none'
                   : 'border-color 260ms ease',
@@ -322,80 +443,441 @@ export default function Experience() {
           )}
         </div>
 
-        {/* ======================================================== */}
-        {/* MOBILE                                                   */}
-        {/* ======================================================== */}
+        {/* ========================================================== */}
+        {/* MOBILE TIMELINE                                            */}
+        {/* ========================================================== */}
 
         <ol className="md:hidden">
-          {timeline.map((entry, index) => (
-            <li
-              key={entry.id}
-              className="relative grid grid-cols-[3.5rem_1fr] gap-4"
-            >
-              {/* Vertical line */}
+          {timeline.map(
+            (entry, index) => (
+              <li
+                key={entry.id}
+                className="relative grid grid-cols-[3.5rem_1fr] gap-4"
+              >
 
-              {index < timeline.length - 1 && (
-                <span
-                  aria-hidden="true"
-                  className="absolute bottom-0 left-[27px] top-[60px] w-[2px]"
-                  style={{
-                    backgroundImage:
-                      'repeating-linear-gradient(180deg, rgba(244,244,245,0.28) 0 3px, transparent 3px 11px)',
-                  }}
-                />
-              )}
+                {index <
+                  timeline.length -
+                    1 && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-0 left-[27px] top-[60px] w-[2px]"
+                    style={{
+                      backgroundImage:
+                        'repeating-linear-gradient(180deg, rgba(244,244,245,0.28) 0 3px, transparent 3px 11px)',
+                    }}
+                  />
+                )}
 
-              {/* Mark */}
+                <div className="pt-1">
+                  <StopMark
+                    entry={entry}
+                    isActive
+                  />
+                </div>
 
-              <div className="pt-1">
-                <StopMark
-                  entry={entry}
-                  isActive
-                />
-              </div>
-
-              {/* Detail */}
-
-              <div className="pb-10 pt-1">
-                <Detail entry={entry} />
-              </div>
-            </li>
-          ))}
+                <div className="pb-10 pt-1">
+                  <Detail
+                    entry={entry}
+                  />
+                </div>
+              </li>
+            ),
+          )}
         </ol>
-
       </div>
     </section>
   )
 }
 
 /* ================================================================== */
-/* ROUTE GEOMETRY                                                    */
+/* ANIMATED CARTOGRAPHIC BACKGROUND                                   */
+/* ================================================================== */
+
+function AnimatedMapBackground() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      style={{
+        opacity: 0.42,
+      }}
+    >
+      <svg
+        width="100%"
+        height="100%"
+        viewBox="0 0 1200 520"
+        preserveAspectRatio="none"
+        className="absolute inset-0 h-full w-full"
+      >
+        <defs>
+
+          {/* ======================================================== */}
+          {/* MAP GRID                                                */}
+          {/* ======================================================== */}
+
+          <pattern
+            id="mapGrid"
+            width="72"
+            height="72"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M 72 0 L 0 0 0 72"
+              fill="none"
+              stroke="rgba(244,244,245,0.055)"
+              strokeWidth="1"
+            />
+
+            <circle
+              cx="0"
+              cy="0"
+              r="1.5"
+              fill="rgba(244,244,245,0.10)"
+            />
+          </pattern>
+
+          {/* ======================================================== */}
+          {/* SOFT CENTRE GLOW                                         */}
+          {/* ======================================================== */}
+
+          <radialGradient
+            id="mapGlow"
+            cx="50%"
+            cy="50%"
+            r="60%"
+          >
+            <stop
+              offset="0%"
+              stopColor="rgba(244,85,42,0.07)"
+            />
+
+            <stop
+              offset="55%"
+              stopColor="rgba(244,85,42,0.025)"
+            />
+
+            <stop
+              offset="100%"
+              stopColor="rgba(0,0,0,0)"
+            />
+          </radialGradient>
+
+          {/* ======================================================== */}
+          {/* SIGNAL GLOW                                             */}
+          {/* ======================================================== */}
+
+          <filter
+            id="mapSignalGlow"
+            x="-200%"
+            y="-200%"
+            width="400%"
+            height="400%"
+          >
+            <feGaussianBlur
+              stdDeviation="5"
+            />
+          </filter>
+        </defs>
+
+        {/* ========================================================== */}
+        {/* GRID                                                       */}
+        {/* ========================================================== */}
+
+        <rect
+          width="1200"
+          height="520"
+          fill="url(#mapGrid)"
+        />
+
+        {/* ========================================================== */}
+        {/* CENTRE LIGHT                                              */}
+        {/* ========================================================== */}
+
+        <rect
+          width="1200"
+          height="520"
+          fill="url(#mapGlow)"
+        />
+
+        {/* ========================================================== */}
+        {/* TOPOGRAPHIC CONTOURS                                      */}
+        {/* ========================================================== */}
+
+        <g
+          fill="none"
+          stroke="rgba(244,244,245,0.075)"
+          strokeWidth="1"
+        >
+          <path d="M-80 100 C120 20 190 160 370 105 S620 25 820 105 S1060 170 1280 80" />
+
+          <path d="M-100 135 C110 55 210 190 390 135 S630 55 835 135 S1080 200 1300 110" />
+
+          <path d="M-120 170 C90 90 220 220 405 165 S650 90 850 165 S1090 235 1320 145" />
+
+          <path d="M-130 205 C70 125 235 250 420 195 S675 125 870 195 S1110 270 1340 180" />
+
+          <path d="M-120 350 C100 280 220 410 410 350 S650 285 850 350 S1080 420 1320 330" />
+
+          <path d="M-110 385 C100 315 240 445 430 385 S670 320 875 385 S1095 455 1320 365" />
+
+          <path d="M-100 420 C100 350 250 480 445 420 S690 355 890 420 S1110 490 1320 400" />
+        </g>
+
+        {/* ========================================================== */}
+        {/* SECONDARY CARTOGRAPHIC LINES                              */}
+        {/* ========================================================== */}
+
+        <g
+          fill="none"
+          stroke="rgba(244,244,245,0.045)"
+          strokeWidth="1"
+        >
+          <path d="M130 -40 C190 90 95 180 170 290 S220 430 170 570" />
+
+          <path d="M330 -40 C390 80 295 190 365 300 S410 440 360 570" />
+
+          <path d="M540 -40 C600 100 500 180 570 300 S620 450 570 570" />
+
+          <path d="M760 -40 C820 80 720 190 790 310 S835 450 790 570" />
+
+          <path d="M970 -40 C1030 90 930 190 1000 310 S1045 450 995 570" />
+        </g>
+
+        {/* ========================================================== */}
+        {/* MAP JUNCTIONS                                             */}
+        {/* ========================================================== */}
+
+        <g
+          fill="none"
+          stroke="rgba(244,244,245,0.09)"
+          strokeWidth="1"
+        >
+          <circle
+            cx="170"
+            cy="145"
+            r="24"
+          />
+
+          <circle
+            cx="170"
+            cy="145"
+            r="42"
+          />
+
+          <circle
+            cx="475"
+            cy="335"
+            r="18"
+          />
+
+          <circle
+            cx="475"
+            cy="335"
+            r="34"
+          />
+
+          <circle
+            cx="890"
+            cy="185"
+            r="25"
+          />
+
+          <circle
+            cx="890"
+            cy="185"
+            r="47"
+          />
+
+          <circle
+            cx="1080"
+            cy="370"
+            r="20"
+          />
+
+          <circle
+            cx="1080"
+            cy="370"
+            r="38"
+          />
+        </g>
+
+        {/* ========================================================== */}
+        {/* SMALL MAP NODES                                           */}
+        {/* ========================================================== */}
+
+        <g
+          fill="rgba(244,244,245,0.25)"
+        >
+          <circle
+            cx="170"
+            cy="145"
+            r="2"
+          />
+
+          <circle
+            cx="475"
+            cy="335"
+            r="2"
+          />
+
+          <circle
+            cx="890"
+            cy="185"
+            r="2"
+          />
+
+          <circle
+            cx="1080"
+            cy="370"
+            r="2"
+          />
+
+          <circle
+            cx="305"
+            cy="90"
+            r="1.5"
+          />
+
+          <circle
+            cx="680"
+            cy="425"
+            r="1.5"
+          />
+
+          <circle
+            cx="1010"
+            cy="120"
+            r="1.5"
+          />
+        </g>
+
+        {/* ========================================================== */}
+        {/* MOVING SIGNAL                                             */}
+        {/* ========================================================== */}
+
+        <g>
+          <circle
+            r="10"
+            fill="rgba(244,85,42,0.18)"
+            filter="url(#mapSignalGlow)"
+          >
+            <animateMotion
+              dur="18s"
+              repeatCount="indefinite"
+              path="M40 420 C180 120 300 450 470 160 S760 80 900 340 S1100 160 1180 80"
+            />
+          </circle>
+
+          <circle
+            r="2.5"
+            fill="rgba(244,85,42,0.55)"
+          >
+            <animateMotion
+              dur="18s"
+              repeatCount="indefinite"
+              path="M40 420 C180 120 300 450 470 160 S760 80 900 340 S1100 160 1180 80"
+            />
+          </circle>
+        </g>
+
+        {/* ========================================================== */}
+        {/* SCANNING LINE                                             */}
+        {/* ========================================================== */}
+
+        <line
+          x1="-100"
+          y1="0"
+          x2="-100"
+          y2="520"
+          stroke="rgba(244,85,42,0.10)"
+          strokeWidth="1"
+        >
+          <animate
+            attributeName="x1"
+            values="-100;1300;-100"
+            dur="22s"
+            repeatCount="indefinite"
+          />
+
+          <animate
+            attributeName="x2"
+            values="-100;1300;-100"
+            dur="22s"
+            repeatCount="indefinite"
+          />
+        </line>
+      </svg>
+
+      {/* ============================================================ */}
+      {/* EDGE FADE                                                    */}
+      {/* ============================================================ */}
+
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(circle at center, transparent 20%, rgba(10,9,8,0.28) 70%, rgba(10,9,8,0.72) 100%)',
+        }}
+      />
+
+      <div
+        className="absolute inset-x-0 top-0 h-24"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(10,9,8,0.7), transparent)',
+        }}
+      />
+
+      <div
+        className="absolute inset-x-0 bottom-0 h-24"
+        style={{
+          background:
+            'linear-gradient(0deg, rgba(10,9,8,0.7), transparent)',
+        }}
+      />
+    </div>
+  )
+}
+
+/* ================================================================== */
+/* ROUTE STOPS                                                       */
 /* ================================================================== */
 
 /*
- * Creates a deliberate wave rather than a random walk.
+ * Controlled wave rather than random wandering.
  *
- * This is important visually: the old version looked like a network
- * diagram because the nodes wandered too far vertically.
+ * The previous route deliberately used a random walk. It looked
+ * interesting, but it also produced large empty areas and made the
+ * timeline feel more like a network diagram.
  *
- * The new route has:
- * - controlled vertical movement
- * - slight irregularity
- * - consistent left-to-right progress
+ * This version keeps the organic feel while giving the route a much
+ * stronger visual rhythm.
  */
-function buildStops(count, width, height) {
+
+function buildStops(
+  count,
+  width,
+  height,
+) {
   const out = []
 
   const left = EDGE
   const right = width - EDGE
 
-  const center = height / 2
-  const amplitude = Math.min(
-    145,
-    height * 0.28,
-  )
+  const center =
+    height / 2
 
-  for (let i = 0; i < count; i++) {
+  const amplitude =
+    Math.min(
+      145,
+      height * 0.28,
+    )
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
     const progress =
       count > 1
         ? i / (count - 1)
@@ -403,20 +885,22 @@ function buildStops(count, width, height) {
 
     const x =
       left +
-      (right - left) * progress
+      (right - left) *
+        progress
 
-    /*
-     * Two gentle waves across the route.
-     *
-     * The small deterministic offset keeps it from
-     * looking mechanically perfect.
-     */
     const wave =
-      Math.sin(progress * Math.PI * 2.15)
+      Math.sin(
+        progress *
+          Math.PI *
+          2.15,
+      )
 
     const secondary =
       Math.sin(
-        progress * Math.PI * 5.1 + 0.7,
+        progress *
+          Math.PI *
+          5.1 +
+          0.7,
       ) * 18
 
     const y =
@@ -426,6 +910,7 @@ function buildStops(count, width, height) {
 
     out.push({
       x,
+
       y: clamp(
         y,
         78,
@@ -438,52 +923,81 @@ function buildStops(count, width, height) {
 }
 
 /* ================================================================== */
-/* WAYPOINTS                                                         */
+/* ROUTE WAYPOINTS                                                   */
 /* ================================================================== */
 
-function buildWaypoints(stops) {
-  if (!stops.length) return []
+function buildWaypoints(
+  stops,
+) {
+  if (!stops.length) {
+    return []
+  }
 
   const waypoints = []
 
   waypoints.push({
-    x: stops[0].x - 42,
-    y: stops[0].y - 24,
+    x:
+      stops[0].x - 42,
+
+    y:
+      stops[0].y - 24,
   })
 
-  for (let i = 0; i < stops.length; i++) {
-    const current = stops[i]
+  for (
+    let i = 0;
+    i < stops.length;
+    i++
+  ) {
+    const current =
+      stops[i]
 
-    waypoints.push(current)
+    waypoints.push(
+      current,
+    )
 
-    const next = stops[i + 1]
+    const next =
+      stops[i + 1]
 
-    if (!next) break
+    if (!next) {
+      break
+    }
 
-    const dx = next.x - current.x
-    const dy = next.y - current.y
+    const dx =
+      next.x -
+      current.x
+
+    const dy =
+      next.y -
+      current.y
 
     const length =
-      Math.hypot(dx, dy) || 1
+      Math.hypot(
+        dx,
+        dy,
+      ) || 1
 
-    /*
-     * Alternating bends give the route a hand-drawn
-     * editorial quality without becoming chaotic.
-     */
     const direction =
-      i % 2 === 0 ? -1 : 1
+      i % 2 === 0
+        ? -1
+        : 1
 
-    const amplitude = 28 + (i % 3) * 8
+    const amplitude =
+      28 +
+      (i % 3) * 8
 
     waypoints.push({
       x:
-        (current.x + next.x) / 2 +
+        (current.x +
+          next.x) /
+          2 +
         (-dy / length) *
           amplitude *
           direction,
 
       y:
-        (current.y + next.y) / 2 +
+        (current.y +
+          next.y) /
+          2 +
         (dx / length) *
           amplitude *
           direction,
@@ -491,11 +1005,16 @@ function buildWaypoints(stops) {
   }
 
   const last =
-    stops[stops.length - 1]
+    stops[
+      stops.length - 1
+    ]
 
   waypoints.push({
-    x: last.x + 42,
-    y: last.y + 24,
+    x:
+      last.x + 42,
+
+    y:
+      last.y + 24,
   })
 
   return waypoints
@@ -505,10 +1024,17 @@ function buildWaypoints(stops) {
 /* CURVED ROUTE                                                      */
 /* ================================================================== */
 
-function routePath(stops) {
-  const points = buildWaypoints(stops)
+function routePath(
+  stops,
+) {
+  const points =
+    buildWaypoints(
+      stops,
+    )
 
-  if (points.length < 2) {
+  if (
+    points.length < 2
+  ) {
     return ''
   }
 
@@ -517,33 +1043,43 @@ function routePath(stops) {
 
   for (
     let i = 0;
-    i < points.length - 1;
+    i <
+    points.length - 1;
     i++
   ) {
     const p0 =
-      points[i - 1] || points[i]
+      points[i - 1] ||
+      points[i]
 
-    const p1 = points[i]
-    const p2 = points[i + 1]
+    const p1 =
+      points[i]
+
+    const p2 =
+      points[i + 1]
 
     const p3 =
-      points[i + 2] || p2
+      points[i + 2] ||
+      p2
 
     const c1x =
       p1.x +
-      (p2.x - p0.x) / 6
+      (p2.x - p0.x) /
+        6
 
     const c1y =
       p1.y +
-      (p2.y - p0.y) / 6
+      (p2.y - p0.y) /
+        6
 
     const c2x =
       p2.x -
-      (p3.x - p1.x) / 6
+      (p3.x - p1.x) /
+        6
 
     const c2y =
       p2.y -
-      (p3.y - p1.y) / 6
+      (p3.y - p1.y) /
+        6
 
     d +=
       ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ` +
@@ -555,39 +1091,53 @@ function routePath(stops) {
 }
 
 /* ================================================================== */
-/* ROUTE COLOUR                                                     */
+/* ROUTE GRADIENT                                                    */
 /* ================================================================== */
 
-function gradientStops(points, width) {
+function gradientStops(
+  points,
+  width,
+) {
   let last = 0
 
-  return points.map((point, index) => {
-    const entry =
-      timeline[index] || {}
+  return points.map(
+    (point, index) => {
+      const entry =
+        timeline[index] ||
+        {}
 
-    const offset = Math.max(
-      last,
-      clamp(
-        point.x / (width || 1),
-        0,
-        1,
-      ),
-    )
+      const offset =
+        Math.max(
+          last,
 
-    last = offset
+          clamp(
+            point.x /
+              (width || 1),
+            0,
+            1,
+          ),
+        )
 
-    return (
-      <stop
-        key={entry.id || index}
-        offset={offset}
-        stopColor={textColor(entry)}
-      />
-    )
-  })
+      last = offset
+
+      return (
+        <stop
+          key={
+            entry.id ||
+            index
+          }
+          offset={offset}
+          stopColor={textColor(
+            entry,
+          )}
+        />
+      )
+    },
+  )
 }
 
 /* ================================================================== */
-/* PATH DISTANCE                                                     */
+/* ROUTE DISTANCE                                                    */
 /* ================================================================== */
 
 function lengthAt(
@@ -596,7 +1146,9 @@ function lengthAt(
   total,
 ) {
   let best = 0
-  let bestDistance = Infinity
+
+  let bestDistance =
+    Infinity
 
   const steps = 260
 
@@ -606,7 +1158,8 @@ function lengthAt(
     i++
   ) {
     const distance =
-      (i / steps) * total
+      (i / steps) *
+      total
 
     const point =
       element.getPointAtLength(
@@ -614,12 +1167,22 @@ function lengthAt(
       )
 
     const difference =
-      (point.x - target.x) ** 2 +
-      (point.y - target.y) ** 2
+      (point.x -
+        target.x) **
+        2 +
+      (point.y -
+        target.y) **
+        2
 
-    if (difference < bestDistance) {
-      bestDistance = difference
-      best = distance
+    if (
+      difference <
+      bestDistance
+    ) {
+      bestDistance =
+        difference
+
+      best =
+        distance
     }
   }
 
@@ -631,11 +1194,14 @@ function lengthAt(
     i <= 20;
     i++
   ) {
-    const distance = clamp(
-      best + (i / 20) * span,
-      0,
-      total,
-    )
+    const distance =
+      clamp(
+        best +
+          (i / 20) *
+            span,
+        0,
+        total,
+      )
 
     const point =
       element.getPointAtLength(
@@ -643,12 +1209,22 @@ function lengthAt(
       )
 
     const difference =
-      (point.x - target.x) ** 2 +
-      (point.y - target.y) ** 2
+      (point.x -
+        target.x) **
+        2 +
+      (point.y -
+        target.y) **
+        2
 
-    if (difference < bestDistance) {
-      bestDistance = difference
-      best = distance
+    if (
+      difference <
+      bestDistance
+    ) {
+      bestDistance =
+        difference
+
+      best =
+        distance
     }
   }
 
@@ -666,36 +1242,66 @@ function placeCard(
   width,
   height,
 ) {
-  const blockers = points
-    .filter((_, i) => i !== index)
-    .map((p) => ({
-      x0: p.x - 78,
-      x1: p.x + 78,
-      y0: p.y - 32,
-      y1: p.y + 84,
-    }))
+  const blockers =
+    points
+      .filter(
+        (_, i) =>
+          i !== index,
+      )
+      .map((p) => ({
+        x0:
+          p.x - 78,
+
+        x1:
+          p.x + 78,
+
+        y0:
+          p.y - 32,
+
+        y1:
+          p.y + 84,
+      }))
 
   const own = {
-    x0: point.x - 78,
-    x1: point.x + 78,
-    y0: point.y - 32,
-    y1: point.y + 84,
+    x0:
+      point.x - 78,
+
+    x1:
+      point.x + 78,
+
+    y0:
+      point.y - 32,
+
+    y1:
+      point.y + 84,
   }
 
-  const overlaps = (rect, box) =>
-    rect.left + CARD_W > box.x0 &&
-    rect.left < box.x1 &&
-    rect.top + CARD_H > box.y0 &&
-    rect.top < box.y1
+  const overlaps = (
+    rect,
+    obstacle,
+  ) =>
+    rect.left +
+      CARD_W >
+      obstacle.x0 &&
+    rect.left <
+      obstacle.x1 &&
+    rect.top +
+      CARD_H >
+      obstacle.y0 &&
+    rect.top <
+      obstacle.y1
 
   const centerLeft =
-    point.x - CARD_W / 2
+    point.x -
+    CARD_W / 2
 
   const centerTop =
-    point.y - CARD_H / 2
+    point.y -
+    CARD_H / 2
 
   const preferDown =
-    point.y < height / 2
+    point.y <
+    height / 2
 
   let best = null
 
@@ -706,8 +1312,10 @@ function placeCard(
     if (
       left < 0 ||
       top < 0 ||
-      left + CARD_W > width ||
-      top + CARD_H > height
+      left + CARD_W >
+        width ||
+      top + CARD_H >
+        height
     ) {
       return
     }
@@ -717,27 +1325,43 @@ function placeCard(
       top,
     }
 
-    if (overlaps(rect, own)) {
+    if (
+      overlaps(
+        rect,
+        own,
+      )
+    ) {
       return
     }
 
     const covered =
-      blockers.filter((box) =>
-        overlaps(rect, box),
+      blockers.filter(
+        (obstacle) =>
+          overlaps(
+            rect,
+            obstacle,
+          ),
       ).length
 
     const distance =
       Math.hypot(
-        left + CARD_W / 2 - point.x,
-        top + CARD_H / 2 - point.y,
+        left +
+          CARD_W / 2 -
+          point.x,
+
+        top +
+          CARD_H / 2 -
+          point.y,
       )
 
     const score =
-      distance + covered * 100
+      distance +
+      covered * 100
 
     if (
       !best ||
-      score < best.score
+      score <
+        best.score
     ) {
       best = {
         left,
@@ -756,7 +1380,8 @@ function placeCard(
       step * 22
 
     const down =
-      point.y + CARD_GAP
+      point.y +
+      CARD_GAP
 
     const up =
       point.y -
@@ -770,12 +1395,14 @@ function placeCard(
       )
 
       consider(
-        centerLeft - offset,
+        centerLeft -
+          offset,
         down,
       )
 
       consider(
-        centerLeft + offset,
+        centerLeft +
+          offset,
         down,
       )
 
@@ -790,12 +1417,14 @@ function placeCard(
       )
 
       consider(
-        centerLeft - offset,
+        centerLeft -
+          offset,
         up,
       )
 
       consider(
-        centerLeft + offset,
+        centerLeft +
+          offset,
         up,
       )
 
@@ -811,7 +1440,9 @@ function placeCard(
     )
 
     consider(
-      point.x - CARD_W - 72,
+      point.x -
+        CARD_W -
+        72,
       centerTop,
     )
   }
@@ -831,7 +1462,10 @@ function placeCard(
     ),
 
     top: clamp(
-      downFallback(point, height),
+      fallbackTop(
+        point,
+        height,
+      ),
       0,
       Math.max(
         0,
@@ -841,20 +1475,27 @@ function placeCard(
   }
 }
 
-function downFallback(
+function fallbackTop(
   point,
   height,
 ) {
   if (
-    point.y + CARD_GAP + CARD_H <=
+    point.y +
+      CARD_GAP +
+      CARD_H <=
     height
   ) {
-    return point.y + CARD_GAP
+    return (
+      point.y +
+      CARD_GAP
+    )
   }
 
-  return point.y -
+  return (
+    point.y -
     CARD_GAP -
     CARD_H
+  )
 }
 
 /* ================================================================== */
@@ -869,11 +1510,12 @@ function Stop({
   onEnter,
 }) {
   /*
-   * Labels alternate above and below the route.
+   * Alternate labels above and below the route.
    *
-   * This makes the timeline readable without putting
-   * every label on top of the route.
+   * This keeps the route readable while avoiding eleven
+   * labels sitting on top of each other.
    */
+
   const labelAbove =
     point.y > 255
 
@@ -887,7 +1529,10 @@ function Stop({
           ? 'route-card'
           : undefined
       }
-      aria-label={`${entry.year} — ${entry.short || entry.title}`}
+      aria-label={`${entry.year} — ${
+        entry.short ||
+        entry.title
+      }`}
       className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity duration-300"
       style={{
         left: point.x,
@@ -897,9 +1542,9 @@ function Stop({
       }}
     >
 
-      {/* ======================================================== */}
-      {/* Permanent label                                          */}
-      {/* ======================================================== */}
+      {/* ========================================================== */}
+      {/* LABEL ABOVE                                                */}
+      {/* ========================================================== */}
 
       {labelAbove && (
         <StopLabel
@@ -909,14 +1554,18 @@ function Stop({
         />
       )}
 
-      {/* ======================================================== */}
-      {/* Mark                                                     */}
-      {/* ======================================================== */}
+      {/* ========================================================== */}
+      {/* NODE                                                       */}
+      {/* ========================================================== */}
 
       <StopMark
         entry={entry}
         isActive={active}
       />
+
+      {/* ========================================================== */}
+      {/* LABEL BELOW                                                */}
+      {/* ========================================================== */}
 
       {!labelAbove && (
         <StopLabel
@@ -929,7 +1578,7 @@ function Stop({
 }
 
 /* ================================================================== */
-/* PERMANENT STOP LABEL                                               */
+/* STOP LABEL                                                        */
 /* ================================================================== */
 
 function StopLabel({
@@ -950,6 +1599,7 @@ function StopLabel({
         style={{
           color:
             textColor(entry),
+
           opacity:
             active ? 1 : 0.78,
         }}
@@ -958,9 +1608,11 @@ function StopLabel({
       </span>
 
       <span
-        className="mt-1 max-w-[150px] whitespace-nowrap text-center text-[11.5px] leading-tight transition-opacity duration-300"
+        className="mt-1 max-w-[160px] whitespace-nowrap text-center text-[11.5px] leading-tight transition-opacity duration-300"
         style={{
-          color: 'var(--ink)',
+          color:
+            'var(--ink)',
+
           opacity:
             active ? 1 : 0.68,
         }}
@@ -968,12 +1620,31 @@ function StopLabel({
         {entry.short ||
           entry.title}
       </span>
+
+      {/* Current indicator */}
+
+      {entry.id ===
+        'aston' && (
+        <span
+          className="mt-1 font-mono text-[8px] uppercase tracking-[0.16em]"
+          style={{
+            color:
+              textColor(
+                entry,
+              ),
+            opacity:
+              active ? 1 : 0.9,
+          }}
+        >
+          Now
+        </span>
+      )}
     </span>
   )
 }
 
 /* ================================================================== */
-/* DETAIL CARD / MOBILE DETAIL                                        */
+/* DETAIL                                                            */
 /* ================================================================== */
 
 function Detail({
@@ -999,7 +1670,8 @@ function Detail({
             : 'text-[1.3rem]'
         }`}
         style={{
-          color: 'var(--ink)',
+          color:
+            'var(--ink)',
         }}
       >
         {entry.title}
@@ -1008,7 +1680,8 @@ function Detail({
       <p
         className="mono-label mt-2"
         style={{
-          color: 'var(--muted)',
+          color:
+            'var(--muted)',
         }}
       >
         {entry.org}
@@ -1026,7 +1699,9 @@ function Detail({
             className="inline-block h-1.5 w-1.5 rounded-full"
             style={{
               background:
-                textColor(entry),
+                textColor(
+                  entry,
+                ),
             }}
           />
 
@@ -1057,13 +1732,18 @@ function Detail({
           style={{
             color:
               textColor(entry),
+
             borderColor:
               textColor(entry),
           }}
         >
-          {linkLabel(entry.href)}
+          {linkLabel(
+            entry.href,
+          )}
 
-          <span aria-hidden="true">
+          <span
+            aria-hidden="true"
+          >
             ↗
           </span>
         </a>
@@ -1073,10 +1753,12 @@ function Detail({
 }
 
 /* ================================================================== */
-/* LINK LABEL                                                         */
+/* LINK LABEL                                                        */
 /* ================================================================== */
 
-function linkLabel(href = '') {
+function linkLabel(
+  href = '',
+) {
   if (
     href.includes(
       'github.com',
@@ -1116,10 +1798,124 @@ function linkLabel(href = '') {
 }
 
 /* ================================================================== */
-/* COLOUR HELPERS                                                     */
+/* STOP MARK                                                         */
 /* ================================================================== */
 
-const textColor = (entry) =>
+function StopMark({
+  entry,
+  isActive,
+}) {
+  const accent =
+    entry.accent ||
+    'var(--accent)'
+
+  const ink = isActive
+    ? onFill(
+        entry.accent,
+      )
+    : textColor(entry)
+
+  const Mark =
+    markFor(entry)
+
+  const isCurrent =
+    entry.id === 'aston'
+
+  return (
+    <span
+      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
+      style={{
+        background:
+          isActive
+            ? accent
+            : '#0A0908',
+
+        border:
+          `2px solid ${accent}`,
+
+        color: ink,
+
+        transform:
+          isActive
+            ? 'scale(1.06)'
+            : 'scale(1)',
+
+        boxShadow:
+          isActive
+            ? `0 0 0 6px ${accent}22`
+            : isCurrent
+              ? `0 0 0 5px ${accent}12`
+              : 'none',
+
+        transition:
+          'transform 300ms ease, box-shadow 300ms ease',
+      }}
+    >
+
+      {/* ========================================================== */}
+      {/* CURRENT ASTON PULSE                                        */}
+      {/* ========================================================== */}
+
+      {isCurrent && (
+        <>
+          <span
+            className="absolute inset-[-10px] rounded-full border"
+            style={{
+              borderColor:
+                `${accent}30`,
+              animation:
+                'timelinePulse 3.2s ease-out infinite',
+            }}
+          />
+
+          <span
+            className="absolute -right-3 -top-3 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.12em]"
+            style={{
+              color:
+                accent,
+
+              background:
+                '#0A0908',
+
+              border:
+                `1px solid ${accent}55`,
+            }}
+          >
+            NOW
+          </span>
+        </>
+      )}
+
+      {/* ========================================================== */}
+      {/* ICON                                                       */}
+      {/* ========================================================== */}
+
+      {Mark ? (
+        <Mark
+          width="27"
+          height="27"
+        />
+      ) : (
+        <span
+          className="serif text-[17px] leading-none tracking-tight"
+          style={{
+            color: ink,
+          }}
+        >
+          {entry.monogram}
+        </span>
+      )}
+    </span>
+  )
+}
+
+/* ================================================================== */
+/* COLOUR HELPERS                                                    */
+/* ================================================================== */
+
+const textColor = (
+  entry,
+) =>
   entry.tint ||
   entry.accent ||
   'var(--accent)'
@@ -1159,79 +1955,14 @@ function onFill(hex) {
     0.7152 * rgb[1] +
     0.0722 * rgb[2]
 
-  return luminance > 0.187
+  return luminance >
+    0.187
     ? '#0B0A09'
     : '#fff'
 }
 
 /* ================================================================== */
-/* STOP MARK                                                          */
-/* ================================================================== */
-
-function StopMark({
-  entry,
-  isActive,
-}) {
-  const accent =
-    entry.accent ||
-    'var(--accent)'
-
-  const ink = isActive
-    ? onFill(entry.accent)
-    : textColor(entry)
-
-  const Mark =
-    markFor(entry)
-
-  return (
-    <span
-      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
-      style={{
-        background:
-          isActive
-            ? accent
-            : '#0A0908',
-
-        border:
-          `2px solid ${accent}`,
-
-        color: ink,
-
-        transform:
-          isActive
-            ? 'scale(1.06)'
-            : 'scale(1)',
-
-        boxShadow:
-          isActive
-            ? `0 0 0 6px ${accent}22`
-            : 'none',
-
-        transition:
-          'transform 300ms ease, box-shadow 300ms ease',
-      }}
-    >
-      {Mark ? (
-        <Mark
-          width="27"
-          height="27"
-        />
-      ) : (
-        <span
-          className="serif text-[17px] leading-none tracking-tight"
-          style={{
-            color: ink,
-          }}
-        >
-          {entry.monogram}
-        </span>
-      )}
-    </span>
-  )
-}
-
-/* ================================================================== */
-/* UTILITY                                                            */
+/* CLAMP                                                             */
 /* ================================================================== */
 
 const clamp = (
@@ -1246,3 +1977,57 @@ const clamp = (
       max,
     ),
   )
+
+/* ================================================================== */
+/* CURRENT-NODE ANIMATION                                            */
+/* ================================================================== */
+
+/*
+ * Injected once because this animation is local to the timeline and
+ * doesn't need to affect the rest of the site.
+ */
+
+if (
+  typeof document !==
+    'undefined' &&
+  !document.getElementById(
+    'timeline-pulse-style',
+  )
+) {
+  const style =
+    document.createElement(
+      'style',
+    )
+
+  style.id =
+    'timeline-pulse-style'
+
+  style.textContent = `
+    @keyframes timelinePulse {
+      0% {
+        transform: scale(0.82);
+        opacity: 0.65;
+      }
+
+      70% {
+        transform: scale(1.18);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1.18);
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .timeline-map-motion {
+        animation: none !important;
+      }
+    }
+  `
+
+  document.head.appendChild(
+    style,
+  )
+}
