@@ -12,7 +12,7 @@ export const profile = {
   },
   // Rendered as metadata in About's left column, so it is written as
   // terms rather than a sentence. The separator is what About splits on.
-  positioning: 'AI · Software · Transformation',
+ positioning: 'AI · Business Transformation · Software',
 
   // NOT CURRENTLY RENDERED. About used to list these under a Highlights
   // heading; that list is gone and the heading is now only the marker
@@ -28,8 +28,8 @@ export const profile = {
   // About carries no education: the timeline is where study belongs, and
   // saying it twice made the section longer without making it stronger.
   about: [
-    'I build practical AI and software systems that solve real problems.',
-    'Interested in the space where technology, data and business meet.',
+    'I build practical AI and software systems that turn real problems into useful products.',
+  'With a background in Computer Science and an MSc in AI for Business Transformation, I am interested in where technology, data and business meet.',
   ],
 }
 
@@ -38,11 +38,11 @@ export const projects = [
     id: 'uniwise',
     themeKey: 'uniwise',
     index: '01',
-    domain: 'RAG · EdTech',
+    domain: 'Generative AI · RAG · Trust',
     year: '2026',
     title: 'UniWise',
     tagline:
-      'A source-grounded RAG study assistant. Dissertation project.',
+    'A source-grounded AI assistant designed to make academic information more trustworthy and traceable.',
     problem:
       'Students rely on lecture material spread across PDFs, slides, and notes. General-purpose LLMs answer confidently from training data even when the answer isn\'t in the module, making it hard to know what\'s actually grounded.',
     solution:
@@ -122,11 +122,12 @@ export const projects = [
     id: 'cloud',
     themeKey: 'cloud',
     index: '03',
-    domain: 'Brand · Frontend',
+    domain: 'Digital Transformation · Product',
     year: '2025',
     title: 'Cloud Seven Realty',
     tagline:
-      'A frontend and brand website for a Srinagar-based real estate brand, powered by Google Sheets and Drive so listings can be updated without redeploying.',
+      tagline:
+  'A production digital platform for a real estate client, designed around business workflows rather than just a website.',
     problem:
       'The business needed an online presence that showed its local knowledge, verified-title focus, and on-ground support. Generic listing templates would have flattened the things that make the business trustworthy, and the team needed to update listings themselves without touching code.',
     solution:
@@ -274,6 +275,17 @@ export const projects = [
 // Kept deliberately short. A long list of every tool ever touched
 // flattens the strong signals into the same weight as the weak ones.
 export const skills = [
+  {
+  group: 'AI & Business Transformation',
+  items: [
+    'AI Strategy',
+    'Digital Transformation',
+    'Generative AI',
+    'AI Adoption',
+    'Responsible AI',
+    'Process Improvement',
+  ],
+},
   {
     group: 'RAG & LLM Systems',
     items: [
@@ -457,7 +469,7 @@ export const timeline = [
     tint: '#C561A6',
     href: 'https://www.aston.ac.uk/study/courses/ai-business-transformation-msc',
     body:
-      'How organisations actually adopt AI: strategy, deployment, governance, and measurable impact. A continuation of the applied AI direction from my undergraduate work.',
+      'body:   'MSc focused on how organisations adopt AI in practice, covering AI strategy, digital transformation, deployment, governance and measurable business impact, developed in partnership with Capgemini.', A continuation of the applied AI direction from my undergraduate work.',
   },
 ]
 
