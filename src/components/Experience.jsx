@@ -404,10 +404,72 @@ function AnimatedMapBackground() {
     <div
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 z-[2] overflow-hidden"
-      style={{
-        opacity: 0.85,
-      }}
+      style={{ opacity: 0.82 }}
     >
+      <style>{`
+        @keyframes mountainDrift {
+          0%, 100% {
+            transform: translate3d(0, 0, 0);
+          }
+          50% {
+            transform: translate3d(-14px, 3px, 0);
+          }
+        }
+
+        @keyframes cloudDrift {
+          0% {
+            transform: translate3d(-40px, 0, 0);
+          }
+          50% {
+            transform: translate3d(30px, -4px, 0);
+          }
+          100% {
+            transform: translate3d(-40px, 0, 0);
+          }
+        }
+
+        @keyframes roadSignal {
+          0%, 100% {
+            opacity: .35;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+
+        @keyframes carJourney {
+          0% {
+            offset-distance: 0%;
+            opacity: 0;
+          }
+          6% {
+            opacity: 1;
+          }
+          94% {
+            opacity: 1;
+          }
+          100% {
+            offset-distance: 100%;
+            opacity: 0;
+          }
+        }
+
+        @keyframes birds {
+          0%, 100% {
+            transform: translate3d(0, 0, 0);
+          }
+          50% {
+            transform: translate3d(18px, -7px, 0);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .comic-map-animated {
+            animation: none !important;
+          }
+        }
+      `}</style>
+
       <svg
         width="100%"
         height="100%"
@@ -416,293 +478,773 @@ function AnimatedMapBackground() {
         className="absolute inset-0 h-full w-full"
       >
         <defs>
-
-          {/* GRID */}
-
-          <pattern
-            id="mapGrid"
-            width="72"
-            height="72"
-            patternUnits="userSpaceOnUse"
-          >
-            <path
-              d="M 72 0 L 0 0 0 72"
-              fill="none"
-              stroke="rgba(244,244,245,0.09)"
-              strokeWidth="1"
-            />
-
-            <circle
-              cx="0"
-              cy="0"
-              r="1.5"
-              fill="rgba(244,244,245,0.16)"
-            />
-          </pattern>
-
-          {/* CENTRE GLOW */}
-
-          <radialGradient
-            id="mapGlow"
-            cx="50%"
-            cy="50%"
-            r="60%"
+          {/* Atmospheric background */}
+          <linearGradient
+            id="comicSky"
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="1"
           >
             <stop
               offset="0%"
-              stopColor="rgba(244,85,42,0.13)"
+              stopColor="rgba(18,20,27,0.92)"
             />
-
             <stop
-              offset="45%"
-              stopColor="rgba(244,85,42,0.055)"
+              offset="55%"
+              stopColor="rgba(10,12,15,0.72)"
             />
-
-            <stop
-              offset="75%"
-              stopColor="rgba(244,85,42,0.018)"
-            />
-
             <stop
               offset="100%"
-              stopColor="rgba(0,0,0,0)"
+              stopColor="rgba(4,5,6,0.96)"
             />
-          </radialGradient>
+          </linearGradient>
 
-          {/* SIGNAL GLOW */}
-
-          <filter
-            id="mapSignalGlow"
-            x="-200%"
-            y="-200%"
-            width="400%"
-            height="400%"
+          {/* Mountain haze */}
+          <linearGradient
+            id="mountainFar"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
           >
-            <feGaussianBlur
-              stdDeviation="5"
+            <stop
+              offset="0%"
+              stopColor="rgba(100,108,116,0.20)"
             />
+            <stop
+              offset="100%"
+              stopColor="rgba(35,39,43,0.05)"
+            />
+          </linearGradient>
+
+          <linearGradient
+            id="mountainMid"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
+          >
+            <stop
+              offset="0%"
+              stopColor="rgba(54,61,67,0.75)"
+            />
+            <stop
+              offset="100%"
+              stopColor="rgba(13,16,18,0.92)"
+            />
+          </linearGradient>
+
+          <linearGradient
+            id="mountainDark"
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="1"
+          >
+            <stop
+              offset="0%"
+              stopColor="rgba(28,32,35,0.92)"
+            />
+            <stop
+              offset="100%"
+              stopColor="rgba(4,5,6,1)"
+            />
+          </linearGradient>
+
+          {/* Road */}
+          <linearGradient
+            id="comicRoad"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="0"
+          >
+            <stop
+              offset="0%"
+              stopColor="rgba(20,21,22,0.98)"
+            />
+            <stop
+              offset="50%"
+              stopColor="rgba(38,38,37,0.98)"
+            />
+            <stop
+              offset="100%"
+              stopColor="rgba(17,18,18,0.98)"
+            />
+          </linearGradient>
+
+          {/* Road glow */}
+          <filter
+            id="roadGlow"
+            x="-30%"
+            y="-30%"
+            width="160%"
+            height="160%"
+          >
+            <feGaussianBlur stdDeviation="7" />
           </filter>
 
-          {/* NETWORK GLOW */}
-
           <filter
-            id="softMapGlow"
-            x="-20%"
-            y="-20%"
-            width="140%"
-            height="140%"
+            id="softGlow"
+            x="-100%"
+            y="-100%"
+            width="300%"
+            height="300%"
           >
-            <feGaussianBlur
-              stdDeviation="2"
-            />
+            <feGaussianBlur stdDeviation="3" />
           </filter>
+
+          {/* Mountain texture */}
+          <pattern
+            id="comicHatch"
+            width="12"
+            height="12"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(24)"
+          >
+            <line
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="12"
+              stroke="rgba(244,244,245,0.055)"
+              strokeWidth="1"
+            />
+          </pattern>
+
+          {/* Route for the tiny car */}
+          <path
+            id="carRoute"
+            d="
+              M -70 455
+              C 75 425 80 330 205 342
+              C 315 353 305 440 415 414
+              C 530 388 505 274 610 266
+              C 735 257 708 350 830 327
+              C 945 305 900 184 1010 174
+              C 1085 167 1130 130 1270 84
+            "
+          />
         </defs>
 
-        {/* GRID */}
+        {/* =====================================================
+            SKY
+           ===================================================== */}
 
         <rect
+          x="0"
+          y="0"
           width="1200"
           height="520"
-          fill="url(#mapGrid)"
+          fill="url(#comicSky)"
         />
 
-        {/* CENTRE LIGHT */}
+        {/* tiny stars / comic specks */}
 
-        <rect
-          width="1200"
-          height="520"
-          fill="url(#mapGlow)"
-        />
-
-        {/* TOPOGRAPHIC CONTOURS */}
-
-        <g
-          fill="none"
-          stroke="rgba(244,244,245,0.14)"
-          strokeWidth="1"
-        >
-          <path d="M-80 100 C120 20 190 160 370 105 S620 25 820 105 S1060 170 1280 80" />
-          <path d="M-100 135 C110 55 210 190 390 135 S630 55 835 135 S1080 200 1300 110" />
-          <path d="M-120 170 C90 90 220 220 405 165 S650 90 850 165 S1090 235 1320 145" />
-          <path d="M-130 205 C70 125 235 250 420 195 S675 125 870 195 S1110 270 1340 180" />
-
-          <path d="M-120 350 C100 280 220 410 410 350 S650 285 850 350 S1080 420 1320 330" />
-          <path d="M-110 385 C100 315 240 445 430 385 S670 320 875 385 S1095 455 1320 365" />
-          <path d="M-100 420 C100 350 250 480 445 420 S690 355 890 420 S1110 490 1320 400" />
+        <g opacity="0.28">
+          <circle cx="120" cy="54" r="1.2" fill="#f4f4f5" />
+          <circle cx="215" cy="88" r="1" fill="#f4f4f5" />
+          <circle cx="350" cy="42" r="1.4" fill="#f4f4f5" />
+          <circle cx="505" cy="75" r="1" fill="#f4f4f5" />
+          <circle cx="675" cy="43" r="1.3" fill="#f4f4f5" />
+          <circle cx="835" cy="82" r="1" fill="#f4f4f5" />
+          <circle cx="1010" cy="50" r="1.2" fill="#f4f4f5" />
         </g>
 
-        {/* SECONDARY LINES */}
+        {/* =====================================================
+            CLOUDS
+           ===================================================== */}
 
         <g
-          fill="none"
-          stroke="rgba(244,244,245,0.08)"
-          strokeWidth="1"
+          className="comic-map-animated"
+          style={{
+            animation:
+              'cloudDrift 24s ease-in-out infinite',
+          }}
+          opacity="0.38"
         >
-          <path d="M130 -40 C190 90 95 180 170 290 S220 430 170 570" />
-          <path d="M330 -40 C390 80 295 190 365 300 S410 440 360 570" />
-          <path d="M540 -40 C600 100 500 180 570 300 S620 450 570 570" />
-          <path d="M760 -40 C820 80 720 190 790 310 S835 450 790 570" />
-          <path d="M970 -40 C1030 90 930 190 1000 310 S1045 450 995 570" />
-        </g>
-
-        {/* MAP JUNCTIONS */}
-
-        <g
-          fill="none"
-          stroke="rgba(244,244,245,0.14)"
-          strokeWidth="1"
-        >
-          <circle cx="170" cy="145" r="24" />
-          <circle cx="170" cy="145" r="42" />
-
-          <circle cx="475" cy="335" r="18" />
-          <circle cx="475" cy="335" r="34" />
-
-          <circle cx="890" cy="185" r="25" />
-          <circle cx="890" cy="185" r="47" />
-
-          <circle cx="1080" cy="370" r="20" />
-          <circle cx="1080" cy="370" r="38" />
-        </g>
-
-        {/* SMALL NODES */}
-
-        <g
-          fill="rgba(244,244,245,0.38)"
-        >
-          <circle
-            cx="170"
-            cy="145"
-            r="2"
-          />
-          <circle
-            cx="475"
-            cy="335"
-            r="2"
-          />
-          <circle
-            cx="890"
-            cy="185"
-            r="2"
-          />
-          <circle
-            cx="1080"
-            cy="370"
-            r="2"
+          <path
+            d="
+              M60 125
+              C50 106 70 90 92 94
+              C100 70 138 69 148 96
+              C172 89 190 107 186 126
+              Z
+            "
+            fill="rgba(115,120,125,0.32)"
+            stroke="rgba(244,244,245,0.10)"
+            strokeWidth="1"
           />
 
-          <circle
-            cx="305"
-            cy="90"
-            r="1.5"
-          />
-          <circle
-            cx="680"
-            cy="425"
-            r="1.5"
-          />
-          <circle
-            cx="1010"
-            cy="120"
-            r="1.5"
+          <path
+            d="
+              M880 112
+              C868 94 890 77 912 84
+              C920 60 958 61 969 87
+              C995 79 1012 99 1006 119
+              Z
+            "
+            fill="rgba(115,120,125,0.30)"
+            stroke="rgba(244,244,245,0.09)"
+            strokeWidth="1"
           />
         </g>
 
-        {/* EXTRA NETWORK CONNECTIONS */}
+        {/* =====================================================
+            DISTANT MOUNTAINS
+           ===================================================== */}
 
         <g
-          fill="none"
-          stroke="rgba(244,85,42,0.16)"
-          strokeWidth="1"
-          filter="url(#softMapGlow)"
+          className="comic-map-animated"
+          style={{
+            animation:
+              'mountainDrift 22s ease-in-out infinite',
+          }}
         >
-          <path d="M170 145 L305 90 L475 335" />
-          <path d="M475 335 L680 425 L890 185" />
-          <path d="M890 185 L1010 120 L1080 370" />
-        </g>
+          <path
+            d="
+              M0 260
+              L95 138
+              L145 204
+              L220 95
+              L290 185
+              L375 110
+              L445 210
+              L535 132
+              L610 205
+              L700 100
+              L790 205
+              L875 125
+              L955 212
+              L1050 112
+              L1200 245
+              L1200 360
+              L0 360
+              Z
+            "
+            fill="url(#mountainFar)"
+            stroke="rgba(244,244,245,0.08)"
+            strokeWidth="2"
+          />
 
-        {/* MOVING SIGNAL */}
+          {/* snow-like comic highlights */}
 
-        <g>
-          <circle
-            r="12"
-            fill="rgba(244,85,42,0.22)"
-            filter="url(#mapSignalGlow)"
+          <g
+            fill="none"
+            stroke="rgba(244,244,245,0.16)"
+            strokeWidth="2"
+            strokeLinecap="round"
           >
-            <animateMotion
-              dur="18s"
-              repeatCount="indefinite"
-              path="M40 420 C180 120 300 450 470 160 S760 80 900 340 S1100 160 1180 80"
+            <path d="M80 158 L95 138 L108 160" />
+            <path d="M202 120 L220 95 L240 121" />
+            <path d="M357 137 L375 110 L395 139" />
+            <path d="M682 126 L700 100 L722 128" />
+            <path d="M1030 138 L1050 112 L1070 140" />
+          </g>
+        </g>
+
+        {/* =====================================================
+            MID MOUNTAINS
+           ===================================================== */}
+
+        <path
+          d="
+            M0 330
+            L105 188
+            L170 272
+            L260 150
+            L340 264
+            L450 170
+            L530 286
+            L630 150
+            L725 274
+            L835 165
+            L920 280
+            L1025 175
+            L1110 270
+            L1200 205
+            L1200 520
+            L0 520
+            Z
+          "
+          fill="url(#mountainMid)"
+          stroke="rgba(244,244,245,0.12)"
+          strokeWidth="2"
+        />
+
+        {/* mountain hatch */}
+
+        <path
+          d="
+            M0 330
+            L105 188
+            L170 272
+            L260 150
+            L340 264
+            L450 170
+            L530 286
+            L630 150
+            L725 274
+            L835 165
+            L920 280
+            L1025 175
+            L1110 270
+            L1200 205
+            L1200 520
+            L0 520
+            Z
+          "
+          fill="url(#comicHatch)"
+        />
+
+        {/* mountain ridge highlights */}
+
+        <g
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path
+            d="M105 188 L170 272"
+            stroke="rgba(244,244,245,0.18)"
+            strokeWidth="3"
+          />
+          <path
+            d="M260 150 L340 264"
+            stroke="rgba(244,244,245,0.16)"
+            strokeWidth="3"
+          />
+          <path
+            d="M450 170 L530 286"
+            stroke="rgba(244,244,245,0.15)"
+            strokeWidth="3"
+          />
+          <path
+            d="M630 150 L725 274"
+            stroke="rgba(244,244,245,0.16)"
+            strokeWidth="3"
+          />
+          <path
+            d="M835 165 L920 280"
+            stroke="rgba(244,244,245,0.14)"
+            strokeWidth="3"
+          />
+        </g>
+
+        {/* =====================================================
+            PINE FOREST
+           ===================================================== */}
+
+        <g opacity="0.72">
+          {[
+            [45, 350, 34],
+            [82, 372, 28],
+            [126, 342, 38],
+            [174, 380, 30],
+            [235, 344, 35],
+            [300, 365, 28],
+            [355, 342, 40],
+            [405, 375, 28],
+            [470, 350, 36],
+            [525, 372, 28],
+            [585, 345, 34],
+            [655, 365, 30],
+            [710, 342, 38],
+            [770, 375, 28],
+            [825, 350, 34],
+            [890, 370, 30],
+            [945, 345, 38],
+            [1010, 375, 30],
+            [1070, 350, 35],
+            [1140, 370, 30],
+          ].map(([x, y, size], index) => (
+            <path
+              key={index}
+              d={`
+                M ${x} ${y}
+                L ${x - size / 2} ${y + size * 1.5}
+                L ${x - size * 0.18} ${y + size * 1.5}
+                L ${x - size * 0.42} ${y + size * 2.1}
+                L ${x + size * 0.42} ${y + size * 2.1}
+                L ${x + size * 0.18} ${y + size * 1.5}
+                L ${x + size / 2} ${y + size * 1.5}
+                Z
+              `}
+              fill="rgba(5,7,8,0.92)"
+              stroke="rgba(244,244,245,0.06)"
+              strokeWidth="1"
             />
-          </circle>
+          ))}
+        </g>
+
+        {/* =====================================================
+            WINDING MOUNTAIN ROAD
+           ===================================================== */}
+
+        {/* soft road glow */}
+
+        <path
+          d="
+            M-70 455
+            C75 425 80 330 205 342
+            C315 353 305 440 415 414
+            C530 388 505 274 610 266
+            C735 257 708 350 830 327
+            C945 305 900 184 1010 174
+            C1085 167 1130 130 1270 84
+          "
+          fill="none"
+          stroke="rgba(244,85,42,0.25)"
+          strokeWidth="20"
+          strokeLinecap="round"
+          filter="url(#roadGlow)"
+        />
+
+        {/* road body */}
+
+        <path
+          d="
+            M-70 455
+            C75 425 80 330 205 342
+            C315 353 305 440 415 414
+            C530 388 505 274 610 266
+            C735 257 708 350 830 327
+            C945 305 900 184 1010 174
+            C1085 167 1130 130 1270 84
+          "
+          fill="none"
+          stroke="rgba(3,4,5,0.96)"
+          strokeWidth="30"
+          strokeLinecap="round"
+        />
+
+        {/* road surface */}
+
+        <path
+          d="
+            M-70 455
+            C75 425 80 330 205 342
+            C315 353 305 440 415 414
+            C530 388 505 274 610 266
+            C735 257 708 350 830 327
+            C945 305 900 184 1010 174
+            C1085 167 1130 130 1270 84
+          "
+          fill="none"
+          stroke="url(#comicRoad)"
+          strokeWidth="24"
+          strokeLinecap="round"
+        />
+
+        {/* road outer comic outlines */}
+
+        <path
+          d="
+            M-70 455
+            C75 425 80 330 205 342
+            C315 353 305 440 415 414
+            C530 388 505 274 610 266
+            C735 257 708 350 830 327
+            C945 305 900 184 1010 174
+            C1085 167 1130 130 1270 84
+          "
+          fill="none"
+          stroke="rgba(244,244,245,0.16)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+
+        {/* yellow/orange road markings */}
+
+        <path
+          d="
+            M-70 455
+            C75 425 80 330 205 342
+            C315 353 305 440 415 414
+            C530 388 505 274 610 266
+            C735 257 708 350 830 327
+            C945 305 900 184 1010 174
+            C1085 167 1130 130 1270 84
+          "
+          fill="none"
+          stroke="rgba(244,85,42,0.72)"
+          strokeWidth="2"
+          strokeDasharray="12 14"
+          strokeLinecap="round"
+        />
+
+        {/* =====================================================
+            ROAD MARKERS
+           ===================================================== */}
+
+        {[
+          [72, 418],
+          [205, 342],
+          [320, 427],
+          [515, 322],
+          [705, 294],
+          [900, 250],
+          [1015, 173],
+          [1115, 137],
+        ].map(([cx, cy], index) => (
+          <g
+            key={index}
+            style={{
+              animation:
+                `roadSignal ${2.2 + index * 0.12}s ease-in-out infinite`,
+              animationDelay: `${index * 180}ms`,
+            }}
+          >
+            <circle
+              cx={cx}
+              cy={cy}
+              r="10"
+              fill="rgba(244,85,42,0.14)"
+              filter="url(#softGlow)"
+            />
+
+            <circle
+              cx={cx}
+              cy={cy}
+              r="3"
+              fill="rgba(244,85,42,0.8)"
+            />
+          </g>
+        ))}
+
+        {/* =====================================================
+            LITTLE CAR
+           ===================================================== */}
+
+        <g
+          className="comic-map-animated"
+          style={{
+            offsetPath:
+              "path('M -70 455 C75 425 80 330 205 342 C315 353 305 440 415 414 C530 388 505 274 610 266 C735 257 708 350 830 327 C945 305 900 184 1010 174 C1085 167 1130 130 1270 84')",
+            animation:
+              'carJourney 32s linear infinite',
+          }}
+        >
+          {/* car shadow */}
+
+          <ellipse
+            cx="0"
+            cy="10"
+            rx="17"
+            ry="5"
+            fill="rgba(0,0,0,0.55)"
+          />
+
+          {/* car body */}
+
+          <path
+            d="
+              M-18 3
+              L-12 -6
+              L-4 -9
+              L7 -8
+              L15 -2
+              L19 5
+              L16 9
+              L-16 9
+              Z
+            "
+            fill="#111315"
+            stroke="rgba(244,85,42,0.9)"
+            strokeWidth="1.5"
+          />
+
+          {/* windows */}
+
+          <path
+            d="M-9 -5 L-3 -7 L3 -6 L7 -2 L-8 -2 Z"
+            fill="rgba(180,190,195,0.18)"
+            stroke="rgba(244,244,245,0.22)"
+            strokeWidth="0.8"
+          />
+
+          {/* headlights */}
 
           <circle
+            cx="18"
+            cy="3"
+            r="1.5"
+            fill="rgba(255,214,150,0.95)"
+          />
+
+          <circle
+            cx="-16"
+            cy="3"
+            r="1.2"
+            fill="rgba(244,85,42,0.8)"
+          />
+
+          {/* wheels */}
+
+          <circle
+            cx="-10"
+            cy="9"
             r="3"
-            fill="rgba(244,85,42,0.75)"
-          >
-            <animateMotion
-              dur="18s"
-              repeatCount="indefinite"
-              path="M40 420 C180 120 300 450 470 160 S760 80 900 340 S1100 160 1180 80"
-            />
-          </circle>
+            fill="#050505"
+            stroke="rgba(244,244,245,0.25)"
+            strokeWidth="1"
+          />
+
+          <circle
+            cx="11"
+            cy="9"
+            r="3"
+            fill="#050505"
+            stroke="rgba(244,244,245,0.25)"
+            strokeWidth="1"
+          />
         </g>
 
-        {/* SCANNING LINE */}
+        {/* =====================================================
+            COMIC BIRDS
+           ===================================================== */}
 
-        <line
-          x1="-100"
-          y1="0"
-          x2="-100"
-          y2="520"
-          stroke="rgba(244,85,42,0.16)"
-          strokeWidth="1"
+        <g
+          className="comic-map-animated"
+          style={{
+            animation:
+              'birds 7s ease-in-out infinite',
+          }}
+          fill="none"
+          stroke="rgba(244,244,245,0.30)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
         >
-          <animate
-            attributeName="x1"
-            values="-100;1300;-100"
-            dur="22s"
-            repeatCount="indefinite"
+          <path d="M420 105 q5 -5 10 0 q5 -5 10 0" />
+          <path d="M452 124 q4 -4 8 0 q4 -4 8 0" />
+          <path d="M780 92 q5 -5 10 0 q5 -5 10 0" />
+        </g>
+
+        {/* =====================================================
+            WOODEN SIGNPOST
+           ===================================================== */}
+
+        <g transform="translate(1020 355) rotate(-4)">
+          <path
+            d="M0 0 L5 90"
+            stroke="rgba(19,13,9,0.9)"
+            strokeWidth="7"
           />
 
-          <animate
-            attributeName="x2"
-            values="-100;1300;-100"
-            dur="22s"
-            repeatCount="indefinite"
+          <path
+            d="
+              M-45 15
+              L28 4
+              L35 29
+              L-38 40
+              Z
+            "
+            fill="rgba(35,25,18,0.92)"
+            stroke="rgba(244,244,245,0.13)"
+            strokeWidth="1"
           />
-        </line>
+
+          <path
+            d="
+              M-42 49
+              L32 38
+              L39 63
+              L-35 74
+              Z
+            "
+            fill="rgba(35,25,18,0.92)"
+            stroke="rgba(244,244,245,0.13)"
+            strokeWidth="1"
+          />
+
+          <text
+            x="-29"
+            y="30"
+            fill="rgba(244,244,245,0.55)"
+            fontSize="9"
+            fontFamily="monospace"
+            fontWeight="700"
+            letterSpacing="1"
+          >
+            AHEAD
+          </text>
+
+          <text
+            x="-27"
+            y="64"
+            fill="rgba(244,244,245,0.42)"
+            fontSize="8"
+            fontFamily="monospace"
+            fontWeight="700"
+            letterSpacing="1"
+          >
+            NEXT
+          </text>
+        </g>
+
+        {/* =====================================================
+            SMALL CAMPS / LANDMARKS
+           ===================================================== */}
+
+        <g opacity="0.55">
+          {/* cabin */}
+          <g transform="translate(150 395)">
+            <path
+              d="M0 15 L22 0 L44 15 V38 H0 Z"
+              fill="rgba(8,9,9,0.92)"
+              stroke="rgba(244,244,245,0.13)"
+              strokeWidth="1"
+            />
+            <path
+              d="M-3 16 L22 -3 L47 16"
+              fill="none"
+              stroke="rgba(244,85,42,0.45)"
+              strokeWidth="2"
+            />
+            <rect
+              x="17"
+              y="24"
+              width="8"
+              height="14"
+              fill="rgba(244,85,42,0.18)"
+            />
+          </g>
+
+          {/* tiny flag */}
+          <g transform="translate(860 210)">
+            <line
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="42"
+              stroke="rgba(244,244,245,0.28)"
+              strokeWidth="1"
+            />
+            <path
+              d="M0 2 L22 7 L0 13 Z"
+              fill="rgba(244,85,42,0.45)"
+            />
+          </g>
+        </g>
+
+        {/* =====================================================
+            VIGNETTE
+           ===================================================== */}
+
+        <rect
+          x="0"
+          y="0"
+          width="1200"
+          height="520"
+          fill="none"
+          stroke="rgba(0,0,0,0.55)"
+          strokeWidth="80"
+        />
       </svg>
-
-      {/* EDGE FADE */}
-
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(circle at center, transparent 15%, rgba(5,5,5,0.12) 55%, rgba(5,5,5,0.55) 100%)',
-        }}
-      />
-
-      <div
-        className="absolute inset-x-0 top-0 h-24"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(5,5,5,0.65), transparent)',
-        }}
-      />
-
-      <div
-        className="absolute inset-x-0 bottom-0 h-24"
-        style={{
-          background:
-            'linear-gradient(0deg, rgba(5,5,5,0.65), transparent)',
-        }}
-      />
     </div>
   )
 }
-
 /* ================================================================
    BUILD STOPS
    ================================================================ */
