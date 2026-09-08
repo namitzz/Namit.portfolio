@@ -126,7 +126,7 @@ export const projects = [
     year: '2025',
     title: 'Cloud Seven Realty',
     tagline:
-      tagline:
+  
   'A production digital platform for a real estate client, designed around business workflows rather than just a website.',
     problem:
       'The business needed an online presence that showed its local knowledge, verified-title focus, and on-ground support. Generic listing templates would have flattened the things that make the business trustworthy, and the team needed to update listings themselves without touching code.',
@@ -469,7 +469,7 @@ export const timeline = [
     tint: '#C561A6',
     href: 'https://www.aston.ac.uk/study/courses/ai-business-transformation-msc',
     body:
-      'body:   'MSc focused on how organisations adopt AI in practice, covering AI strategy, digital transformation, deployment, governance and measurable business impact, developed in partnership with Capgemini.', A continuation of the applied AI direction from my undergraduate work.',
+  'MSc focused on how organisations adopt AI in practice, covering AI strategy, digital transformation, deployment, governance and measurable business impact, developed in partnership with Capgemini.',
   },
 ]
 
