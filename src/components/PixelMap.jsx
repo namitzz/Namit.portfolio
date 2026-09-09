@@ -32,8 +32,14 @@ const C = {
   dirtEdge: '#93764B',
   water: '#3E7FA3',
   waterLite: '#4E96B8',
-  cliff: '#7A5E3F',
-  cliffTop: '#93724C',
+  // A cliff is two colours, not one: the grass-topped surface you look
+  // down on, and the face you look at. That pair is what gives a flat
+  // top-down tile map its height.
+  cliffTop: '#6E9C5C',
+  cliffTopLite: '#7CAD68',
+  cliffFace: '#8A6A45',
+  cliffFaceDark: '#6E5335',
+  cliffLip: '#A98455',
   canopy: '#396B37',
   canopyLite: '#457F41',
   trunk: '#5A3F27',
@@ -82,7 +88,11 @@ export default function PixelMap({ d, width, height }) {
         const dRoute = nearRoute(route, x, y)
 
         let kind = 'grass'
-        if (edge < 26 + rand() * 16) kind = 'cliff'
+        // Raised ground: the frame of the map, plus a few interior
+        // plateaus so the terrain steps rather than sitting on one level.
+        const plateau =
+          hash2((c >> 3) + 41, (r >> 3) + 17) > 0.86 && dRouteFar(route, x, y)
+        if (edge < 22 + rand() * 14 || plateau) kind = 'cliff'
         else if (dRoute < PATH_HALF) kind = 'path'
         else if (ponds.some((p) => inPond(p, x, y))) kind = 'water'
         // Trees clump. A per-tile coin toss gives evenly scattered
@@ -116,13 +126,37 @@ export default function PixelMap({ d, width, height }) {
           ctx.fillStyle = C.dirt
           ctx.fillRect(t.x, t.y, TILE, TILE)
         } else if (t.kind === 'cliff') {
-          ctx.fillStyle = t.tone > 0.5 ? C.cliff : C.cliffTop
+          // The top surface is grass seen from above, so raised ground
+          // still reads as ground.
+          ctx.fillStyle = t.tone > 0.5 ? C.cliffTopLite : C.cliffTop
           ctx.fillRect(t.x, t.y, TILE, TILE)
         } else if (t.tone > 0.93) {
           // Grass tuft: two pixels, which is all an overworld ever used.
           ctx.fillStyle = C.tuft
           ctx.fillRect(t.x + 5, t.y + 9, 3, 2)
           ctx.fillRect(t.x + 9, t.y + 6, 2, 3)
+        }
+      }
+    }
+
+    // Cliff faces. A raised tile with open ground below it shows its
+    // side, lit at the lip and darkening down, so the step reads as a
+    // drop rather than as a change of colour.
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const t = grid[r][c]
+        if (t.kind !== 'cliff') continue
+        if (grid[r + 1]?.[c]?.kind === 'cliff') continue
+        ctx.fillStyle = C.cliffLip
+        ctx.fillRect(t.x, t.y + TILE - 3, TILE, 3)
+        ctx.fillStyle = C.cliffFace
+        ctx.fillRect(t.x, t.y + TILE, TILE, 11)
+        ctx.fillStyle = C.cliffFaceDark
+        ctx.fillRect(t.x, t.y + TILE + 11, TILE, 4)
+        // A couple of pixels of rubble, so the face is not a flat band.
+        if (t.tone > 0.6) {
+          ctx.fillStyle = C.cliffFaceDark
+          ctx.fillRect(t.x + 4, t.y + TILE + 3, 3, 3)
         }
       }
     }
@@ -166,6 +200,11 @@ export default function PixelMap({ d, width, height }) {
 
 function drawTree(ctx, x, y, tone) {
   const lite = tone > 0.5
+  // Same direction as every building's shadow, so one light governs the
+  // whole map.
+  ctx.fillStyle = 'rgba(20,32,18,0.30)'
+  ctx.fillRect(x + 4, y + 13, 12, 4)
+  ctx.fillRect(x + 2, y + 14, 16, 2)
   ctx.fillStyle = C.trunk
   ctx.fillRect(x + 7, y + 12, 3, 4)
   ctx.fillStyle = lite ? C.canopyLite : C.canopy
@@ -209,6 +248,9 @@ function nearRoute(route, x, y) {
   }
   return Math.sqrt(best)
 }
+
+/** True when a point is well clear of the road, so terrain never blocks it. */
+const dRouteFar = (route, x, y) => nearRoute(route, x, y) > 96
 
 const inPond = (p, x, y) =>
   ((x - p.x) / p.rx) ** 2 + ((y - p.y) / p.ry) ** 2 < 1

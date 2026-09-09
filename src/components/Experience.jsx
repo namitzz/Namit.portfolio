@@ -9,8 +9,14 @@ import { timeline } from '../data/content'
 import { markFor } from './TimelineMarks'
 import Reveal from './Reveal'
 import PixelMap from './PixelMap'
+import Building, { buildingFor, BUILDING_H } from './MapBuildings'
 
-const TRACK_H = 560
+// The map is a town now, not a band. Taller gives the buildings somewhere
+// to stand and the roads somewhere to turn.
+const TRACK_H = 820
+// Everything on the map is snapped to this, so roads meet buildings
+// squarely and corners land on tile boundaries rather than between them.
+const TILE = 16
 const CARD_W = 340
 const CARD_H = 280
 const CARD_GAP = 78
@@ -890,72 +896,35 @@ function Compass() {
    ROUTE STOPS
    ================================================================== */
 
-function buildStops(
-  count,
-  width,
-  height,
-) {
+/** Deterministic noise, so the town is the same town on every load. */
+function seededRandom(seed) {
+  let s = seed >>> 0
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0
+    return s / 4294967296
+  }
+}
+
+function buildStops(count, width, height) {
+  const snap = (v) => Math.round(v / TILE) * TILE + TILE / 2
+  const left = EDGE
+  const right = width - EDGE
+  const rand = seededRandom(0x7f4a7c15)
   const out = []
 
-  const left = EDGE
-  const right =
-    width - EDGE
+  // Stops walk left to right so the timeline still reads in order, but
+  // each one steps to a different band so the roads between them have to
+  // turn. A town where every building sits on one line is a street.
+  const bands = [0.2, 0.44, 0.68, 0.34, 0.58, 0.24, 0.5, 0.74, 0.3, 0.62, 0.42]
 
-  const center =
-    height * 0.57
-
-  const amplitude =
-    Math.min(
-      115,
-      height * 0.22,
-    )
-
-  for (
-    let i = 0;
-    i < count;
-    i++
-  ) {
-    const progress =
-      count > 1
-        ? i /
-          (count - 1)
-        : 0
-
-    const x =
-      left +
-      (right - left) *
-        progress
-
-    const wave =
-      Math.sin(
-        progress *
-          Math.PI *
-          2.15,
-      )
-
-    const secondary =
-      Math.sin(
-        progress *
-          Math.PI *
-          5.1 +
-          0.7,
-      ) * 14
-
-    const y =
-      center +
-      wave * amplitude +
-      secondary
-
+  for (let i = 0; i < count; i++) {
+    const t = count > 1 ? i / (count - 1) : 0
+    const band = bands[i % bands.length]
     out.push({
-      x,
-      y: clamp(
-        y,
-        100,
-        height - 90,
-      ),
+      x: snap(left + (right - left) * t),
+      y: snap(height * band + (rand() - 0.5) * 26),
     })
   }
-
   return out
 }
 
@@ -963,166 +932,43 @@ function buildStops(
    WAYPOINTS
    ================================================================== */
 
-function buildWaypoints(
-  stops,
-) {
-  if (!stops.length) {
-    return []
+/**
+ * The road between two stops, as tiles rather than as a curve: out along
+ * one axis, a square corner, then in along the other. Alternating which
+ * axis leads stops every junction looking the same.
+ */
+function buildWaypoints(stops) {
+  if (!stops.length) return []
+  const pts = [stops[0]]
+  for (let i = 0; i < stops.length - 1; i++) {
+    const a = stops[i]
+    const b = stops[i + 1]
+    // Always out along x, then in along y. Alternating which axis led
+    // looked more varied but made the road retrace itself: a segment that
+    // arrived vertically and then left vertically ran back down the line
+    // it had just come up, so the traveller walked the same stretch twice
+    // and the glow doubled back over it.
+    pts.push({ x: b.x, y: a.y }, { x: b.x, y: b.y })
   }
-
-  const waypoints = []
-
-  waypoints.push({
-    x:
-      stops[0].x - 42,
-    y:
-      stops[0].y - 20,
-  })
-
-  for (
-    let i = 0;
-    i < stops.length;
-    i++
-  ) {
-    const current =
-      stops[i]
-
-    waypoints.push(
-      current,
-    )
-
-    const next =
-      stops[i + 1]
-
-    if (!next) {
-      break
-    }
-
-    const dx =
-      next.x -
-      current.x
-
-    const dy =
-      next.y -
-      current.y
-
-    const length =
-      Math.hypot(
-        dx,
-        dy,
-      ) || 1
-
-    const direction =
-      i % 2 === 0
-        ? -1
-        : 1
-
-    const amount =
-      25 +
-      (i % 3) * 7
-
-    waypoints.push({
-      x:
-        (current.x +
-          next.x) /
-          2 +
-        (-dy / length) *
-          amount *
-          direction,
-
-      y:
-        (current.y +
-          next.y) /
-          2 +
-        (dx / length) *
-          amount *
-          direction,
-    })
-  }
-
-  const last =
-    stops[
-      stops.length - 1
-    ]
-
-  waypoints.push({
-    x:
-      last.x + 42,
-    y:
-      last.y + 20,
-  })
-
-  return waypoints
+  return pts
 }
 
 /* ==================================================================
    ROUTE PATH
    ================================================================== */
 
-function routePath(
-  stops,
-) {
-  const points =
-    buildWaypoints(
-      stops,
-    )
-
-  if (
-    points.length < 2
-  ) {
-    return ''
-  }
-
-  let d =
-    `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`
-
-  for (
-    let i = 0;
-    i <
-    points.length - 1;
-    i++
-  ) {
-    const p0 =
-      points[i - 1] ||
-      points[i]
-
-    const p1 =
-      points[i]
-
-    const p2 =
-      points[i + 1]
-
-    const p3 =
-      points[i + 2] ||
-      p2
-
-    const c1x =
-      p1.x +
-      (p2.x - p0.x) /
-        6
-
-    const c1y =
-      p1.y +
-      (p2.y - p0.y) /
-        6
-
-    const c2x =
-      p2.x -
-      (p3.x - p1.x) /
-        6
-
-    const c2y =
-      p2.y -
-      (p3.y - p1.y) /
-        6
-
-    d +=
-      ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ` +
-      `${c2x.toFixed(2)} ${c2y.toFixed(2)}, ` +
-      `${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
-  }
-
-  return d
+/**
+ * Straight segments and square corners. The spline is gone: it fought the
+ * tile grid, and a road that meets a building at an angle never looks
+ * like it was built there.
+ */
+function routePath(stops) {
+  const p = buildWaypoints(stops)
+  if (p.length < 2) return ''
+  return (
+    `M ${p[0].x} ${p[0].y} ` +
+    p.slice(1).map((q) => `L ${q.x} ${q.y}`).join(' ')
+  )
 }
 
 /* ==================================================================
@@ -1548,12 +1394,13 @@ function Stop({
           : undefined
       }
       aria-label={`${entry.year} ${entry.short || entry.title}`}
-      className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-all duration-300"
+      className="absolute z-10 flex -translate-x-1/2 flex-col items-center transition-all duration-300"
       style={{
         left: point.x,
-        top: point.y,
-        opacity:
-          dimmed ? 0.45 : 1,
+        // The building's base sits on the road, so the whole sprite is
+        // lifted by its own height rather than centred on the point.
+        top: point.y - BUILDING_H + 10,
+        opacity: dimmed ? 0.55 : 1,
       }}
     >
       {labelAbove && (
@@ -1642,189 +1489,40 @@ function StopLabel({
    STOP MARK
    ================================================================== */
 
-function StopMark({
-  entry,
-  isActive,
-}) {
-  const accent =
-    routeColor(entry)
-
-  const Mark =
-    markFor(entry)
-
-  const isCurrent =
-    entry.id === 'aston'
-
+/**
+ * The building that stands at a stop.
+ *
+ * It sits on the road rather than over it: the anchor is the base of the
+ * building, not its middle, so the footprint lands on the tile the route
+ * actually passes through and the roof rises away from it.
+ *
+ * Hovering lifts it. Scale alone reads as a zoom; lifting and growing the
+ * shadow together reads as picking something up off the ground, which is
+ * what "pops" has to mean on a map seen from above.
+ */
+function StopMark({ entry, isActive }) {
+  const accent = entry.accent || 'var(--accent)'
   return (
     <span
-      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
+      className="block"
       style={{
-        background:
-          isActive
-            ? accent
-            : '#F5E8CC',
-
-        border:
-          `3px solid ${accent}`,
-
-        color:
-          isActive
-            ? onFill(accent)
-            : accent,
-
-        transform:
-          isActive
-            ? 'scale(1.10)'
-            : 'scale(1)',
-
-        boxShadow:
-          isActive
-            ? `0 0 0 7px ${accent}35, 0 7px 18px rgba(0,0,0,0.28)`
-            : '0 5px 12px rgba(0,0,0,0.20)',
-
-        transition:
-          'transform 260ms ease, box-shadow 260ms ease, background 260ms ease',
+        // Anchored at the base, so the building stands on its plot.
+        transformOrigin: '50% 100%',
+        transform: isActive
+          ? 'translateY(-7px) scale(1.14)'
+          : 'translateY(0) scale(1)',
+        transition: 'transform 260ms cubic-bezier(0.22,1,0.36,1)',
+        filter: isActive
+          ? `drop-shadow(0 10px 14px rgba(0,0,0,0.45)) drop-shadow(0 0 10px ${accent}66)`
+          : 'drop-shadow(0 6px 8px rgba(0,0,0,0.35))',
       }}
     >
-      {isCurrent && (
-        <span
-          className="absolute inset-[-10px] rounded-full border-2"
-          style={{
-            borderColor:
-              `${accent}65`,
-            animation:
-              'timelinePulse 3s ease-out infinite',
-          }}
-        />
-      )}
-
-      {Mark ? (
-        <Mark
-          width="27"
-          height="27"
-        />
-      ) : (
-        <span
-          className="serif text-[16px]"
-          style={{
-            color:
-              isActive
-                ? onFill(
-                    accent,
-                  )
-                : accent,
-          }}
-        >
-          {entry.monogram}
-        </span>
-      )}
+      <Building
+        type={buildingFor(entry)}
+        accent={accent}
+        active={isActive}
+      />
     </span>
-  )
-}
-
-/* ==================================================================
-   DETAIL
-   ================================================================== */
-
-function Detail({
-  entry,
-  compact = false,
-}) {
-  return (
-    <>
-      <div className="flex items-start justify-between gap-3">
-        <p
-          className="mono-label"
-          style={{
-            color:
-              textColor(entry),
-          }}
-        >
-          {entry.year}
-        </p>
-
-        {entry.status && (
-          <span
-            className="rounded-full border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em]"
-            style={{
-              color:
-                textColor(
-                  entry,
-                ),
-              borderColor:
-                `${textColor(entry)}55`,
-              background:
-                `${textColor(entry)}12`,
-            }}
-          >
-            {entry.status}
-          </span>
-        )}
-      </div>
-
-      <h3
-        className={`serif mt-2 leading-tight ${
-          compact
-            ? 'text-[1.15rem]'
-            : 'text-[1.3rem]'
-        }`}
-        style={{
-          color:
-            'var(--ink)',
-        }}
-      >
-        {entry.title}
-      </h3>
-
-      <p
-        className="mono-label mt-2"
-        style={{
-          color:
-            'var(--muted)',
-        }}
-      >
-        {entry.org}
-      </p>
-
-      <p
-        className={`mt-3 leading-relaxed ${
-          compact
-            ? 'text-[13px]'
-            : 'text-[15px]'
-        }`}
-        style={{
-          color:
-            'var(--ink-soft)',
-        }}
-      >
-        {entry.body}
-      </p>
-
-      {entry.href && (
-        <a
-          href={entry.href}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
-          style={{
-            color:
-              textColor(entry),
-            borderColor:
-              textColor(entry),
-          }}
-        >
-          {linkLabel(
-            entry.href,
-          )}
-
-          <span
-            aria-hidden="true"
-          >
-            ↗
-          </span>
-        </a>
-      )}
-    </>
   )
 }
 
@@ -2038,5 +1736,111 @@ if (
 
   document.head.appendChild(
     style,
+  )
+}
+
+/* ==================================================================
+   DETAIL
+   ================================================================== */
+
+function Detail({
+  entry,
+  compact = false,
+}) {
+  return (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <p
+          className="mono-label"
+          style={{
+            color:
+              textColor(entry),
+          }}
+        >
+          {entry.year}
+        </p>
+
+        {entry.status && (
+          <span
+            className="rounded-full border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em]"
+            style={{
+              color:
+                textColor(
+                  entry,
+                ),
+              borderColor:
+                `${textColor(entry)}55`,
+              background:
+                `${textColor(entry)}12`,
+            }}
+          >
+            {entry.status}
+          </span>
+        )}
+      </div>
+
+      <h3
+        className={`serif mt-2 leading-tight ${
+          compact
+            ? 'text-[1.15rem]'
+            : 'text-[1.3rem]'
+        }`}
+        style={{
+          color:
+            'var(--ink)',
+        }}
+      >
+        {entry.title}
+      </h3>
+
+      <p
+        className="mono-label mt-2"
+        style={{
+          color:
+            'var(--muted)',
+        }}
+      >
+        {entry.org}
+      </p>
+
+      <p
+        className={`mt-3 leading-relaxed ${
+          compact
+            ? 'text-[13px]'
+            : 'text-[15px]'
+        }`}
+        style={{
+          color:
+            'var(--ink-soft)',
+        }}
+      >
+        {entry.body}
+      </p>
+
+      {entry.href && (
+        <a
+          href={entry.href}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
+          style={{
+            color:
+              textColor(entry),
+            borderColor:
+              textColor(entry),
+          }}
+        >
+          {linkLabel(
+            entry.href,
+          )}
+
+          <span
+            aria-hidden="true"
+          >
+            ↗
+          </span>
+        </a>
+      )}
+    </>
   )
 }
