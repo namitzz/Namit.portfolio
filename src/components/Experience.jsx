@@ -1,1846 +1,405 @@
-import {
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { timeline } from '../data/content'
-import { markFor } from './TimelineMarks'
 import Reveal from './Reveal'
-import PixelMap from './PixelMap'
-import Building, { buildingFor, BUILDING_H } from './MapBuildings'
 
-// The map is a town now, not a band. Taller gives the buildings somewhere
-// to stand and the roads somewhere to turn.
-const TRACK_H = 720
-// Everything on the map is snapped to this, so roads meet buildings
-// squarely and corners land on tile boundaries rather than between them.
-const TILE = 16
-const CARD_W = 340
-const CARD_H = 280
-const CARD_GAP = 78
-const EDGE = 80
+const VB = { w: 1000, h: 760 }
+
+// These coordinates deliberately follow the supplied reference rather than
+// auto-laying the timeline out. The point of the section is that the map has
+// a recognisable geography: Leicester -> Modelling -> Consultancy -> Consul
+// and then back through the centre to the lower row.
+const LANDMARKS = [
+  { x: 175, y: 165, labelX: 175, labelY: 188, kind: 'castle', tone: '#c73d4e' },
+  { x: 400, y: 165, labelX: 400, labelY: 214, kind: 'stall', tone: '#d9a55d' },
+  { x: 610, y: 165, labelX: 610, labelY: 188, kind: 'arch', tone: '#d69b64' },
+  { x: 820, y: 165, labelX: 820, labelY: 188, kind: 'fountain', tone: '#5aa7dc' },
+  { x: 820, y: 365, labelX: 820, labelY: 414, kind: 'ctf', tone: '#54c2a2' },
+  { x: 610, y: 365, labelX: 610, labelY: 414, kind: 'micro', tone: '#a86eaa' },
+  { x: 400, y: 365, labelX: 400, labelY: 414, kind: 'market', tone: '#e45e63' },
+  { x: 175, y: 430, labelX: 175, labelY: 479, kind: 'class', tone: '#9d8dbb' },
+  { x: 175, y: 650, labelX: 175, labelY: 688, kind: 'uniwise', tone: '#7e8872' },
+  { x: 500, y: 650, labelX: 500, labelY: 704, kind: 'graduation', tone: '#7b9bc4' },
+  { x: 825, y: 650, labelX: 825, labelY: 688, kind: 'aston', tone: '#9a7151' },
+]
+
+const ROUTE = 'M175 165 H400 H610 H820 V365 H610 H400 H175 V650 H500 H825'
+
+const TREE_POSITIONS = [
+  [30, 60, 1.2], [78, 95, 1], [120, 48, 1.15], [225, 45, 1.25],
+  [275, 90, 1.1], [335, 42, 1.25], [470, 58, 1.1], [520, 35, 1.25],
+  [690, 52, 1.1], [750, 62, 1.2], [900, 55, 1.25], [950, 105, 1.1],
+  [35, 280, 1.25], [75, 330, 1.1], [100, 540, 1.2], [60, 610, 1.15],
+  [105, 705, 1.2], [260, 705, 1.25], [315, 600, 1.1], [365, 550, 1.2],
+  [660, 525, 1.15], [710, 570, 1.2], [900, 525, 1.2], [950, 600, 1.25],
+  [915, 705, 1.2], [755, 720, 1.25], [585, 720, 1.1], [450, 720, 1.1],
+  [965, 320, 1.25], [930, 405, 1.1], [875, 470, 1.15], [710, 300, 1.1],
+  [700, 410, 1.2], [300, 260, 1.15], [255, 320, 1.1], [305, 460, 1.2],
+]
+
+const FLOWERS = [
+  [70, 220], [260, 120], [470, 250], [715, 105], [875, 225],
+  [285, 515], [720, 495], [905, 345], [355, 610], [555, 610],
+]
 
 export default function Experience() {
   const reduce = useReducedMotion()
-  const wrapRef = useRef(null)
   const pathRef = useRef(null)
-  const animationRef = useRef(null)
-
-  const [box, setBox] = useState({
-    w: 0,
-    h: TRACK_H,
-  })
-
+  const rafRef = useRef(null)
   const [active, setActive] = useState(null)
+  const [traveller, setTraveller] = useState({ x: LANDMARKS[0].x, y: LANDMARKS[0].y, length: 0, rotation: 0 })
+  const [routeLength, setRouteLength] = useState(0)
+  const [routeStops, setRouteStops] = useState([])
 
-  const [arc, setArc] = useState({
-    total: 0,
-    at: [],
-  })
-
-  const [traveller, setTraveller] = useState({
-    x: 0,
-    y: 0,
-    rotation: 0,
-    length: 0,
-    visible: false,
-  })
-
-  const height = TRACK_H
+  const current = active === null ? null : timeline[active]
 
   useLayoutEffect(() => {
-    const el = wrapRef.current
+    if (!pathRef.current) return
+    const path = pathRef.current
+    const total = path.getTotalLength()
+    const stops = LANDMARKS.map((point) => nearestLength(path, point, total))
+    setRouteLength(total)
+    setRouteStops(stops)
+    const p = path.getPointAtLength(stops[0])
+    setTraveller({ x: p.x, y: p.y, length: stops[0], rotation: 0 })
+  }, [])
 
-    if (!el) return undefined
-
-    const measure = () => {
-      setBox({
-        w: el.clientWidth,
-        h: height,
-      })
-    }
-
-    measure()
-
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-
-    return () => ro.disconnect()
-  }, [height])
-
-  const points = useMemo(
-    () =>
-      box.w
-        ? buildStops(
-            timeline.length,
-            box.w,
-            height,
-          )
-        : [],
-    [box.w, height],
-  )
-
-  const d = useMemo(
-    () =>
-      points.length
-        ? routePath(points)
-        : '',
-    [points],
-  )
-
-  const inkStops = useMemo(
-    () =>
-      gradientStops(
-        points,
-        box.w,
-      ),
-    [points, box.w],
-  )
-
-  const card = useMemo(() => {
-    if (
-      active === null ||
-      !points[active]
-    ) {
-      return null
-    }
-
-    return {
-      entry: timeline[active],
-      ...placeCard(
-        points[active],
-        active,
-        points,
-        box.w,
-        height,
-      ),
-    }
-  }, [
-    active,
-    points,
-    box.w,
-    height,
-  ])
-
-  useLayoutEffect(() => {
-    const el = pathRef.current
-
-    if (
-      !el ||
-      !d ||
-      !points.length
-    ) {
-      return
-    }
-
-    const total =
-      el.getTotalLength()
-
-    const at = points.map(
-      (point) =>
-        lengthAt(
-          el,
-          point,
-          total,
-        ),
-    )
-
-    setArc({
-      total,
-      at,
-    })
-
-    if (
-      traveller.length === 0 &&
-      at.length
-    ) {
-      const first =
-        el.getPointAtLength(0)
-
-      setTraveller({
-        x: first.x,
-        y: first.y,
-        rotation: 0,
-        length: 0,
-        visible: true,
-      })
-    }
-  }, [d, points])
-
-  const stopAnimation = () => {
-    if (animationRef.current) {
-      cancelAnimationFrame(
-        animationRef.current,
-      )
-
-      animationRef.current = null
-    }
-  }
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), [])
 
   const walkTo = (index) => {
-    if (
-      !pathRef.current ||
-      !arc.total ||
-      !points[index]
-    ) {
+    if (!pathRef.current || !routeLength || !routeStops.length) {
       setActive(index)
       return
     }
+    cancelAnimationFrame(rafRef.current)
 
-    stopAnimation()
-
-    const path =
-      pathRef.current
-
-    const target =
-      arc.at[index] || 0
-
-    const start =
-      traveller.visible
-        ? traveller.length
-        : 0
-
-    const distance = Math.abs(
-      target - start,
-    )
-
-    const duration = reduce
-      ? 0
-      : Math.min(
-          2400,
-          Math.max(
-            850,
-            distance * 3.4,
-          ),
-        )
-
-    const started =
-      performance.now()
+    const path = pathRef.current
+    const start = traveller.length
+    const target = routeStops[index]
+    const distance = Math.abs(target - start)
+    const duration = reduce ? 0 : Math.min(2200, Math.max(650, distance * 3.5))
+    const started = performance.now()
 
     const tick = (now) => {
-      const raw =
-        duration === 0
-          ? 1
-          : Math.min(
-              1,
-              (now - started) /
-                duration,
-            )
-
-      const eased =
-        1 -
-        Math.pow(
-          1 - raw,
-          3,
-        )
-
-      const length =
-        start +
-        (target - start) *
-          eased
-
-      const point =
-        path.getPointAtLength(
-          length,
-        )
-
-      const lookDistance =
-        Math.min(
-          arc.total,
-          Math.max(
-            0,
-            length +
-              (target >= start
-                ? 2
-                : -2),
-          ),
-        )
-
-      const next =
-        path.getPointAtLength(
-          lookDistance,
-        )
-
-      const rotation =
-        Math.atan2(
-          next.y - point.y,
-          next.x - point.x,
-        ) *
-        (180 / Math.PI)
-
-      setTraveller({
-        x: point.x,
-        y: point.y,
-        rotation,
-        length,
-        visible: true,
-      })
-
+      const raw = duration === 0 ? 1 : Math.min(1, (now - started) / duration)
+      const eased = 1 - Math.pow(1 - raw, 3)
+      const length = start + (target - start) * eased
+      const point = path.getPointAtLength(length)
+      const ahead = path.getPointAtLength(Math.min(routeLength, Math.max(0, length + (target >= start ? 2 : -2))))
+      const rotation = Math.atan2(ahead.y - point.y, ahead.x - point.x) * 180 / Math.PI
+      setTraveller({ x: point.x, y: point.y, length, rotation })
       if (raw < 1) {
-        animationRef.current =
-          requestAnimationFrame(
-            tick,
-          )
+        rafRef.current = requestAnimationFrame(tick)
       } else {
-        animationRef.current =
-          null
-
         setActive(index)
       }
     }
 
-    animationRef.current =
-      requestAnimationFrame(
-        tick,
-      )
+    rafRef.current = requestAnimationFrame(tick)
   }
 
-  useLayoutEffect(() => {
-    return () => stopAnimation()
-  }, [])
-
-  const travelled =
-    active !== null
-      ? arc.at[active] || 0
-      : traveller.length
+  const progress = traveller.length
+  const previous = () => active !== null && walkTo(Math.max(0, active - 1))
+  const next = () => active !== null && walkTo(Math.min(timeline.length - 1, active + 1))
 
   return (
-    <section
-      id="experience"
-      className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{
-        background:
-          'linear-gradient(180deg, rgba(244,85,42,0.075) 0%, rgba(244,244,245,0.015) 42%, rgba(244,244,245,0.025) 100%)',
-      }}
-    >
+    <section id="experience" className="relative px-6 py-24 md:px-16 md:py-32" style={{ background: 'linear-gradient(180deg, rgba(244,85,42,0.075), rgba(244,244,245,0.015) 45%, rgba(244,244,245,0.025))' }}>
       <div className="mx-auto w-full max-w-[1600px]">
-
-        {/* =========================================================
-            HEADING
-           ========================================================= */}
-
-        <Reveal
-          className="mb-12 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
-          style={{
-            borderColor:
-              'var(--hairline)',
-          }}
-        >
+        <Reveal className="mb-12 flex flex-wrap items-end justify-between gap-4 border-b pb-6" style={{ borderColor: 'var(--hairline)' }}>
           <div>
-            <p className="eyebrow">
-              Experience &amp; Education
-            </p>
-
-            <h2
-              className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
-              style={{
-                color: 'var(--ink)',
-              }}
-            >
-              The route so far
-              <span
-                style={{
-                  color:
-                    'var(--accent)',
-                }}
-              >
-                .
-              </span>
+            <p className="eyebrow">Experience &amp; Education</p>
+            <h2 className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]" style={{ color: 'var(--ink)' }}>
+              The route so far<span style={{ color: 'var(--accent)' }}>.</span>
             </h2>
-
-            <p
-              className="mt-4 max-w-xl text-sm leading-relaxed"
-              style={{
-                color:
-                  'var(--muted)',
-              }}
-            >
-              Click a stop and follow the journey.
+            <p className="mt-4 max-w-xl text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
+              A little pixel-art version of the route — click a destination and watch the traveller walk there.
             </p>
           </div>
-
-          <div className="flex flex-col items-start gap-2 md:items-end">
-            <p
-              className="mono-label"
-              style={{
-                color:
-                  'var(--muted)',
-              }}
-            >
-              {timeline.length} stops · 2023 – present
-            </p>
-
-            <div
-              className="hidden items-center gap-3 font-mono text-[9px] uppercase tracking-[0.12em] md:flex"
-              style={{
-                color:
-                  'var(--muted)',
-              }}
-            >
-              <span className="text-[#F4552A]">
-                ● EDUCATION
-              </span>
-
-              <span className="text-[#4C8FD8]">
-                ● PROJECT
-              </span>
-
-              <span className="text-[#35B89A]">
-                ● EXPERIENCE
-              </span>
-            </div>
-          </div>
+          <p className="mono-label" style={{ color: 'var(--muted)' }}>{timeline.length} stops · 2023 – present</p>
         </Reveal>
 
-        {/* =========================================================
-            DESKTOP MAP
-           ========================================================= */}
-
-        <div
-          ref={wrapRef}
-          className="relative hidden overflow-hidden rounded-[2rem] border md:block"
-          style={{
-            height,
-            borderColor:
-              'rgba(244,244,245,0.10)',
-            background:
-              '#4E7B45',
-            boxShadow:
-              '0 40px 100px -55px rgba(0,0,0,0.9)',
-          }}
-        >
-          {/* Tiles, drawn from the route: the dirt road on the map and
-              the journey through the timeline are the same line. */}
-          <PixelMap d={d} width={box.w} height={height} />
-
-          {/* -------------------------------------------------------
-              ROUTE
-             ------------------------------------------------------- */}
-
-          {box.w > 0 && (
-            <svg
-              aria-hidden="true"
-              width={box.w}
-              height={height}
-              className="absolute left-0 top-0 z-[4]"
-            >
+        <div className="hidden md:block">
+          <div className="relative mx-auto aspect-[1000/760] w-full max-w-[1280px] overflow-hidden rounded-[28px] border bg-[#2f6d3a] shadow-[0_40px_100px_-55px_rgba(0,0,0,.9)]" style={{ borderColor: 'rgba(244,244,245,.12)' }}>
+            <svg viewBox={`0 0 ${VB.w} ${VB.h}`} className="absolute inset-0 h-full w-full" role="img" aria-label="Interactive pixel-art career journey map">
               <defs>
-                <filter
-                  id="journeyGlow"
-                  x="-20%"
-                  y="-20%"
-                  width="140%"
-                  height="140%"
-                >
-                  <feGaussianBlur
-                    stdDeviation="6"
-                  />
+                <pattern id="grassTexture" width="32" height="32" patternUnits="userSpaceOnUse">
+                  <rect width="32" height="32" fill="#3c914b" />
+                  <path d="M4 9h3M18 5h2M26 18h3M10 27h2M22 29h4M2 21h2" stroke="#4ca057" strokeWidth="2" shapeRendering="crispEdges" opacity=".55" />
+                  <path d="M7 17h1M15 22h2M28 8h1M12 3h1" stroke="#2e7c3d" strokeWidth="2" shapeRendering="crispEdges" opacity=".65" />
+                </pattern>
+                <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feDropShadow dx="0" dy="7" stdDeviation="4" floodColor="#17371d" floodOpacity=".38" />
                 </filter>
-
-                <linearGradient
-                  id="journeyRoute"
-                  gradientUnits="userSpaceOnUse"
-                  x1="0"
-                  y1="0"
-                  x2={box.w}
-                  y2={height}
-                >
-                  {inkStops}
+                <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stopColor="#74c5ef" />
+                  <stop offset="1" stopColor="#317db2" />
                 </linearGradient>
               </defs>
 
-              {/* glow */}
+              <rect width="1000" height="760" fill="url(#grassTexture)" />
+              <rect x="0" y="0" width="1000" height="760" fill="none" stroke="#24572e" strokeWidth="12" shapeRendering="crispEdges" />
 
-              {arc.total > 0 && (
-                <path
-                  d={d}
-                  fill="none"
-                  stroke="#F4552A"
-                  strokeWidth="12"
-                  strokeLinecap="round"
-                  filter="url(#journeyGlow)"
-                  opacity="0.18"
-                  style={{
-                    strokeDasharray:
-                      arc.total,
-                    strokeDashoffset:
-                      arc.total -
-                      travelled,
-                  }}
-                />
-              )}
+              <MapPatches />
+              {TREE_POSITIONS.map(([x, y, s], i) => <PixelTree key={i} x={x} y={y} scale={s} />)}
+              {FLOWERS.map(([x, y], i) => <Flower key={i} x={x} y={y} />)}
 
-              {/* cream trail */}
+              <path d={ROUTE} fill="none" stroke="#8c6a4c" strokeWidth="58" strokeLinecap="square" strokeLinejoin="miter" opacity=".85" />
+              <path d={ROUTE} fill="none" stroke="#b18a62" strokeWidth="45" strokeLinecap="square" strokeLinejoin="miter" />
+              <path d={ROUTE} fill="none" stroke="#c8a579" strokeWidth="2" strokeDasharray="1 12" strokeLinecap="round" opacity=".55" />
 
-              <path
-                d={d}
-                fill="none"
-                stroke="#F7E8C9"
-                strokeWidth="7"
-                strokeLinecap="round"
-                strokeDasharray="2 13"
-                opacity="0.95"
-              />
+              <path d="M400 165v-48M610 165v-48M820 365v48M610 365v55M400 365v50M175 650v-52M500 650v-50M825 650v-52" stroke="#b18a62" strokeWidth="24" strokeLinecap="square" />
 
-              {/* orange centre */}
+              {LANDMARKS.map((point, index) => (
+                <g key={timeline[index]?.id || index}>
+                  <Landmark point={point} />
+                  <LandmarkButton point={point} entry={timeline[index]} active={active === index} onClick={() => walkTo(index)} />
+                </g>
+              ))}
 
-              {arc.total > 0 && (
-                <path
-                  d={d}
-                  fill="none"
-                  stroke="url(#journeyRoute)"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  style={{
-                    strokeDasharray:
-                      arc.total,
-                    strokeDashoffset:
-                      arc.total -
-                      travelled,
-                    opacity:
-                      travelled > 0
-                        ? 1
-                        : 0,
-                    transition:
-                      reduce
-                        ? 'none'
-                        : 'stroke-dashoffset 300ms ease',
-                  }}
-                />
-              )}
+              <path pointerEvents="none" d={ROUTE} fill="none" stroke="#f8e8c8" strokeWidth="7" strokeDasharray="2 13" strokeLinecap="round" opacity=".98" />
+              <path pointerEvents="none" d={ROUTE} fill="none" stroke="#fff7df" strokeWidth="2" strokeDasharray="1 13" strokeLinecap="round" opacity=".8" />
 
-              {/* little trail dashes */}
+              <path pointerEvents="none" d={ROUTE} fill="none" stroke="#f4552a" strokeWidth="5" strokeDasharray={routeLength || 1} strokeDashoffset={(routeLength || 1) - progress} strokeLinecap="round" opacity=".9" />
+              <path pointerEvents="none" ref={pathRef} d={ROUTE} fill="none" stroke="transparent" strokeWidth="2" />
 
-              <path
-                ref={pathRef}
-                d={d}
-                fill="none"
-                stroke="#A83B20"
-                strokeWidth="1.5"
-                strokeDasharray="5 10"
-                strokeLinecap="round"
-                opacity="0.8"
-              />
-
-              {/* ---------------------------------------------------
-                  TRAVELLER
-                 --------------------------------------------------- */}
-
-              {traveller.visible && (
-                <Traveller
-                  x={traveller.x}
-                  y={traveller.y}
-                  rotation={
-                    traveller.rotation
-                  }
-                  reduce={reduce}
-                />
-              )}
+              <Traveller x={traveller.x} y={traveller.y} rotation={traveller.rotation} reduce={reduce} />
             </svg>
-          )}
 
-          {/* -------------------------------------------------------
-              DESTINATIONS
-             ------------------------------------------------------- */}
+            {current && <svg viewBox={`0 0 ${VB.w} ${VB.h}`} className="pointer-events-none absolute inset-0 h-full w-full">
+              <foreignObject x={active >= 7 ? 285 : 545} y={active >= 7 ? 430 : 205} width="310" height="275">
+                <div className="pointer-events-auto rounded-2xl border p-4 shadow-2xl backdrop-blur-md" style={{ background: 'rgba(17,19,18,.94)', borderColor: current?.accent || '#f4552a', color: '#f4f4f5' }}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-mono text-[9px] uppercase tracking-[.16em] opacity-55">{current?.year}</div>
+                      <div className="mt-1 font-semibold leading-tight">{current?.title}</div>
+                      <div className="mt-1 text-xs opacity-60">{current?.org}</div>
+                    </div>
+                    <button type="button" onClick={() => setActive(null)} className="rounded-full border px-2 py-1 font-mono text-[9px] opacity-55 hover:opacity-100">×</button>
+                  </div>
+                  <p className="mt-3 text-[11px] leading-relaxed opacity-75">{current?.body || current?.description || current?.summary}</p>
+                  {current?.status && <div className="mt-3 inline-flex rounded-full border px-2 py-1 font-mono text-[9px] uppercase tracking-wider" style={{ borderColor: current.accent || '#fff', color: current.accent || '#fff' }}>{current.status}</div>}
+                  <div className="mt-4 flex items-center justify-between gap-2">
+                    <button type="button" onClick={previous} disabled={active === 0} className="rounded-lg border px-3 py-2 font-mono text-[9px] uppercase tracking-wider opacity-70 hover:opacity-100 disabled:opacity-25">← Previous</button>
+                    {current?.href && <a href={current.href} target="_blank" rel="noreferrer" className="rounded-lg border px-3 py-2 font-mono text-[9px] uppercase tracking-wider opacity-70 hover:opacity-100">Open ↗</a>}
+                    <button type="button" onClick={next} disabled={active === timeline.length - 1} className="rounded-lg border px-3 py-2 font-mono text-[9px] uppercase tracking-wider opacity-70 hover:opacity-100">Next →</button>
+                  </div>
+                </div>
+              </foreignObject>
+            </svg>}
 
-          {points.map(
-            (point, index) => {
-              const entry =
-                timeline[index]
-
-              if (!entry) {
-                return null
-              }
-
-              return (
-                <Stop
-                  key={entry.id}
-                  entry={entry}
-                  point={point}
-                  active={
-                    active === index
-                  }
-                  dimmed={
-                    active !== null &&
-                    active !== index
-                  }
-                  onEnter={() =>
-                    setActive(index)
-                  }
-                  onClick={() =>
-                    walkTo(index)
-                  }
-                />
-              )
-            },
-          )}
-
-          {/* -------------------------------------------------------
-              DETAIL CARD
-             ------------------------------------------------------- */}
-
-          {card && (
-            <div
-              id="route-card"
-              className="absolute z-30 overflow-hidden rounded-2xl border p-5"
-              style={{
-                left: card.left,
-                top: card.top,
-                width: CARD_W,
-                maxHeight:
-                  height -
-                  card.top -
-                  12,
-                borderColor:
-                  textColor(
-                    card.entry,
-                  ),
-                background:
-                  'rgba(17,19,18,0.94)',
-                backdropFilter:
-                  'blur(14px)',
-                boxShadow:
-                  '0 30px 80px -40px rgba(0,0,0,0.95)',
-              }}
-            >
-              <Detail
-                entry={card.entry}
-                compact
-              />
+            <div className="pointer-events-none absolute bottom-5 left-5 z-20 rounded-full border px-3 py-1.5 backdrop-blur-sm" style={{ borderColor: 'rgba(244,244,245,.14)', background: 'rgba(10,14,12,.45)' }}>
+              <span className="font-mono text-[9px] uppercase tracking-[.16em] text-white/60">Interactive journey map</span>
             </div>
-          )}
-
-          {/* -------------------------------------------------------
-              MAP LABEL
-             ------------------------------------------------------- */}
-
-          <div
-            className="pointer-events-none absolute bottom-5 left-6 z-[6] rounded-full border px-3 py-1.5 backdrop-blur-sm"
-            style={{
-              borderColor:
-                'rgba(244,244,245,0.12)',
-              background:
-                'rgba(10,14,12,0.48)',
-            }}
-          >
-            <span
-              className="font-mono text-[9px] uppercase tracking-[0.16em]"
-              style={{
-                color:
-                  'rgba(244,244,245,0.55)',
-              }}
-            >
-              Interactive journey map
-            </span>
+            <div className="pointer-events-none absolute right-5 top-5 z-20 rounded-full border px-3 py-1.5 backdrop-blur-sm" style={{ borderColor: 'rgba(244,244,245,.14)', background: 'rgba(10,14,12,.45)' }}>
+              <span className="font-mono text-[9px] uppercase tracking-[.16em] text-white/60">Click a landmark</span>
+            </div>
+            <style>{`\n              .pixel-walker { animation: pixel-bob .28s steps(2, end) infinite alternate; transform-origin: center; }\n              @keyframes pixel-bob { from { translate: 0 0; } to { translate: 0 -2px; } }\n            `}</style>
           </div>
-
-          <Compass />
         </div>
 
-        {/* =========================================================
-            MOBILE
-           ========================================================= */}
-
-        <ol className="md:hidden">
-          {timeline.map(
-            (entry, index) => (
-              <li
-                key={entry.id}
-                className="relative grid grid-cols-[3.5rem_1fr] gap-4"
-              >
-                {index <
-                  timeline.length - 1 && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute bottom-0 left-[27px] top-[60px] w-[2px]"
-                    style={{
-                      backgroundImage:
-                        'repeating-linear-gradient(180deg, rgba(244,244,245,0.28) 0 3px, transparent 3px 11px)',
-                    }}
-                  />
-                )}
-
-                <div className="pt-1">
-                  <StopMark
-                    entry={entry}
-                    isActive
-                  />
-                </div>
-
-                <div className="pb-10 pt-1">
-                  <Detail
-                    entry={entry}
-                  />
-                </div>
+        <div className="md:hidden">
+          <ol className="relative ml-2 border-l pl-7" style={{ borderColor: 'var(--hairline)' }}>
+            {timeline.map((entry, index) => (
+              <li key={entry.id} className="relative pb-10 last:pb-0">
+                <button type="button" onClick={() => setActive(index)} className="absolute -left-[35px] top-0 h-4 w-4 rounded-full border-2" style={{ background: active === index ? (entry.accent || 'var(--accent)') : 'var(--paper)', borderColor: entry.accent || 'var(--accent)' }} aria-label={`Show ${entry.title}`} />
+                <div className="font-mono text-[10px] uppercase tracking-[.14em]" style={{ color: 'var(--muted)' }}>{entry.year}</div>
+                <h3 className="mt-1 text-base font-semibold" style={{ color: 'var(--ink)' }}>{entry.title}</h3>
+                <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>{entry.org}</p>
+                <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>{entry.body || entry.description || entry.summary}</p>
               </li>
-            ),
-          )}
-        </ol>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   )
 }
 
-function Traveller({
-  x,
-  y,
-  rotation = 0,
-  reduce,
-}) {
+function nearestLength(path, point, total) {
+  let lo = 0
+  let hi = total
+  for (let i = 0; i < 18; i += 1) {
+    const a = lo + (hi - lo) / 3
+    const b = hi - (hi - lo) / 3
+    const pa = path.getPointAtLength(a)
+    const pb = path.getPointAtLength(b)
+    const da = (pa.x - point.x) ** 2 + (pa.y - point.y) ** 2
+    const db = (pb.x - point.x) ** 2 + (pb.y - point.y) ** 2
+    if (da < db) hi = b
+    else lo = a
+  }
+  return (lo + hi) / 2
+}
+
+function MapPatches() {
   return (
-    <g
-      transform={`
-        translate(${x} ${y})
-        rotate(${rotation})
-      `}
-      style={{
-        transition: reduce
-          ? 'none'
-          : 'transform 45ms linear',
-      }}
-    >
-      {/* shadow */}
-
-      <ellipse
-        cx="0"
-        cy="9"
-        rx="8"
-        ry="3"
-        fill="rgba(0,0,0,0.38)"
-      />
-
-      {/* backpack */}
-
-      <rect
-        x="-8"
-        y="-8"
-        width="7"
-        height="12"
-        rx="2"
-        fill="#245D4A"
-        stroke="#13251E"
-        strokeWidth="1"
-      />
-
-      {/* backpack strap */}
-
-      <path
-        d="M-4 -7 Q0 -10 4 -6"
-        fill="none"
-        stroke="#CFAE72"
-        strokeWidth="1"
-      />
-
-      {/* body */}
-
-      <path
-        d="
-          M-3 -6
-          Q1 -9 4 -5
-          L5 5
-          L-4 5
-          Z
-        "
-        fill="#F4552A"
-        stroke="#35150D"
-        strokeWidth="1"
-      />
-
-      {/* head */}
-
-      <circle
-        cx="1"
-        cy="-11"
-        r="4.2"
-        fill="#D99A70"
-        stroke="#35150D"
-        strokeWidth="1"
-      />
-
-      {/* hair */}
-
-      <path
-        d="
-          M-3 -12
-          Q0 -16 4 -13
-          L5 -10
-          L-3 -10
-          Z
-        "
-        fill="#241A16"
-      />
-
-      {/* arm */}
-
-      <path
-        d="M3 -4 L8 1"
-        fill="none"
-        stroke="#D99A70"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-
-      {/* legs */}
-
-      <path
-        d="M-2 5 L-6 11"
-        fill="none"
-        stroke="#24282A"
-        strokeWidth="2.3"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M3 5 L7 10"
-        fill="none"
-        stroke="#24282A"
-        strokeWidth="2.3"
-        strokeLinecap="round"
-      />
-
-      {/* walking spark */}
-
-      <circle
-        cx="-8"
-        cy="12"
-        r="1"
-        fill="#F4552A"
-        opacity="0.8"
-      />
-
-      <circle
-        cx="9"
-        cy="11"
-        r="0.8"
-        fill="#F5B447"
-        opacity="0.7"
-      />
+    <g shapeRendering="crispEdges" opacity=".65">
+      <path d="M0 145h110v35H0zM260 145h75v45h-75zM690 120h65v45h-65zM870 285h130v42H870zM250 520h65v34h-65zM650 515h105v38H650zM420 690h65v35h-65z" fill="#4b9c4f" />
+      <path d="M0 205h45v28H0zM325 215h52v30h-52zM735 245h55v32h-55zM290 585h42v27h-42zM560 485h52v30h-52zM850 455h60v32h-60z" fill="#368943" />
+      <path d="M110 255h12v8h-12zM240 300h14v7h-14zM455 285h12v8h-12zM680 285h13v7h-13zM845 245h15v8h-15zM350 515h12v7h-12zM610 570h13v7h-13z" fill="#2d773a" />
     </g>
   )
 }
 
-/* ==================================================================
-   COMPASS
-   ================================================================== */
-
-function Compass() {
+function PixelTree({ x, y, scale = 1 }) {
   return (
-    <div
-      className="pointer-events-none absolute bottom-5 right-6 z-[6] flex h-16 w-16 items-center justify-center rounded-full border"
-      style={{
-        borderColor:
-          'rgba(244,235,217,0.24)',
-        background:
-          'rgba(13,25,20,0.5)',
-        backdropFilter:
-          'blur(8px)',
-      }}
-    >
-      <svg
-        viewBox="0 0 64 64"
-        width="52"
-        height="52"
-      >
-        <circle
-          cx="32"
-          cy="32"
-          r="25"
-          fill="none"
-          stroke="#E6D7B8"
-          strokeWidth="1"
-          opacity="0.35"
-        />
-
-        <path
-          d="M32 9 L37 32 L32 55 L27 32 Z"
-          fill="#F4552A"
-          opacity="0.8"
-        />
-
-        <path
-          d="M32 9 L37 32 L32 55 L27 32 Z"
-          fill="none"
-          stroke="#E6D7B8"
-          strokeWidth="1"
-        />
-
-        <text
-          x="32"
-          y="7"
-          textAnchor="middle"
-          fill="#E6D7B8"
-          fontSize="6"
-          fontFamily="monospace"
-        >
-          N
-        </text>
-
-        <text
-          x="32"
-          y="62"
-          textAnchor="middle"
-          fill="#E6D7B8"
-          fontSize="6"
-          fontFamily="monospace"
-        >
-          S
-        </text>
-      </svg>
-    </div>
+    <g transform={`translate(${x} ${y}) scale(${scale})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+      <rect x="-5" y="20" width="10" height="17" fill="#70482e" />
+      <rect x="-10" y="26" width="20" height="6" fill="#5d3d29" />
+      <path d="M-25 18h7v-18h8v-10h20v10h8V0h8v18h7v9h-11v6h-34v-6h-11z" fill="#126b38" />
+      <path d="M-18 10h8V0h20v8h10v10h-9v6h-28v-6h-10z" fill="#22a64b" />
+      <path d="M-10 -2h12v-7h11v10h-5v8h-18z" fill="#4bc65a" />
+      <rect x="-18" y="17" width="7" height="5" fill="#0d5b31" />
+      <rect x="12" y="10" width="7" height="6" fill="#18823c" />
+      <rect x="-4" y="24" width="6" height="4" fill="#0d5b31" />
+    </g>
   )
 }
 
-/* ==================================================================
-   ROUTE STOPS
-   ================================================================== */
-
-/** Deterministic noise, so the town is the same town on every load. */
-function seededRandom(seed) {
-  let s = seed >>> 0
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0
-    return s / 4294967296
-  }
-}
-
-function buildStops(count, width, height) {
-  const snap = (v) => Math.round(v / TILE) * TILE + TILE / 2
-  const left = EDGE
-  const right = width - EDGE
-  const rand = seededRandom(0x7f4a7c15)
-  const out = []
-
-  // Stops walk left to right so the timeline still reads in order, but
-  // each one steps to a different band so the roads between them have to
-  // turn. A town where every building sits on one line is a street.
-  const bands = [0.2, 0.44, 0.68, 0.34, 0.58, 0.24, 0.5, 0.74, 0.3, 0.62, 0.42]
-
-  for (let i = 0; i < count; i++) {
-    const t = count > 1 ? i / (count - 1) : 0
-    const band = bands[i % bands.length]
-    out.push({
-      x: snap(left + (right - left) * t),
-      y: snap(height * band + (rand() - 0.5) * 26),
-    })
-  }
-  return out
-}
-
-/* ==================================================================
-   WAYPOINTS
-   ================================================================== */
-
-/**
- * The road between two stops, as tiles rather than as a curve: out along
- * one axis, a square corner, then in along the other. Alternating which
- * axis leads stops every junction looking the same.
- */
-function buildWaypoints(stops) {
-  if (!stops.length) return []
-  const pts = [stops[0]]
-  for (let i = 0; i < stops.length - 1; i++) {
-    const a = stops[i]
-    const b = stops[i + 1]
-    // Always out along x, then in along y. Alternating which axis led
-    // looked more varied but made the road retrace itself: a segment that
-    // arrived vertically and then left vertically ran back down the line
-    // it had just come up, so the traveller walked the same stretch twice
-    // and the glow doubled back over it.
-    pts.push({ x: b.x, y: a.y }, { x: b.x, y: b.y })
-  }
-  return pts
-}
-
-/* ==================================================================
-   ROUTE PATH
-   ================================================================== */
-
-/**
- * Straight segments and square corners. The spline is gone: it fought the
- * tile grid, and a road that meets a building at an angle never looks
- * like it was built there.
- */
-function routePath(stops) {
-  const p = buildWaypoints(stops)
-  if (p.length < 2) return ''
+function Flower({ x, y }) {
   return (
-    `M ${p[0].x} ${p[0].y} ` +
-    p.slice(1).map((q) => `L ${q.x} ${q.y}`).join(' ')
+    <g transform={`translate(${x} ${y})`} shapeRendering="crispEdges">
+      <rect x="0" y="4" width="3" height="9" fill="#28773a" />
+      <rect x="-4" y="0" width="4" height="4" fill="#f2d35c" />
+      <rect x="4" y="0" width="4" height="4" fill="#e65f72" />
+      <rect x="0" y="-4" width="4" height="4" fill="#f4f0c9" />
+    </g>
   )
 }
 
-/* ==================================================================
-   ROUTE GRADIENT
-   ================================================================== */
-
-function gradientStops(
-  points,
-  width,
-) {
-  let last = 0
-
-  return points.map(
-    (point, index) => {
-      const entry =
-        timeline[index] ||
-        {}
-
-      const offset =
-        Math.max(
-          last,
-          clamp(
-            point.x /
-              (width || 1),
-            0,
-            1,
-          ),
-        )
-
-      last = offset
-
-      return (
-        <stop
-          key={
-            entry.id ||
-            index
-          }
-          offset={
-            `${offset * 100}%`
-          }
-          stopColor={
-            routeColor(
-              entry,
-            )
-          }
-        />
-      )
-    },
-  )
-}
-
-/* ==================================================================
-   ROUTE DISTANCE
-   ================================================================== */
-
-function lengthAt(
-  element,
-  target,
-  total,
-) {
-  let best = 0
-  let bestDistance =
-    Infinity
-
-  const steps = 320
-
-  for (
-    let i = 0;
-    i <= steps;
-    i++
-  ) {
-    const distance =
-      (i / steps) *
-      total
-
-    const point =
-      element.getPointAtLength(
-        distance,
-      )
-
-    const difference =
-      (point.x -
-        target.x) **
-        2 +
-      (point.y -
-        target.y) **
-        2
-
-    if (
-      difference <
-      bestDistance
-    ) {
-      bestDistance =
-        difference
-      best = distance
-    }
-  }
-
-  const span =
-    total / steps
-
-  for (
-    let i = -20;
-    i <= 20;
-    i++
-  ) {
-    const distance =
-      clamp(
-        best +
-          (i / 20) *
-            span,
-        0,
-        total,
-      )
-
-    const point =
-      element.getPointAtLength(
-        distance,
-      )
-
-    const difference =
-      (point.x -
-        target.x) **
-        2 +
-      (point.y -
-        target.y) **
-        2
-
-    if (
-      difference <
-      bestDistance
-    ) {
-      bestDistance =
-        difference
-      best = distance
-    }
-  }
-
-  return best
-}
-
-/* ==================================================================
-   CARD PLACEMENT
-   ================================================================== */
-
-function placeCard(
-  point,
-  index,
-  points,
-  width,
-  height,
-) {
-  const blockers =
-    points
-      .filter(
-        (_, i) =>
-          i !== index,
-      )
-      .map((p) => ({
-        x0: p.x - 82,
-        x1: p.x + 82,
-        y0: p.y - 34,
-        y1: p.y + 78,
-      }))
-
-  const own = {
-    x0: point.x - 82,
-    x1: point.x + 82,
-    y0: point.y - 34,
-    y1: point.y + 78,
-  }
-
-  const overlaps = (
-    rect,
-    obstacle,
-  ) =>
-    rect.left +
-      CARD_W >
-      obstacle.x0 &&
-    rect.left <
-      obstacle.x1 &&
-    rect.top +
-      CARD_H >
-      obstacle.y0 &&
-    rect.top <
-      obstacle.y1
-
-  const centerLeft =
-    point.x -
-    CARD_W / 2
-
-  const centerTop =
-    point.y -
-    CARD_H / 2
-
-  const preferDown =
-    point.y <
-    height / 2
-
-  let best = null
-
-  const consider = (
-    left,
-    top,
-  ) => {
-    if (
-      left < 12 ||
-      top < 12 ||
-      left + CARD_W >
-        width - 12 ||
-      top + CARD_H >
-        height - 12
-    ) {
-      return
-    }
-
-    const rect = {
-      left,
-      top,
-    }
-
-    if (
-      overlaps(
-        rect,
-        own,
-      )
-    ) {
-      return
-    }
-
-    const covered =
-      blockers.filter(
-        (obstacle) =>
-          overlaps(
-            rect,
-            obstacle,
-          ),
-      ).length
-
-    const distance =
-      Math.hypot(
-        left +
-          CARD_W / 2 -
-          point.x,
-
-        top +
-          CARD_H / 2 -
-          point.y,
-      )
-
-    const score =
-      distance +
-      covered * 110
-
-    if (
-      !best ||
-      score <
-        best.score
-    ) {
-      best = {
-        left,
-        top,
-        score,
-      }
-    }
-  }
-
-  for (
-    let step = 0;
-    step <= 18;
-    step++
-  ) {
-    const offset =
-      step * 20
-
-    const down =
-      point.y +
-      CARD_GAP
-
-    const up =
-      point.y -
-      CARD_GAP -
-      CARD_H
-
-    if (preferDown) {
-      consider(
-        centerLeft,
-        down,
-      )
-
-      consider(
-        centerLeft -
-          offset,
-        down,
-      )
-
-      consider(
-        centerLeft +
-          offset,
-        down,
-      )
-
-      consider(
-        centerLeft,
-        up,
-      )
-    } else {
-      consider(
-        centerLeft,
-        up,
-      )
-
-      consider(
-        centerLeft -
-          offset,
-        up,
-      )
-
-      consider(
-        centerLeft +
-          offset,
-        up,
-      )
-
-      consider(
-        centerLeft,
-        down,
-      )
-    }
-
-    consider(
-      point.x + 70,
-      centerTop,
-    )
-
-    consider(
-      point.x -
-        CARD_W +
-        70,
-      centerTop,
-    )
-  }
-
-  if (best) {
-    return best
-  }
-
-  return {
-    left: clamp(
-      centerLeft,
-      12,
-      Math.max(
-        12,
-        width -
-          CARD_W -
-          12,
-      ),
-    ),
-
-    top: clamp(
-      fallbackTop(
-        point,
-        height,
-      ),
-      12,
-      Math.max(
-        12,
-        height -
-          CARD_H -
-          12,
-      ),
-    ),
+function Landmark({ point }) {
+  const { x, y, kind } = point
+  switch (kind) {
+    case 'castle': return <Castle x={x} y={y} />
+    case 'stall': return <WoodenArch x={x} y={y} />
+    case 'arch': return <WoodenArch x={x} y={y} wide />
+    case 'fountain': return <Fountain x={x} y={y} />
+    case 'ctf': return <GreenGate x={x} y={y} />
+    case 'micro': return <PurpleGate x={x} y={y} />
+    case 'market': return <Market x={x} y={y} />
+    case 'class': return <ClassBuilding x={x} y={y} />
+    case 'uniwise': return <Uniwise x={x} y={y} />
+    case 'graduation': return <Graduation x={x} y={y} />
+    case 'aston': return <Aston x={x} y={y} />
+    default: return <rect x={x - 20} y={y - 20} width="40" height="40" fill="#fff" shapeRendering="crispEdges" />
   }
 }
 
-function fallbackTop(
-  point,
-  height,
-) {
-  if (
-    point.y +
-      CARD_GAP +
-      CARD_H <=
-    height
-  ) {
-    return (
-      point.y +
-      CARD_GAP
-    )
-  }
-
+function LandmarkButton({ point, entry, active, onClick }) {
+  const width = 74
+  const label = shortLabel(entry)
   return (
-    point.y -
-    CARD_GAP -
-    CARD_H
+    <g className="cursor-pointer" onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick() }} aria-label={`Go to ${entry?.title}`}>
+      <rect x={point.x - width / 2} y={point.labelY - 18} width={width} height="23" rx="3" fill={active ? '#fff6dd' : '#f4ead5'} stroke={active ? '#f4552a' : '#725a45'} strokeWidth="2" />
+      <text x={point.labelX} y={point.labelY - 3} textAnchor="middle" fontSize="10" fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#42372f">{label}</text>
+      <rect x={point.x - 20} y={point.labelY + 7} width="40" height="8" rx="2" fill="#42372f" opacity=".22" />
+    </g>
   )
 }
 
-/* ==================================================================
-   STOP
-   ================================================================== */
-
-function Stop({
-  entry,
-  point,
-  active,
-  dimmed,
-  onEnter,
-  onClick,
-}) {
-  const labelAbove =
-    point.y > 285
-
-  return (
-    <button
-      type="button"
-      onMouseEnter={onEnter}
-      onFocus={onEnter}
-      onClick={onClick}
-      aria-describedby={
-        active
-          ? 'route-card'
-          : undefined
-      }
-      aria-label={`${entry.year} ${entry.short || entry.title}`}
-      className="absolute z-10 flex -translate-x-1/2 flex-col items-center transition-all duration-300"
-      style={{
-        left: point.x,
-        // The building's base sits on the road, so the whole sprite is
-        // lifted by its own height rather than centred on the point.
-        top: point.y - BUILDING_H + 10,
-        opacity: dimmed ? 0.55 : 1,
-      }}
-    >
-      {labelAbove && (
-        <StopLabel
-          entry={entry}
-          active={active}
-          above
-        />
-      )}
-
-      <StopMark
-        entry={entry}
-        isActive={active}
-      />
-
-      {!labelAbove && (
-        <StopLabel
-          entry={entry}
-          active={active}
-        />
-      )}
-    </button>
-  )
+function shortLabel(entry) {
+  if (!entry) return ''
+  const map = { leicester: 'Leicester', modelling: 'Modelling', consultancy: 'Consultancy', consul: 'Consul visit', ctf: 'CTF', microinternship: 'Micro-internship', cloudseven: 'Cloud Seven', classfutures: 'ClassFutures', uniwise: 'UniWise', graduation: 'Graduation', aston: 'Aston' }
+  return map[entry.id] || entry.short || entry.title
 }
 
-/* ==================================================================
-   STOP LABEL
-   ================================================================== */
-
-function StopLabel({
-  entry,
-  active,
-  above = false,
-}) {
-  return (
-    <span
-      className={
-        above
-          ? 'mb-3 flex flex-col items-center'
-          : 'mt-3 flex flex-col items-center'
-      }
-    >
-      <span
-        className="rounded-full border px-2.5 py-1 font-mono text-[9px] tracking-[0.12em] shadow-sm"
-        style={{
-          color: '#332A1E',
-          borderColor:
-            'rgba(74,54,33,0.18)',
-          background:
-            'rgba(246,232,201,0.94)',
-        }}
-      >
-        {entry.year}
-      </span>
-
-      <span
-        className="mt-1 max-w-[170px] whitespace-nowrap rounded bg-[#F3E5C5]/90 px-2 py-1 text-center text-[10.5px] font-medium leading-tight shadow-sm"
-        style={{
-          color: '#30291F',
-          opacity:
-            active ? 1 : 0.88,
-        }}
-      >
-        {entry.short ||
-          entry.title}
-      </span>
-
-      {entry.id ===
-        'aston' && (
-        <span
-          className="mt-1 rounded-full px-2 py-0.5 font-mono text-[7px] uppercase tracking-[0.16em]"
-          style={{
-            color: '#FFF4E5',
-            background:
-              '#F4552A',
-          }}
-        >
-          Now
-        </span>
-      )}
-    </span>
-  )
+function Castle({ x, y }) {
+  return <g transform={`translate(${x - 48} ${y - 58})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <rect x="6" y="0" width="25" height="58" fill="#b93649" /><rect x="65" y="0" width="25" height="58" fill="#b93649" />
+    <rect x="0" y="-10" width="37" height="18" fill="#ce4454" /><rect x="59" y="-10" width="37" height="18" fill="#ce4454" />
+    <path d="M0-10h9v-8h9v8h10v-8h9v8M59-10h9v-8h9v8h10v-8h9v8" fill="#e15a68" />
+    <rect x="31" y="12" width="34" height="46" fill="#c74654" /><rect x="38" y="25" width="20" height="33" fill="#713b31" />
+    <path d="M38 25h20v-7H38z" fill="#7e4a39" /><rect x="13" y="18" width="10" height="13" fill="#7e3141" /><rect x="67" y="18" width="10" height="13" fill="#7e3141" />
+    <rect x="2" y="7" width="90" height="5" fill="#ef6d77" opacity=".55" />
+  </g>
 }
 
-/* ==================================================================
-   STOP MARK
-   ================================================================== */
-
-/**
- * The building that stands at a stop.
- *
- * It sits on the road rather than over it: the anchor is the base of the
- * building, not its middle, so the footprint lands on the tile the route
- * actually passes through and the roof rises away from it.
- *
- * Hovering lifts it. Scale alone reads as a zoom; lifting and growing the
- * shadow together reads as picking something up off the ground, which is
- * what "pops" has to mean on a map seen from above.
- */
-function StopMark({ entry, isActive }) {
-  const accent = entry.accent || 'var(--accent)'
-  return (
-    <span
-      className="block"
-      style={{
-        // Anchored at the base, so the building stands on its plot.
-        transformOrigin: '50% 100%',
-        transform: isActive
-          ? 'translateY(-7px) scale(1.14)'
-          : 'translateY(0) scale(1)',
-        transition: 'transform 260ms cubic-bezier(0.22,1,0.36,1)',
-        filter: isActive
-          ? `drop-shadow(0 10px 14px rgba(0,0,0,0.45)) drop-shadow(0 0 10px ${accent}66)`
-          : 'drop-shadow(0 6px 8px rgba(0,0,0,0.35))',
-      }}
-    >
-      <Building
-        type={buildingFor(entry)}
-        accent={accent}
-        active={isActive}
-      />
-    </span>
-  )
+function WoodenArch({ x, y, wide = false }) {
+  const w = wide ? 70 : 56
+  return <g transform={`translate(${x - w / 2} ${y - 45})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <rect x="0" y="0" width={w} height="10" fill="#9a663d" /><rect x="0" y="0" width="8" height="58" fill="#81542f" /><rect x={w - 8} y="0" width="8" height="58" fill="#81542f" />
+    <path d={`M8 26Q${w / 2} -10 ${w - 8} 26`} fill="none" stroke="#d79b60" strokeWidth="7" />
+    <rect x="14" y="34" width={w - 28} height="24" fill="#b47b48" opacity=".8" /><rect x="19" y="36" width="8" height="8" fill="#d6a36c" /><rect x={w - 27} y="36" width="8" height="8" fill="#d6a36c" />
+  </g>
 }
 
-/* ==================================================================
-   LINK LABEL
-   ================================================================== */
-
-function linkLabel(
-  href = '',
-) {
-  if (
-    href.includes(
-      'github.com',
-    )
-  ) {
-    return 'Repository'
-  }
-
-  if (
-    href.includes(
-      'le.ac.uk',
-    ) ||
-    href.includes(
-      'aston.ac.uk',
-    )
-  ) {
-    return 'Course page'
-  }
-
-  if (
-    href.includes(
-      'linkedin.com',
-    )
-  ) {
-    return 'The post'
-  }
-
-  if (
-    href.includes(
-      'classfutures',
-    )
-  ) {
-    return 'Read it'
-  }
-
-  return 'Visit'
+function Fountain({ x, y }) {
+  return <g transform={`translate(${x} ${y - 25})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <ellipse cx="0" cy="30" rx="40" ry="18" fill="#56707b" /><ellipse cx="0" cy="26" rx="34" ry="15" fill="#8eb5c5" /><ellipse cx="0" cy="24" rx="27" ry="12" fill="url(#water)" />
+    <rect x="-7" y="-4" width="14" height="28" fill="#d3e0e0" /><rect x="-13" y="14" width="26" height="8" fill="#c2d3d5" /><rect x="-4" y="-16" width="8" height="12" fill="#e2eceb" />
+    <path d="M-4-16Q-20-4-12 8M4-16Q20-4 12 8" fill="none" stroke="#66b9e8" strokeWidth="5" />
+    <circle cx="0" cy="-19" r="5" fill="#74c9ef" />
+  </g>
 }
 
-/* ==================================================================
-   COLOUR HELPERS
-   ================================================================== */
-
-function routeColor(
-  entry = {},
-) {
-  if (entry.id === 'aston') {
-    return '#F4552A'
-  }
-
-  if (
-    entry.kind ===
-    'education'
-  ) {
-    return (
-      entry.accent ||
-      '#F4552A'
-    )
-  }
-
-  if (
-    entry.kind ===
-    'project'
-  ) {
-    return (
-      entry.accent ||
-      '#4C8FD8'
-    )
-  }
-
-  if (
-    entry.kind ===
-    'experience'
-  ) {
-    return (
-      entry.accent ||
-      '#35B89A'
-    )
-  }
-
-  return (
-    entry.accent ||
-    entry.tint ||
-    '#F4552A'
-  )
+function GreenGate({ x, y }) {
+  return <g transform={`translate(${x - 38} ${y - 38})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <path d="M5 60V22Q5 0 38 0t33 22v38H58V25Q58 14 38 14T18 25v35z" fill="#f0f2e8" />
+    <path d="M18 60V27Q18 14 38 14t20 13v33z" fill="#2e8c73" />
+    <path d="M20 25Q38 10 56 25" fill="none" stroke="#bde7d7" strokeWidth="4" />
+  </g>
 }
 
-const textColor = (
-  entry,
-) =>
-  entry.tint ||
-  entry.accent ||
-  routeColor(entry)
-
-function onFill(hex) {
-  if (
-    !hex ||
-    hex[0] !== '#'
-  ) {
-    return '#fff'
-  }
-
-  const rgb = [
-    1,
-    3,
-    5,
-  ].map(
-    (index) => {
-      const value =
-        parseInt(
-          hex.substring(
-            index,
-            index + 2,
-          ),
-          16,
-        ) / 255
-
-      return value <=
-        0.03928
-        ? value / 12.92
-        : Math.pow(
-            (value +
-              0.055) /
-              1.055,
-            2.4,
-          )
-    },
-  )
-
-  const luminance =
-    0.2126 * rgb[0] +
-    0.7152 * rgb[1] +
-    0.0722 * rgb[2]
-
-  return luminance >
-    0.187
-    ? '#0B0A09'
-    : '#fff'
+function PurpleGate({ x, y }) {
+  return <g transform={`translate(${x - 38} ${y - 48})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <path d="M2 65V18L18 11L38 2L58 11L74 18v47H55V28Q55 19 38 19T21 28v37z" fill="#6e4b73" />
+    <path d="M14 65V22L38 10L62 22v43H53V30Q53 21 38 21T23 30v35z" fill="#8d5d91" />
+    <rect x="5" y="39" width="10" height="26" fill="#523c5d" /><rect x="61" y="39" width="10" height="26" fill="#523c5d" />
+  </g>
 }
 
-/* ==================================================================
-   CLAMP
-   ================================================================== */
-
-const clamp = (
-  value,
-  min,
-  max,
-) =>
-  Math.max(
-    min,
-    Math.min(
-      value,
-      max,
-    ),
-  )
-
-/* ==================================================================
-   TIMELINE PULSE
-   ================================================================== */
-
-if (
-  typeof document !==
-    'undefined' &&
-  !document.getElementById(
-    'timeline-pulse-style',
-  )
-) {
-  const style =
-    document.createElement(
-      'style',
-    )
-
-  style.id =
-    'timeline-pulse-style'
-
-  style.textContent = `
-    @keyframes timelinePulse {
-      0% {
-        transform: scale(0.82);
-        opacity: 0.65;
-      }
-
-      70% {
-        transform: scale(1.18);
-        opacity: 0;
-      }
-
-      100% {
-        transform: scale(1.18);
-        opacity: 0;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-      }
-    }
-  `
-
-  document.head.appendChild(
-    style,
-  )
+function Market({ x, y }) {
+  return <g transform={`translate(${x - 55} ${y - 44})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <rect x="7" y="26" width="96" height="39" fill="#9ca6a1" /><rect x="7" y="26" width="96" height="8" fill="#c6d0ca" />
+    <rect x="0" y="0" width="110" height="28" fill="#ece1cf" /><path d="M0 0h18v28H0zM36 0h18v28H36zM72 0h18v28H72z" fill="#d9535f" />
+    <path d="M0 28Q0 37 9 37t9-9Q18 37 27 37t9-9Q36 37 45 37t9-9Q54 37 63 37t9-9Q72 37 81 37t9-9Q90 37 99 37t11-9" fill="#f1e6d4" />
+    <rect x="18" y="40" width="14" height="25" fill="#687773" /><rect x="80" y="40" width="14" height="25" fill="#687773" />
+  </g>
 }
 
-/* ==================================================================
-   DETAIL
-   ================================================================== */
+function ClassBuilding({ x, y }) {
+  return <g transform={`translate(${x - 58} ${y - 45})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <path d="M0 20L56 0l55 23v53H0z" fill="#75658e" /><path d="M8 21L56 5l47 19-25 14-22-8-25 10z" fill="#9b8ac0" />
+    <path d="M15 28l41 14 41-17v42L56 53 15 41z" fill="#6b627d" /><rect x="52" y="39" width="8" height="36" fill="#4d4a5d" />
+    <path d="M30 34l26 9 26-11" stroke="#b6a7d0" strokeWidth="3" fill="none" />
+  </g>
+}
 
-function Detail({
-  entry,
-  compact = false,
-}) {
-  return (
-    <>
-      <div className="flex items-start justify-between gap-3">
-        <p
-          className="mono-label"
-          style={{
-            color:
-              textColor(entry),
-          }}
-        >
-          {entry.year}
-        </p>
+function Uniwise({ x, y }) {
+  return <g transform={`translate(${x - 53} ${y - 48})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <path d="M0 22L54 0l54 22v50H0z" fill="#69745f" /><path d="M6 21L54 4l47 18-47 18z" fill="#8b957c" />
+    <rect x="8" y="33" width="92" height="37" fill="#78836e" /><rect x="16" y="37" width="19" height="14" fill="#d8d8ca" /><rect x="69" y="37" width="19" height="14" fill="#d8d8ca" />
+    <rect x="42" y="50" width="25" height="20" fill="#4f4f45" /><rect x="49" y="55" width="11" height="15" fill="#343630" />
+    <rect x="4" y="27" width="100" height="5" fill="#b1b8a5" />
+  </g>
+}
 
-        {entry.status && (
-          <span
-            className="rounded-full border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em]"
-            style={{
-              color:
-                textColor(
-                  entry,
-                ),
-              borderColor:
-                `${textColor(entry)}55`,
-              background:
-                `${textColor(entry)}12`,
-            }}
-          >
-            {entry.status}
-          </span>
-        )}
-      </div>
+function Graduation({ x, y }) {
+  return <g transform={`translate(${x - 50} ${y - 58})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <rect x="7" y="5" width="86" height="70" fill="#7f9cc1" /><rect x="0" y="12" width="18" height="70" fill="#5e83b0" /><rect x="82" y="12" width="18" height="70" fill="#5e83b0" />
+    <path d="M0 12l9-18 9 18M82 12l9-18 9 18" fill="#7ea0c8" /><path d="M16 5h67v15H16z" fill="#b4c8df" /><rect x="35" y="25" width="30" height="55" fill="#667e9e" />
+    <path d="M42 43h16v37H42z" fill="#394d67" /><rect x="22" y="28" width="12" height="14" fill="#a9bfd8" /><rect x="66" y="28" width="12" height="14" fill="#a9bfd8" />
+  </g>
+}
 
-      <h3
-        className={`serif mt-2 leading-tight ${
-          compact
-            ? 'text-[1.15rem]'
-            : 'text-[1.3rem]'
-        }`}
-        style={{
-          color:
-            'var(--ink)',
-        }}
-      >
-        {entry.title}
-      </h3>
+function Aston({ x, y }) {
+  return <g transform={`translate(${x - 55} ${y - 50})`} shapeRendering="crispEdges" filter="url(#softShadow)">
+    <path d="M0 25L55 0l55 25v55H0z" fill="#755039" /><path d="M7 24L55 3l48 22-48 21z" fill="#9a6f4f" />
+    <rect x="13" y="39" width="84" height="41" fill="#875f42" /><rect x="44" y="55" width="23" height="25" fill="#3c3029" />
+    <rect x="20" y="48" width="16" height="13" fill="#e0d6b5" /><rect x="74" y="48" width="16" height="13" fill="#e0d6b5" />
+    <path d="M52 11v24M43 22h18" stroke="#f0e7d0" strokeWidth="4" />
+  </g>
+}
 
-      <p
-        className="mono-label mt-2"
-        style={{
-          color:
-            'var(--muted)',
-        }}
-      >
-        {entry.org}
-      </p>
-
-      <p
-        className={`mt-3 leading-relaxed ${
-          compact
-            ? 'text-[13px]'
-            : 'text-[15px]'
-        }`}
-        style={{
-          color:
-            'var(--ink-soft)',
-        }}
-      >
-        {entry.body}
-      </p>
-
-      {entry.href && (
-        <a
-          href={entry.href}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
-          style={{
-            color:
-              textColor(entry),
-            borderColor:
-              textColor(entry),
-          }}
-        >
-          {linkLabel(
-            entry.href,
-          )}
-
-          <span
-            aria-hidden="true"
-          >
-            ↗
-          </span>
-        </a>
-      )}
-    </>
-  )
+function Traveller({ x, y, rotation, reduce }) {
+  return <g transform={`translate(${x} ${y}) rotate(${rotation})`} className={reduce ? '' : 'pixel-walker'}>
+    <ellipse cx="0" cy="13" rx="10" ry="4" fill="#1c3b22" opacity=".3" />
+    <rect x="-6" y="-9" width="12" height="12" fill="#d9a06b" shapeRendering="crispEdges" />
+    <rect x="-9" y="-2" width="18" height="18" rx="2" fill="#7d4f39" shapeRendering="crispEdges" />
+    <rect x="-7" y="7" width="6" height="10" fill="#273c4d" shapeRendering="crispEdges" />
+    <rect x="1" y="7" width="6" height="10" fill="#273c4d" shapeRendering="crispEdges" />
+    <rect x="-13" y="-1" width="5" height="11" fill="#a95b40" shapeRendering="crispEdges" />
+    <rect x="-4" y="-14" width="8" height="5" fill="#4c342d" shapeRendering="crispEdges" />
+    <rect x="6" y="0" width="7" height="12" fill="#4d6b45" shapeRendering="crispEdges" />
+  </g>
 }
