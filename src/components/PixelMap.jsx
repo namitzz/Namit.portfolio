@@ -24,25 +24,32 @@ const PATH_HALF = 26
 // Muted a little from a true overworld palette, so the section can carry
 // cream type and a warm accent without either fighting the grass.
 const C = {
-  grassA: '#5E8F52',
-  grassB: '#688F58',
-  grassC: '#547F4A',
-  tuft: '#48713F',
-  dirt: '#B49463',
-  dirtEdge: '#93764B',
-  water: '#3E7FA3',
-  waterLite: '#4E96B8',
-  // A cliff is two colours, not one: the grass-topped surface you look
-  // down on, and the face you look at. That pair is what gives a flat
-  // top-down tile map its height.
+  grassA: '#63975A',
+  grassB: '#6FA463',
+  grassC: '#56854E',
+  grassDeep: '#4A7644',
+  tuft: '#3F6B3A',
+  bloomA: '#E8A9C0',
+  bloomB: '#F2E6C8',
+  dirt: '#CBB183',
+  dirtLite: '#DCC69A',
+  dirtEdge: '#A98D5E',
+  dirtGrit: '#B69A6C',
+  water: '#3E85B0',
+  waterLite: '#57A2C8',
+  waterFoam: '#9AD2E4',
+  waterDeep: '#2E6A90',
   cliffTop: '#6E9C5C',
   cliffTopLite: '#7CAD68',
   cliffFace: '#8A6A45',
-  cliffFaceDark: '#6E5335',
-  cliffLip: '#A98455',
-  canopy: '#396B37',
-  canopyLite: '#457F41',
+  cliffFaceDark: '#6B5033',
+  cliffLip: '#AE8A58',
+  canopy: '#3B7238',
+  canopyLite: '#4C8A44',
+  canopyHi: '#5FA254',
+  canopyDeep: '#2C5A2B',
   trunk: '#5A3F27',
+  fence: '#8A6A45',
 }
 
 export default function PixelMap({ d, width, height }) {
@@ -115,26 +122,58 @@ export default function PixelMap({ d, width, height }) {
       for (let c = 0; c < cols; c++) {
         const t = grid[r][c]
         // Grass under everything, so a tree or a tuft never sits on a hole.
+        // Grass in patches rather than per-tile noise. A fresh random
+        // per tile is television static; a low-frequency term makes
+        // neighbouring tiles agree, so the field reads as meadow with
+        // lighter and darker ground rather than as dither.
+        const patch = hash2((c >> 2) + 7, (r >> 2) + 13)
         ctx.fillStyle =
-          t.tone > 0.72 ? C.grassB : t.tone > 0.36 ? C.grassA : C.grassC
+          patch > 0.66 ? C.grassB : patch > 0.3 ? C.grassA : C.grassC
         ctx.fillRect(t.x, t.y, TILE, TILE)
 
         if (t.kind === 'water') {
-          ctx.fillStyle = t.tone > 0.5 ? C.water : C.waterLite
+          const shore =
+            grid[r - 1]?.[c]?.kind !== 'water' ||
+            grid[r + 1]?.[c]?.kind !== 'water' ||
+            grid[r]?.[c - 1]?.kind !== 'water' ||
+            grid[r]?.[c + 1]?.kind !== 'water'
+          ctx.fillStyle = shore ? C.waterLite : C.waterDeep
           ctx.fillRect(t.x, t.y, TILE, TILE)
+          // Two ripples per tile, offset by the tile's own noise, so the
+          // surface moves without anything animating.
+          ctx.fillStyle = shore ? C.waterFoam : C.water
+          ctx.fillRect(t.x + 2, t.y + 4 + (t.tone > 0.5 ? 2 : 0), 6, 2)
+          ctx.fillRect(t.x + 8, t.y + 10 - (t.tone > 0.5 ? 2 : 0), 5, 2)
         } else if (t.kind === 'path') {
           ctx.fillStyle = C.dirt
           ctx.fillRect(t.x, t.y, TILE, TILE)
+          // Worn centre and a little grit, so the road has a camber
+          // instead of being one flat band of brown.
+          ctx.fillStyle = C.dirtLite
+          ctx.fillRect(t.x + 2, t.y + 2, TILE - 4, TILE - 4)
+          if (t.tone > 0.72) {
+            ctx.fillStyle = C.dirtGrit
+            ctx.fillRect(t.x + 5, t.y + 4, 3, 2)
+            ctx.fillRect(t.x + 9, t.y + 10, 2, 2)
+          }
         } else if (t.kind === 'cliff') {
           // The top surface is grass seen from above, so raised ground
           // still reads as ground.
           ctx.fillStyle = t.tone > 0.5 ? C.cliffTopLite : C.cliffTop
           ctx.fillRect(t.x, t.y, TILE, TILE)
-        } else if (t.tone > 0.93) {
-          // Grass tuft: two pixels, which is all an overworld ever used.
+        } else if (t.tone > 0.88) {
+          // Grass tuft: a few pixels, which is all an overworld ever used.
           ctx.fillStyle = C.tuft
-          ctx.fillRect(t.x + 5, t.y + 9, 3, 2)
-          ctx.fillRect(t.x + 9, t.y + 6, 2, 3)
+          ctx.fillRect(t.x + 4, t.y + 10, 4, 2)
+          ctx.fillRect(t.x + 5, t.y + 8, 2, 2)
+          ctx.fillRect(t.x + 10, t.y + 6, 2, 3)
+        } else if (t.tone < 0.055) {
+          // Blossom. Small, sparse, and the only warm thing on the
+          // ground, which is what stops the green reading as flat.
+          ctx.fillStyle = t.x % 3 ? C.bloomA : C.bloomB
+          ctx.fillRect(t.x + 5, t.y + 6, 2, 2)
+          ctx.fillRect(t.x + 9, t.y + 9, 2, 2)
+          ctx.fillRect(t.x + 7, t.y + 11, 2, 2)
         }
       }
     }
@@ -153,6 +192,16 @@ export default function PixelMap({ d, width, height }) {
         ctx.fillRect(t.x, t.y + TILE, TILE, 11)
         ctx.fillStyle = C.cliffFaceDark
         ctx.fillRect(t.x, t.y + TILE + 11, TILE, 4)
+        // Returns on the exposed sides, so a plateau corner has a
+        // thickness rather than a cut edge.
+        if (grid[r]?.[c - 1]?.kind !== 'cliff') {
+          ctx.fillStyle = C.cliffFaceDark
+          ctx.fillRect(t.x, t.y + TILE - 3, 3, 14)
+        }
+        if (grid[r]?.[c + 1]?.kind !== 'cliff') {
+          ctx.fillStyle = C.cliffFaceDark
+          ctx.fillRect(t.x + TILE - 3, t.y + TILE - 3, 3, 14)
+        }
         // A couple of pixels of rubble, so the face is not a flat band.
         if (t.tone > 0.6) {
           ctx.fillStyle = C.cliffFaceDark
@@ -202,19 +251,28 @@ function drawTree(ctx, x, y, tone) {
   const lite = tone > 0.5
   // Same direction as every building's shadow, so one light governs the
   // whole map.
-  ctx.fillStyle = 'rgba(20,32,18,0.30)'
+  ctx.fillStyle = 'rgba(22,36,20,0.30)'
   ctx.fillRect(x + 4, y + 13, 12, 4)
   ctx.fillRect(x + 2, y + 14, 16, 2)
+
   ctx.fillStyle = C.trunk
-  ctx.fillRect(x + 7, y + 12, 3, 4)
-  ctx.fillStyle = lite ? C.canopyLite : C.canopy
-  // A canopy built from three rects reads rounder than a circle does at
-  // this size, and stays on the pixel grid.
-  ctx.fillRect(x + 3, y + 3, 11, 8)
+  ctx.fillRect(x + 7, y + 11, 3, 5)
+
+  // The canopy is built in courses, widest in the middle, so its
+  // silhouette rounds off instead of ending in a hard corner.
+  const mid = lite ? C.canopyLite : C.canopy
+  ctx.fillStyle = C.canopyDeep
+  ctx.fillRect(x + 2, y + 8, 13, 4)
+  ctx.fillStyle = mid
+  ctx.fillRect(x + 4, y + 1, 9, 3)
+  ctx.fillRect(x + 2, y + 3, 13, 3)
   ctx.fillRect(x + 1, y + 5, 15, 4)
-  ctx.fillRect(x + 5, y + 1, 7, 12)
-  ctx.fillStyle = lite ? C.canopy : '#2E5A2C'
-  ctx.fillRect(x + 3, y + 10, 11, 2)
+  ctx.fillRect(x + 3, y + 9, 11, 2)
+  // Highlight on the side the light comes from, which is what turns a
+  // flat blob into something with a top.
+  ctx.fillStyle = lite ? C.canopyHi : C.canopyLite
+  ctx.fillRect(x + 5, y + 2, 5, 2)
+  ctx.fillRect(x + 3, y + 4, 4, 2)
 }
 
 /** Points along the route, in the map's own coordinates. */

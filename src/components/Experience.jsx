@@ -13,7 +13,7 @@ import Building, { buildingFor, BUILDING_H } from './MapBuildings'
 
 // The map is a town now, not a band. Taller gives the buildings somewhere
 // to stand and the roads somewhere to turn.
-const TRACK_H = 820
+const TRACK_H = 720
 // Everything on the map is snapped to this, so roads meet buildings
 // squarely and corners land on tile boundaries rather than between them.
 const TILE = 16
