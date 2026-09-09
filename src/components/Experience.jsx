@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { timeline } from '../data/content'
 import { markFor } from './TimelineMarks'
+import AerialMap, { AerialCredit } from './AerialMap'
 import Reveal from './Reveal'
 
 /**
@@ -28,11 +29,16 @@ import Reveal from './Reveal'
 // now use it, so the whole thing can be shorter.
 const TRACK_H = 600
 const CARD_W = 340
-// Must clear a stop's own box (90 below the centre, 80 either side) or
-// every candidate overlaps the stop it belongs to, gets rejected, and the
-// placement falls through to an untested fallback.
-const CARD_GAP = 104
-const CARD_SIDE = 96
+// Must clear a stop's own box or every candidate overlaps the stop it
+// belongs to, gets rejected, and the placement falls through to an
+// untested fallback. Measured from the rendered pin, which reaches 28
+// above its disc centre and 103 below it once the stem, the ground point
+// and the label plate are counted, and 69 either side at its widest.
+const PIN_UP = 36
+const PIN_DOWN = 108
+const PIN_SIDE = 76
+const CARD_GAP = PIN_DOWN + 12
+const CARD_SIDE = PIN_SIDE + 22
 // Placement reserves this much height. It is an upper bound, not a cap:
 // the card is then allowed the rest of the section below it, so a longer
 // entry grows instead of being cut off.
@@ -128,18 +134,31 @@ export default function Experience() {
         </Reveal>
 
         {/* ---------- Desktop: serpentine ---------- */}
+        {/* The map plate. Clipped and bordered, so the imagery reads as a
+            frame the route is drawn inside rather than as a section
+            background that happens to have a picture in it. */}
         <div
           ref={wrapRef}
-          className="relative hidden md:block"
-          style={{ height }}
+          className="relative hidden overflow-hidden border md:block"
+          style={{ height, borderColor: 'var(--hairline)' }}
           onMouseLeave={() => setActive(null)}
         >
+          {/* Gated on the measured width, which is zero while the plate
+              is display:none below md. Mobile therefore never mounts the
+              tiles at all, rather than mounting eight images and relying
+              on lazy loading to keep them off the wire. */}
+          {box.w > 0 && (
+            <>
+              <AerialMap />
+              <AerialCredit />
+            </>
+          )}
           {box.w > 0 && (
             <svg
               aria-hidden="true"
               width={box.w}
               height={height}
-              className="absolute left-0 top-0"
+              className="absolute left-0 top-0 z-10"
             >
               <defs>
                 <filter
@@ -474,8 +493,18 @@ function seededRandom(seed) {
 function placeCard(point, index, points, cw, ch) {
   const blockers = points
     .filter((_, j) => j !== index)
-    .map((p) => ({ x0: p.x - 80, x1: p.x + 80, y0: p.y - 32, y1: p.y + 90 }))
-  const own = { x0: point.x - 80, x1: point.x + 80, y0: point.y - 32, y1: point.y + 90 }
+    .map((p) => ({
+      x0: p.x - PIN_SIDE,
+      x1: p.x + PIN_SIDE,
+      y0: p.y - PIN_UP,
+      y1: p.y + PIN_DOWN,
+    }))
+  const own = {
+    x0: point.x - PIN_SIDE,
+    x1: point.x + PIN_SIDE,
+    y0: point.y - PIN_UP,
+    y1: point.y + PIN_DOWN,
+  }
   const hits = (r, b) =>
     r.left + CARD_W > b.x0 && r.left < b.x1 && r.top + CARD_H > b.y0 && r.top < b.y1
 
@@ -490,7 +519,7 @@ function placeCard(point, index, points, cw, ch) {
     if (hits(r, own)) return
     const covered = blockers.filter((b) => hits(r, b)).length
     const dist = Math.hypot(left + CARD_W / 2 - point.x, top + CARD_H / 2 - point.y)
-    const score = dist + covered * 110
+    const score = dist + covered * 170
     if (!best || score < best.score) best = { left, top, score }
   }
 
@@ -519,7 +548,7 @@ function Stop({ entry, point, active, dimmed, onEnter }) {
       onMouseEnter={onEnter}
       onFocus={onEnter}
       aria-describedby={active ? 'route-card' : undefined}
-      className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity duration-300"
+      className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity duration-300"
       style={{ left: point.x, top: point.y, opacity: dimmed ? 0.45 : 1 }}
     >
       <StopMark entry={entry} isActive={active} />
@@ -531,17 +560,26 @@ function Stop({ entry, point, active, dimmed, onEnter }) {
 
           Kept mounted rather than conditional, so the button's accessible
           name is always its stop and the label never reflows the row. */}
+      {/* Over imagery rather than flat ground, so the label carries its
+          own dark plate: terrain behind type is the fastest way to lose
+          both. */}
       <span
-        className="mono-label mt-3 whitespace-nowrap transition-opacity duration-300"
-        style={{ color: textColor(entry), opacity: active ? 1 : 0 }}
+        className="mt-3 flex flex-col items-center gap-1 rounded-sm px-2.5 py-1.5 transition-opacity duration-300"
+        style={{
+          opacity: active ? 1 : 0,
+          background: 'rgba(10,9,8,0.82)',
+          border: `1px solid ${active ? textColor(entry) : 'transparent'}`,
+        }}
       >
-        {entry.year}
-      </span>
-      <span
-        className="mt-1 whitespace-nowrap text-[12.5px] leading-snug transition-opacity duration-300"
-        style={{ color: 'var(--ink)', opacity: active ? 1 : 0 }}
-      >
-        {entry.short}
+        <span className="mono-label whitespace-nowrap" style={{ color: textColor(entry) }}>
+          {entry.year}
+        </span>
+        <span
+          className="whitespace-nowrap text-[12.5px] leading-snug"
+          style={{ color: 'var(--ink)' }}
+        >
+          {entry.short}
+        </span>
       </span>
     </button>
   )
@@ -618,37 +656,101 @@ function onFill(hex) {
   return L > 0.187 ? '#0B0A09' : '#fff'
 }
 
+/**
+ * A stop, as a pin on the map rather than a circle in a list.
+ *
+ * The disc still carries the institution's mark, but it now sits inside a
+ * survey ring with a hairline tick at each quarter, and drops a short
+ * stem to a point on the ground. That is what separates a located thing
+ * from a bullet: it is planted somewhere.
+ *
+ * The disc stays opaque. Over satellite imagery a translucent one turns
+ * into whatever field it happens to be standing on.
+ */
 function StopMark({ entry, isActive }) {
   const accent = entry.accent || 'var(--accent)'
   const ink = isActive ? onFill(entry.accent) : textColor(entry)
   const Mark = markFor(entry)
 
   return (
-    <span
-      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
-      style={{
-        // Opaque, so the dotted route reads as running behind the stop.
-        background: isActive ? accent : '#0A0908',
-        border: `2px solid ${accent}`,
-        color: ink,
-        transform: isActive ? 'scale(1.06)' : 'scale(1)',
-        boxShadow: isActive ? `0 0 0 6px ${accent}22` : 'none',
-        // Only the motion is transitioned. Fill and ink switch together on
-        // the same frame; letting them ease independently can leave the
-        // mark sitting on the colour it was picked against.
-        transition: 'transform 300ms ease, box-shadow 300ms ease',
-      }}
-    >
-      {Mark ? (
-        <Mark width="27" height="27" />
-      ) : (
-        <span
-          className="serif text-[17px] leading-none tracking-tight"
-          style={{ color: ink }}
-        >
-          {entry.monogram}
-        </span>
-      )}
+    <span className="relative flex flex-col items-center">
+      {/* Survey ring: only present on the stop being pointed at, so the
+          idle map stays quiet. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-7 h-[74px] w-[74px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          border: `1px solid ${accent}`,
+          opacity: isActive ? 0.55 : 0,
+          transform: `translate(-50%, -50%) scale(${isActive ? 1 : 0.86})`,
+          transition: 'opacity 300ms ease, transform 300ms ease',
+        }}
+      />
+      {isActive &&
+        [0, 90, 180, 270].map((deg) => (
+          <span
+            key={deg}
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1/2 top-7 h-[7px] w-px"
+            style={{
+              background: accent,
+              opacity: 0.7,
+              transform: `rotate(${deg}deg) translateY(-42px)`,
+              transformOrigin: 'center top',
+            }}
+          />
+        ))}
+
+      <span
+        className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
+        style={{
+          // Opaque. Over imagery a see-through mark takes on the field
+          // behind it and stops being a mark.
+          background: isActive ? accent : '#0A0908',
+          border: `2px solid ${accent}`,
+          color: ink,
+          transform: isActive ? 'scale(1.06)' : 'scale(1)',
+          boxShadow: isActive
+            ? `0 0 0 6px ${accent}22, 0 10px 26px -10px rgba(0,0,0,0.9)`
+            : '0 10px 26px -12px rgba(0,0,0,0.85)',
+          // Only the motion is transitioned. Fill and ink switch together
+          // on the same frame; letting them ease independently can leave
+          // the mark sitting on the colour it was picked against.
+          transition: 'transform 300ms ease, box-shadow 300ms ease',
+        }}
+      >
+        {Mark ? (
+          <Mark width="27" height="27" />
+        ) : (
+          <span
+            className="serif text-[17px] leading-none tracking-tight"
+            style={{ color: ink }}
+          >
+            {entry.monogram}
+          </span>
+        )}
+      </span>
+
+      {/* Stem and ground point: the pin is planted here. */}
+      <span
+        aria-hidden="true"
+        className="block w-px transition-all duration-300"
+        style={{
+          height: isActive ? 12 : 8,
+          background: accent,
+          opacity: isActive ? 0.9 : 0.55,
+        }}
+      />
+      <span
+        aria-hidden="true"
+        className="block rounded-full transition-all duration-300"
+        style={{
+          width: isActive ? 6 : 4,
+          height: isActive ? 6 : 4,
+          background: accent,
+          boxShadow: isActive ? `0 0 10px ${accent}` : 'none',
+        }}
+      />
     </span>
   )
 }
