@@ -1,109 +1,304 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { timeline } from '../data/content'
 import { markFor } from './TimelineMarks'
-import AerialMap, { AerialCredit } from './AerialMap'
 import Reveal from './Reveal'
+import PixelMap from './PixelMap'
 
-/**
- * The route so far, drawn as a serpentine rather than a straight line.
- *
- * Ten stops will not sit on one horizontal run at any sane size, so the
- * route snakes: left to right along the top, a turn at the end, then
- * right to left along the bottom. Reading order follows the line, which
- * is the whole point of drawing it as a route.
- *
- * The path is measured, not guessed. An SVG scaled with
- * preserveAspectRatio would stretch the dashes into different lengths on
- * each run; instead the container is measured and the path is built in
- * real pixels, so every dash is the same dash.
- *
- * Detail pops out beside the stop being pointed at, above or below
- * depending on which run it sits on, and clamped to the container so it
- * never leaves the section. Below `md` the whole thing becomes a vertical
- * spine with every detail already open, because there is no hover.
- */
-
-// The section is sized to the route, not the other way round. Two level
-// passes with a void between them wasted most of the height; the stops
-// now use it, so the whole thing can be shorter.
-const TRACK_H = 600
+const TRACK_H = 560
 const CARD_W = 340
-// Must clear a stop's own box or every candidate overlaps the stop it
-// belongs to, gets rejected, and the placement falls through to an
-// untested fallback. Measured from the rendered pin, which reaches 28
-// above its disc centre and 103 below it once the stem, the ground point
-// and the label plate are counted, and 69 either side at its widest.
-const PIN_UP = 36
-const PIN_DOWN = 108
-const PIN_SIDE = 76
-const CARD_GAP = PIN_DOWN + 12
-const CARD_SIDE = PIN_SIDE + 22
-// Placement reserves this much height. It is an upper bound, not a cap:
-// the card is then allowed the rest of the section below it, so a longer
-// entry grows instead of being cut off.
 const CARD_H = 280
-const EDGE = 96
-// Consecutive stops must differ in height by at least this much, which is
-// what stops their labels colliding when they are close in x.
-const MIN_DY = 118
+const CARD_GAP = 78
+const EDGE = 80
 
 export default function Experience() {
   const reduce = useReducedMotion()
   const wrapRef = useRef(null)
-  const [box, setBox] = useState({ w: 0, h: 0 })
+  const pathRef = useRef(null)
+  const animationRef = useRef(null)
+
+  const [box, setBox] = useState({
+    w: 0,
+    h: TRACK_H,
+  })
+
   const [active, setActive] = useState(null)
+
+  const [arc, setArc] = useState({
+    total: 0,
+    at: [],
+  })
+
+  const [traveller, setTraveller] = useState({
+    x: 0,
+    y: 0,
+    rotation: 0,
+    length: 0,
+    visible: false,
+  })
 
   const height = TRACK_H
 
   useLayoutEffect(() => {
     const el = wrapRef.current
+
     if (!el) return undefined
-    const measure = () => setBox({ w: el.clientWidth, h: height })
+
+    const measure = () => {
+      setBox({
+        w: el.clientWidth,
+        h: height,
+      })
+    }
+
     measure()
+
     const ro = new ResizeObserver(measure)
     ro.observe(el)
+
     return () => ro.disconnect()
   }, [height])
 
-  // Memoised on width alone. All of this used to be rebuilt on every
-  // render, and every hover is a render, so moving the pointer between
-  // stops was re-running the spline and re-solving all eleven card
-  // placements: about eighteen thousand operations per move.
   const points = useMemo(
-    () => (box.w ? buildStops(timeline.length, box.w, height) : []),
+    () =>
+      box.w
+        ? buildStops(
+            timeline.length,
+            box.w,
+            height,
+          )
+        : [],
     [box.w, height],
   )
-  const d = useMemo(() => (points.length ? routePath(points) : ''), [points])
-  const inkStops = useMemo(() => gradientStops(points, box.w), [points, box.w])
 
-  // Only the stop being pointed at needs a placement, so this solves one
-  // rather than eleven.
+  const d = useMemo(
+    () =>
+      points.length
+        ? routePath(points)
+        : '',
+    [points],
+  )
+
+  const inkStops = useMemo(
+    () =>
+      gradientStops(
+        points,
+        box.w,
+      ),
+    [points, box.w],
+  )
+
   const card = useMemo(() => {
-    if (active === null || !points[active]) return null
+    if (
+      active === null ||
+      !points[active]
+    ) {
+      return null
+    }
+
     return {
       entry: timeline[active],
-      ...placeCard(points[active], active, points, box.w, height),
+      ...placeCard(
+        points[active],
+        active,
+        points,
+        box.w,
+        height,
+      ),
     }
-  }, [active, points, box.w, height])
-
-  // How far along the route each stop sits, so the glow can be drawn up
-  // to exactly that point. Read off the rendered path: nothing else knows
-  // where a spline actually reaches.
-  const pathRef = useRef(null)
-  const [arc, setArc] = useState({ total: 0, at: [] })
+  }, [
+    active,
+    points,
+    box.w,
+    height,
+  ])
 
   useLayoutEffect(() => {
     const el = pathRef.current
-    if (!el || !d) return
-    const total = el.getTotalLength()
-    setArc({ total, at: points.map((pt) => lengthAt(el, pt, total)) })
-    // `d` alone identifies the geometry; points are derived from the same
-    // width, so it is not a separate dependency.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [d])
 
-  const travelled = active !== null ? arc.at[active] || 0 : 0
+    if (
+      !el ||
+      !d ||
+      !points.length
+    ) {
+      return
+    }
+
+    const total =
+      el.getTotalLength()
+
+    const at = points.map(
+      (point) =>
+        lengthAt(
+          el,
+          point,
+          total,
+        ),
+    )
+
+    setArc({
+      total,
+      at,
+    })
+
+    if (
+      traveller.length === 0 &&
+      at.length
+    ) {
+      const first =
+        el.getPointAtLength(0)
+
+      setTraveller({
+        x: first.x,
+        y: first.y,
+        rotation: 0,
+        length: 0,
+        visible: true,
+      })
+    }
+  }, [d, points])
+
+  const stopAnimation = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(
+        animationRef.current,
+      )
+
+      animationRef.current = null
+    }
+  }
+
+  const walkTo = (index) => {
+    if (
+      !pathRef.current ||
+      !arc.total ||
+      !points[index]
+    ) {
+      setActive(index)
+      return
+    }
+
+    stopAnimation()
+
+    const path =
+      pathRef.current
+
+    const target =
+      arc.at[index] || 0
+
+    const start =
+      traveller.visible
+        ? traveller.length
+        : 0
+
+    const distance = Math.abs(
+      target - start,
+    )
+
+    const duration = reduce
+      ? 0
+      : Math.min(
+          2400,
+          Math.max(
+            850,
+            distance * 3.4,
+          ),
+        )
+
+    const started =
+      performance.now()
+
+    const tick = (now) => {
+      const raw =
+        duration === 0
+          ? 1
+          : Math.min(
+              1,
+              (now - started) /
+                duration,
+            )
+
+      const eased =
+        1 -
+        Math.pow(
+          1 - raw,
+          3,
+        )
+
+      const length =
+        start +
+        (target - start) *
+          eased
+
+      const point =
+        path.getPointAtLength(
+          length,
+        )
+
+      const lookDistance =
+        Math.min(
+          arc.total,
+          Math.max(
+            0,
+            length +
+              (target >= start
+                ? 2
+                : -2),
+          ),
+        )
+
+      const next =
+        path.getPointAtLength(
+          lookDistance,
+        )
+
+      const rotation =
+        Math.atan2(
+          next.y - point.y,
+          next.x - point.x,
+        ) *
+        (180 / Math.PI)
+
+      setTraveller({
+        x: point.x,
+        y: point.y,
+        rotation,
+        length,
+        visible: true,
+      })
+
+      if (raw < 1) {
+        animationRef.current =
+          requestAnimationFrame(
+            tick,
+          )
+      } else {
+        animationRef.current =
+          null
+
+        setActive(index)
+      }
+    }
+
+    animationRef.current =
+      requestAnimationFrame(
+        tick,
+      )
+  }
+
+  useLayoutEffect(() => {
+    return () => stopAnimation()
+  }, [])
+
+  const travelled =
+    active !== null
+      ? arc.at[active] || 0
+      : traveller.length
 
   return (
     <section
@@ -111,648 +306,1737 @@ export default function Experience() {
       className="relative px-6 py-24 md:px-16 md:py-32"
       style={{
         background:
-          'linear-gradient(180deg, rgba(244,85,42,0.075) 0%, rgba(244,85,42,0.010) 26%, rgba(244,244,245,0.028) 100%)',
+          'linear-gradient(180deg, rgba(244,85,42,0.075) 0%, rgba(244,244,245,0.015) 42%, rgba(244,244,245,0.025) 100%)',
       }}
     >
       <div className="mx-auto w-full max-w-[1600px]">
+
+        {/* =========================================================
+            HEADING
+           ========================================================= */}
+
         <Reveal
-          className="mb-16 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
-          style={{ borderColor: 'var(--hairline)' }}
+          className="mb-12 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
+          style={{
+            borderColor:
+              'var(--hairline)',
+          }}
         >
           <div>
-            <p className="eyebrow">Experience &amp; Education</p>
+            <p className="eyebrow">
+              Experience &amp; Education
+            </p>
+
             <h2
               className="serif mt-3 text-[clamp(1.9rem,4vw,3.2rem)] leading-[0.95] tracking-[-0.02em]"
-              style={{ color: 'var(--ink)' }}
+              style={{
+                color: 'var(--ink)',
+              }}
             >
-              The route so far<span style={{ color: 'var(--accent)' }}>.</span>
+              The route so far
+              <span
+                style={{
+                  color:
+                    'var(--accent)',
+                }}
+              >
+                .
+              </span>
             </h2>
+
+            <p
+              className="mt-4 max-w-xl text-sm leading-relaxed"
+              style={{
+                color:
+                  'var(--muted)',
+              }}
+            >
+              Click a stop and follow the journey.
+            </p>
           </div>
-          <p className="mono-label" style={{ color: 'var(--muted)' }}>
-            {timeline.length} stops · 2023 – present
-          </p>
+
+          <div className="flex flex-col items-start gap-2 md:items-end">
+            <p
+              className="mono-label"
+              style={{
+                color:
+                  'var(--muted)',
+              }}
+            >
+              {timeline.length} stops · 2023 – present
+            </p>
+
+            <div
+              className="hidden items-center gap-3 font-mono text-[9px] uppercase tracking-[0.12em] md:flex"
+              style={{
+                color:
+                  'var(--muted)',
+              }}
+            >
+              <span className="text-[#F4552A]">
+                ● EDUCATION
+              </span>
+
+              <span className="text-[#4C8FD8]">
+                ● PROJECT
+              </span>
+
+              <span className="text-[#35B89A]">
+                ● EXPERIENCE
+              </span>
+            </div>
+          </div>
         </Reveal>
 
-        {/* ---------- Desktop: serpentine ---------- */}
-        {/* The map plate. Clipped and bordered, so the imagery reads as a
-            frame the route is drawn inside rather than as a section
-            background that happens to have a picture in it. */}
+        {/* =========================================================
+            DESKTOP MAP
+           ========================================================= */}
+
         <div
           ref={wrapRef}
-          className="relative hidden overflow-hidden border md:block"
-          style={{ height, borderColor: 'var(--hairline)' }}
-          onMouseLeave={() => setActive(null)}
+          className="relative hidden overflow-hidden rounded-[2rem] border md:block"
+          style={{
+            height,
+            borderColor:
+              'rgba(244,244,245,0.10)',
+            background:
+              '#4E7B45',
+            boxShadow:
+              '0 40px 100px -55px rgba(0,0,0,0.9)',
+          }}
         >
-          {/* Gated on the measured width, which is zero while the plate
-              is display:none below md. Mobile therefore never mounts the
-              tiles at all, rather than mounting eight images and relying
-              on lazy loading to keep them off the wire. */}
-          {box.w > 0 && (
-            <>
-              <AerialMap />
-              <AerialCredit />
-            </>
-          )}
+          {/* Tiles, drawn from the route: the dirt road on the map and
+              the journey through the timeline are the same line. */}
+          <PixelMap d={d} width={box.w} height={height} />
+
+          {/* -------------------------------------------------------
+              ROUTE
+             ------------------------------------------------------- */}
+
           {box.w > 0 && (
             <svg
               aria-hidden="true"
               width={box.w}
               height={height}
-              className="absolute left-0 top-0 z-10"
+              className="absolute left-0 top-0 z-[4]"
             >
               <defs>
                 <filter
-                  id="routeGlow"
-                  x="-10%"
-                  y="-10%"
-                  width="120%"
-                  height="120%"
+                  id="journeyGlow"
+                  x="-20%"
+                  y="-20%"
+                  width="140%"
+                  height="140%"
                 >
-                  <feGaussianBlur stdDeviation="7" />
+                  <feGaussianBlur
+                    stdDeviation="6"
+                  />
                 </filter>
 
-                {/* The route's colours, laid along it. Each stop
-                    contributes its own tint at its own position, so the
-                    glow is the right colour wherever it has reached.
-                    Mapped on x rather than arc length because the stops
-                    advance left to right, which makes x a faithful stand
-                    in for progress and avoids a second measurement. */}
                 <linearGradient
-                  id="routeInk"
+                  id="journeyRoute"
                   gradientUnits="userSpaceOnUse"
                   x1="0"
                   y1="0"
                   x2={box.w}
-                  y2="0"
+                  y2={height}
                 >
                   {inkStops}
                 </linearGradient>
               </defs>
 
-              {/* The glow, revealed up to the stop being pointed at. One
-                  dash as long as the whole route, pulled back by its own
-                  length so nothing shows, then let out to that stop's
-                  distance. Animating the offset is what makes the light
-                  travel along the route as the pointer moves between
-                  stops. Drawn first, so it sits under the line. */}
+              {/* glow */}
+
               {arc.total > 0 && (
                 <path
                   d={d}
                   fill="none"
-                  stroke="url(#routeInk)"
-                  strokeWidth="5"
+                  stroke="#F4552A"
+                  strokeWidth="12"
                   strokeLinecap="round"
-                  filter="url(#routeGlow)"
+                  filter="url(#journeyGlow)"
+                  opacity="0.18"
                   style={{
-                    strokeDasharray: arc.total,
-                    strokeDashoffset: arc.total - travelled,
-                    opacity: travelled > 0 ? 0.9 : 0,
-                    transition: reduce
-                      ? 'none'
-                      : 'stroke-dashoffset 460ms cubic-bezier(0.22,1,0.36,1), opacity 220ms ease',
+                    strokeDasharray:
+                      arc.total,
+                    strokeDashoffset:
+                      arc.total -
+                      travelled,
                   }}
                 />
               )}
 
-              {/* The line itself, always drawn, and the element the arc
-                  lengths are measured from. */}
+              {/* cream trail */}
+
+              <path
+                d={d}
+                fill="none"
+                stroke="#F7E8C9"
+                strokeWidth="7"
+                strokeLinecap="round"
+                strokeDasharray="2 13"
+                opacity="0.95"
+              />
+
+              {/* orange centre */}
+
+              {arc.total > 0 && (
+                <path
+                  d={d}
+                  fill="none"
+                  stroke="url(#journeyRoute)"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  style={{
+                    strokeDasharray:
+                      arc.total,
+                    strokeDashoffset:
+                      arc.total -
+                      travelled,
+                    opacity:
+                      travelled > 0
+                        ? 1
+                        : 0,
+                    transition:
+                      reduce
+                        ? 'none'
+                        : 'stroke-dashoffset 300ms ease',
+                  }}
+                />
+              )}
+
+              {/* little trail dashes */}
+
               <path
                 ref={pathRef}
                 d={d}
                 fill="none"
-                stroke="rgba(244,244,245,0.30)"
-                strokeWidth="2"
-                strokeDasharray="3 9"
+                stroke="#A83B20"
+                strokeWidth="1.5"
+                strokeDasharray="5 10"
                 strokeLinecap="round"
+                opacity="0.8"
               />
+
+              {/* ---------------------------------------------------
+                  TRAVELLER
+                 --------------------------------------------------- */}
+
+              {traveller.visible && (
+                <Traveller
+                  x={traveller.x}
+                  y={traveller.y}
+                  rotation={
+                    traveller.rotation
+                  }
+                  reduce={reduce}
+                />
+              )}
             </svg>
           )}
 
-          {points.map((pt, i) => {
-            const entry = timeline[i]
-            if (!entry) return null
-            return (
-              <Stop
-                key={entry.id}
-                entry={entry}
-                point={pt}
-                active={active === i}
-                dimmed={active !== null && active !== i}
-                onEnter={() => setActive(i)}
-              />
-            )
-          })}
+          {/* -------------------------------------------------------
+              DESTINATIONS
+             ------------------------------------------------------- */}
 
-          {/* One card for the whole route, moved and refilled rather than
-              unmounted and remounted per stop. Remounting made it blink
-              between neighbours; keeping it lets the border colour and the
-              position ease across instead. */}
+          {points.map(
+            (point, index) => {
+              const entry =
+                timeline[index]
+
+              if (!entry) {
+                return null
+              }
+
+              return (
+                <Stop
+                  key={entry.id}
+                  entry={entry}
+                  point={point}
+                  active={
+                    active === index
+                  }
+                  dimmed={
+                    active !== null &&
+                    active !== index
+                  }
+                  onEnter={() =>
+                    setActive(index)
+                  }
+                  onClick={() =>
+                    walkTo(index)
+                  }
+                />
+              )
+            },
+          )}
+
+          {/* -------------------------------------------------------
+              DETAIL CARD
+             ------------------------------------------------------- */}
+
           {card && (
             <div
               id="route-card"
-              className="absolute z-20 border p-5"
+              className="absolute z-30 overflow-hidden rounded-2xl border p-5"
               style={{
                 left: card.left,
                 top: card.top,
                 width: CARD_W,
-                maxHeight: height - card.top - 8,
-                overflow: 'hidden',
-                borderColor: textColor(card.entry),
-                background: '#0A0908',
-                boxShadow: '0 30px 70px -40px rgba(0,0,0,0.95)',
-                // Position is not transitioned. Stops sit hundreds of
-                // pixels apart, so easing between them sent the card
-                // flying across the section on every move; it lands where
-                // it belongs instead. Only the colour crosses over.
-                transition: reduce ? 'none' : 'border-color 260ms ease',
+                maxHeight:
+                  height -
+                  card.top -
+                  12,
+                borderColor:
+                  textColor(
+                    card.entry,
+                  ),
+                background:
+                  'rgba(17,19,18,0.94)',
+                backdropFilter:
+                  'blur(14px)',
+                boxShadow:
+                  '0 30px 80px -40px rgba(0,0,0,0.95)',
               }}
             >
-              <Detail entry={card.entry} compact />
+              <Detail
+                entry={card.entry}
+                compact
+              />
             </div>
           )}
+
+          {/* -------------------------------------------------------
+              MAP LABEL
+             ------------------------------------------------------- */}
+
+          <div
+            className="pointer-events-none absolute bottom-5 left-6 z-[6] rounded-full border px-3 py-1.5 backdrop-blur-sm"
+            style={{
+              borderColor:
+                'rgba(244,244,245,0.12)',
+              background:
+                'rgba(10,14,12,0.48)',
+            }}
+          >
+            <span
+              className="font-mono text-[9px] uppercase tracking-[0.16em]"
+              style={{
+                color:
+                  'rgba(244,244,245,0.55)',
+              }}
+            >
+              Interactive journey map
+            </span>
+          </div>
+
+          <Compass />
         </div>
 
-        {/* ---------- Touch: vertical spine ---------- */}
+        {/* =========================================================
+            MOBILE
+           ========================================================= */}
+
         <ol className="md:hidden">
-          {timeline.map((t, i) => (
-            <li key={t.id} className="relative grid grid-cols-[3.5rem_1fr] gap-4">
-              {i < timeline.length - 1 && (
-                <span
-                  aria-hidden="true"
-                  className="absolute bottom-0 left-[27px] top-[60px] w-[2px]"
-                  style={{
-                    backgroundImage:
-                      'repeating-linear-gradient(180deg, rgba(244,244,245,0.28) 0 3px, transparent 3px 11px)',
-                  }}
-                />
-              )}
-              <div className="pt-1">
-                <StopMark entry={t} isActive />
-              </div>
-              <div className="pb-10 pt-1">
-                <Detail entry={t} />
-              </div>
-            </li>
-          ))}
+          {timeline.map(
+            (entry, index) => (
+              <li
+                key={entry.id}
+                className="relative grid grid-cols-[3.5rem_1fr] gap-4"
+              >
+                {index <
+                  timeline.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-0 left-[27px] top-[60px] w-[2px]"
+                    style={{
+                      backgroundImage:
+                        'repeating-linear-gradient(180deg, rgba(244,244,245,0.28) 0 3px, transparent 3px 11px)',
+                    }}
+                  />
+                )}
+
+                <div className="pt-1">
+                  <StopMark
+                    entry={entry}
+                    isActive
+                  />
+                </div>
+
+                <div className="pb-10 pt-1">
+                  <Detail
+                    entry={entry}
+                  />
+                </div>
+              </li>
+            ),
+          )}
         </ol>
       </div>
     </section>
   )
 }
 
-/* ------------------------------------------------------------------ */
+function Traveller({
+  x,
+  y,
+  rotation = 0,
+  reduce,
+}) {
+  return (
+    <g
+      transform={`
+        translate(${x} ${y})
+        rotate(${rotation})
+      `}
+      style={{
+        transition: reduce
+          ? 'none'
+          : 'transform 45ms linear',
+      }}
+    >
+      {/* shadow */}
 
-/**
- * Where the stops sit.
- *
- * One pass left to right, but the height is a random walk rather than a
- * band: each stop steps up or down from the last by a real distance, so
- * the route uses the whole box instead of hugging two lines with nothing
- * between them.
- *
- * The step has a floor (MIN_DY) for a practical reason, not a visual one.
- * Eleven stops across this width sit about 110px apart, and a label like
- * "Micro-internship" is that wide on its own; separating consecutive
- * stops vertically is what keeps their labels from running together.
- *
- * Seeded, so the walk is the same shape on every load. Regenerating it
- * per visit would make it decoration rather than a route.
- */
-function buildStops(count, w, h) {
-  const rand = seededRandom(0x6d2b79f5)
-  const left = EDGE
-  const right = w - EDGE
-  const lo = 88
-  const hi = h - 96
+      <ellipse
+        cx="0"
+        cy="9"
+        rx="8"
+        ry="3"
+        fill="rgba(0,0,0,0.38)"
+      />
+
+      {/* backpack */}
+
+      <rect
+        x="-8"
+        y="-8"
+        width="7"
+        height="12"
+        rx="2"
+        fill="#245D4A"
+        stroke="#13251E"
+        strokeWidth="1"
+      />
+
+      {/* backpack strap */}
+
+      <path
+        d="M-4 -7 Q0 -10 4 -6"
+        fill="none"
+        stroke="#CFAE72"
+        strokeWidth="1"
+      />
+
+      {/* body */}
+
+      <path
+        d="
+          M-3 -6
+          Q1 -9 4 -5
+          L5 5
+          L-4 5
+          Z
+        "
+        fill="#F4552A"
+        stroke="#35150D"
+        strokeWidth="1"
+      />
+
+      {/* head */}
+
+      <circle
+        cx="1"
+        cy="-11"
+        r="4.2"
+        fill="#D99A70"
+        stroke="#35150D"
+        strokeWidth="1"
+      />
+
+      {/* hair */}
+
+      <path
+        d="
+          M-3 -12
+          Q0 -16 4 -13
+          L5 -10
+          L-3 -10
+          Z
+        "
+        fill="#241A16"
+      />
+
+      {/* arm */}
+
+      <path
+        d="M3 -4 L8 1"
+        fill="none"
+        stroke="#D99A70"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      {/* legs */}
+
+      <path
+        d="M-2 5 L-6 11"
+        fill="none"
+        stroke="#24282A"
+        strokeWidth="2.3"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M3 5 L7 10"
+        fill="none"
+        stroke="#24282A"
+        strokeWidth="2.3"
+        strokeLinecap="round"
+      />
+
+      {/* walking spark */}
+
+      <circle
+        cx="-8"
+        cy="12"
+        r="1"
+        fill="#F4552A"
+        opacity="0.8"
+      />
+
+      <circle
+        cx="9"
+        cy="11"
+        r="0.8"
+        fill="#F5B447"
+        opacity="0.7"
+      />
+    </g>
+  )
+}
+
+/* ==================================================================
+   COMPASS
+   ================================================================== */
+
+function Compass() {
+  return (
+    <div
+      className="pointer-events-none absolute bottom-5 right-6 z-[6] flex h-16 w-16 items-center justify-center rounded-full border"
+      style={{
+        borderColor:
+          'rgba(244,235,217,0.24)',
+        background:
+          'rgba(13,25,20,0.5)',
+        backdropFilter:
+          'blur(8px)',
+      }}
+    >
+      <svg
+        viewBox="0 0 64 64"
+        width="52"
+        height="52"
+      >
+        <circle
+          cx="32"
+          cy="32"
+          r="25"
+          fill="none"
+          stroke="#E6D7B8"
+          strokeWidth="1"
+          opacity="0.35"
+        />
+
+        <path
+          d="M32 9 L37 32 L32 55 L27 32 Z"
+          fill="#F4552A"
+          opacity="0.8"
+        />
+
+        <path
+          d="M32 9 L37 32 L32 55 L27 32 Z"
+          fill="none"
+          stroke="#E6D7B8"
+          strokeWidth="1"
+        />
+
+        <text
+          x="32"
+          y="7"
+          textAnchor="middle"
+          fill="#E6D7B8"
+          fontSize="6"
+          fontFamily="monospace"
+        >
+          N
+        </text>
+
+        <text
+          x="32"
+          y="62"
+          textAnchor="middle"
+          fill="#E6D7B8"
+          fontSize="6"
+          fontFamily="monospace"
+        >
+          S
+        </text>
+      </svg>
+    </div>
+  )
+}
+
+/* ==================================================================
+   ROUTE STOPS
+   ================================================================== */
+
+function buildStops(
+  count,
+  width,
+  height,
+) {
   const out = []
-  let y = lo + rand() * 60
-  let dir = 1
 
-  for (let i = 0; i < count; i++) {
-    const t = count > 1 ? i / (count - 1) : 0
-    // A little slack on x lets the route drift back on itself the way a
-    // drawn line does, without ever losing left-to-right reading order.
-    const x = left + (right - left) * t + (rand() - 0.5) * 46
+  const left = EDGE
+  const right =
+    width - EDGE
 
-    if (i > 0) {
-      const step = MIN_DY + rand() * 130
-      if (y + dir * step > hi || y + dir * step < lo) dir *= -1
-      y = clamp(y + dir * step, lo, hi)
-      if (rand() > 0.62) dir *= -1
-    }
+  const center =
+    height * 0.57
 
-    out.push({ x: clamp(x, left - 20, right + 20), y })
+  const amplitude =
+    Math.min(
+      115,
+      height * 0.22,
+    )
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+    const progress =
+      count > 1
+        ? i /
+          (count - 1)
+        : 0
+
+    const x =
+      left +
+      (right - left) *
+        progress
+
+    const wave =
+      Math.sin(
+        progress *
+          Math.PI *
+          2.15,
+      )
+
+    const secondary =
+      Math.sin(
+        progress *
+          Math.PI *
+          5.1 +
+          0.7,
+      ) * 14
+
+    const y =
+      center +
+      wave * amplitude +
+      secondary
+
+    out.push({
+      x,
+      y: clamp(
+        y,
+        100,
+        height - 90,
+      ),
+    })
   }
 
   return out
 }
 
-/**
- * The route through the stops: each stop is a waypoint, with a wandering
- * point inserted between every pair, so the line leaves a stop, drifts
- * off the direct line to the next, and comes back to meet it.
- *
- * Because the stops are waypoints the curve passes exactly through them.
- */
-function buildWaypoints(stops) {
-  if (!stops.length) return []
-  const rand = seededRandom(0x9e3779b9)
-  const wp = [{ x: stops[0].x - 44, y: stops[0].y - 30 }]
+/* ==================================================================
+   WAYPOINTS
+   ================================================================== */
 
-  for (let i = 0; i < stops.length; i++) {
-    wp.push(stops[i])
-    const next = stops[i + 1]
-    if (!next) break
+function buildWaypoints(
+  stops,
+) {
+  if (!stops.length) {
+    return []
+  }
 
-    const a = stops[i]
-    const dx = next.x - a.x
-    const dy = next.y - a.y
-    const len = Math.hypot(dx, dy) || 1
-    const amp = (34 + rand() * 40) * (i % 2 === 0 ? -1 : 1)
+  const waypoints = []
 
-    wp.push({
-      x: (a.x + next.x) / 2 + (-dy / len) * amp,
-      y: (a.y + next.y) / 2 + (dx / len) * amp,
+  waypoints.push({
+    x:
+      stops[0].x - 42,
+    y:
+      stops[0].y - 20,
+  })
+
+  for (
+    let i = 0;
+    i < stops.length;
+    i++
+  ) {
+    const current =
+      stops[i]
+
+    waypoints.push(
+      current,
+    )
+
+    const next =
+      stops[i + 1]
+
+    if (!next) {
+      break
+    }
+
+    const dx =
+      next.x -
+      current.x
+
+    const dy =
+      next.y -
+      current.y
+
+    const length =
+      Math.hypot(
+        dx,
+        dy,
+      ) || 1
+
+    const direction =
+      i % 2 === 0
+        ? -1
+        : 1
+
+    const amount =
+      25 +
+      (i % 3) * 7
+
+    waypoints.push({
+      x:
+        (current.x +
+          next.x) /
+          2 +
+        (-dy / length) *
+          amount *
+          direction,
+
+      y:
+        (current.y +
+          next.y) /
+          2 +
+        (dx / length) *
+          amount *
+          direction,
     })
   }
 
-  const last = stops[stops.length - 1]
-  wp.push({ x: last.x + 42, y: last.y + 32 })
-  return wp
+  const last =
+    stops[
+      stops.length - 1
+    ]
+
+  waypoints.push({
+    x:
+      last.x + 42,
+    y:
+      last.y + 20,
+  })
+
+  return waypoints
 }
 
-/**
- * A Catmull-Rom spline through the waypoints, written out as cubic
- * beziers. Straight segments joined by corner radii read as a diagram;
- * one continuous curve reads as a route someone drew.
- */
-function routePath(stops) {
-  const p = buildWaypoints(stops)
-  if (p.length < 2) return ''
-  let d = `M ${p[0].x.toFixed(2)} ${p[0].y.toFixed(2)}`
+/* ==================================================================
+   ROUTE PATH
+   ================================================================== */
 
-  for (let i = 0; i < p.length - 1; i++) {
-    const p0 = p[i - 1] || p[i]
-    const p1 = p[i]
-    const p2 = p[i + 1]
-    const p3 = p[i + 2] || p2
-    d += ` C ${(p1.x + (p2.x - p0.x) / 6).toFixed(2)} ${(p1.y + (p2.y - p0.y) / 6).toFixed(2)}, ${(p2.x - (p3.x - p1.x) / 6).toFixed(2)} ${(p2.y - (p3.y - p1.y) / 6).toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+function routePath(
+  stops,
+) {
+  const points =
+    buildWaypoints(
+      stops,
+    )
+
+  if (
+    points.length < 2
+  ) {
+    return ''
   }
+
+  let d =
+    `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`
+
+  for (
+    let i = 0;
+    i <
+    points.length - 1;
+    i++
+  ) {
+    const p0 =
+      points[i - 1] ||
+      points[i]
+
+    const p1 =
+      points[i]
+
+    const p2 =
+      points[i + 1]
+
+    const p3 =
+      points[i + 2] ||
+      p2
+
+    const c1x =
+      p1.x +
+      (p2.x - p0.x) /
+        6
+
+    const c1y =
+      p1.y +
+      (p2.y - p0.y) /
+        6
+
+    const c2x =
+      p2.x -
+      (p3.x - p1.x) /
+        6
+
+    const c2y =
+      p2.y -
+      (p3.y - p1.y) /
+        6
+
+    d +=
+      ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ` +
+      `${c2x.toFixed(2)} ${c2y.toFixed(2)}, ` +
+      `${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+  }
+
   return d
 }
 
-/**
- * A gradient stop per route stop, in that stop's own colour. Offsets are
- * forced non-decreasing: the stops carry a little horizontal jitter, and
- * an offset that steps backwards makes the browser drop the gradient.
- */
-function gradientStops(points, w) {
+/* ==================================================================
+   ROUTE GRADIENT
+   ================================================================== */
+
+function gradientStops(
+  points,
+  width,
+) {
   let last = 0
-  return points.map((p, i) => {
-    const at = Math.max(last, clamp(p.x / (w || 1), 0, 1))
-    last = at
-    return (
-      <stop
-        key={timeline[i]?.id || i}
-        offset={at}
-        stopColor={textColor(timeline[i] || {})}
-      />
-    )
-  })
+
+  return points.map(
+    (point, index) => {
+      const entry =
+        timeline[index] ||
+        {}
+
+      const offset =
+        Math.max(
+          last,
+          clamp(
+            point.x /
+              (width || 1),
+            0,
+            1,
+          ),
+        )
+
+      last = offset
+
+      return (
+        <stop
+          key={
+            entry.id ||
+            index
+          }
+          offset={
+            `${offset * 100}%`
+          }
+          stopColor={
+            routeColor(
+              entry,
+            )
+          }
+        />
+      )
+    },
+  )
 }
 
-/**
- * How far along a path a point sits. Coarse sweep, then a refinement
- * around the best sample, which is far cheaper than sampling the whole
- * length finely and lands within a pixel.
- */
-function lengthAt(el, target, total) {
-  let best = 0
-  let bestD = Infinity
-  const STEPS = 260
+/* ==================================================================
+   ROUTE DISTANCE
+   ================================================================== */
 
-  for (let i = 0; i <= STEPS; i++) {
-    const t = (i / STEPS) * total
-    const p = el.getPointAtLength(t)
-    const dd = (p.x - target.x) ** 2 + (p.y - target.y) ** 2
-    if (dd < bestD) {
-      bestD = dd
-      best = t
+function lengthAt(
+  element,
+  target,
+  total,
+) {
+  let best = 0
+  let bestDistance =
+    Infinity
+
+  const steps = 320
+
+  for (
+    let i = 0;
+    i <= steps;
+    i++
+  ) {
+    const distance =
+      (i / steps) *
+      total
+
+    const point =
+      element.getPointAtLength(
+        distance,
+      )
+
+    const difference =
+      (point.x -
+        target.x) **
+        2 +
+      (point.y -
+        target.y) **
+        2
+
+    if (
+      difference <
+      bestDistance
+    ) {
+      bestDistance =
+        difference
+      best = distance
     }
   }
 
-  const span = total / STEPS
-  for (let i = -20; i <= 20; i++) {
-    const t = clamp(best + (i / 20) * span, 0, total)
-    const p = el.getPointAtLength(t)
-    const dd = (p.x - target.x) ** 2 + (p.y - target.y) ** 2
-    if (dd < bestD) {
-      bestD = dd
-      best = t
+  const span =
+    total / steps
+
+  for (
+    let i = -20;
+    i <= 20;
+    i++
+  ) {
+    const distance =
+      clamp(
+        best +
+          (i / 20) *
+            span,
+        0,
+        total,
+      )
+
+    const point =
+      element.getPointAtLength(
+        distance,
+      )
+
+    const difference =
+      (point.x -
+        target.x) **
+        2 +
+      (point.y -
+        target.y) **
+        2
+
+    if (
+      difference <
+      bestDistance
+    ) {
+      bestDistance =
+        difference
+      best = distance
     }
   }
 
   return best
 }
 
-/** Names the destination, rather than guessing from the kind of stop. */
-function linkLabel(href = '') {
-  if (href.includes('github.com')) return 'Repository'
-  if (href.includes('le.ac.uk') || href.includes('aston.ac.uk')) return 'Course page'
-  if (href.includes('linkedin.com')) return 'The post'
-  if (href.includes('classfutures')) return 'Read it'
-  return 'Visit'
-}
+/* ==================================================================
+   CARD PLACEMENT
+   ================================================================== */
 
-function seededRandom(seed) {
-  let s = seed >>> 0
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0
-    return s / 4294967296
-  }
-}
+function placeCard(
+  point,
+  index,
+  points,
+  width,
+  height,
+) {
+  const blockers =
+    points
+      .filter(
+        (_, i) =>
+          i !== index,
+      )
+      .map((p) => ({
+        x0: p.x - 82,
+        x1: p.x + 82,
+        y0: p.y - 34,
+        y1: p.y + 78,
+      }))
 
-/**
- * Where a card goes.
- *
- * The stops are on a random walk, so there is no free half of the section
- * to open into, and often no clear rectangle at all: a card covers a
- * seventh of the box and eleven stops are scattered through it.
- *
- * Two attempts got this wrong in opposite ways. Demanding a fully clear
- * placement found none and fell back to one overlapping several stops.
- * Then scoring it with a heavy penalty for coverage sent cards up to
- * 531px from the stop they belong to, chasing empty space across the
- * section.
- *
- * So distance leads and coverage is a tiebreak worth about a hundred
- * pixels. A card sits beside its own stop and may cover a neighbour,
- * which is what a panel opening over a map does anyway. What it may not
- * do is leave the section, cover its own stop, or clip its text.
- */
-function placeCard(point, index, points, cw, ch) {
-  const blockers = points
-    .filter((_, j) => j !== index)
-    .map((p) => ({
-      x0: p.x - PIN_SIDE,
-      x1: p.x + PIN_SIDE,
-      y0: p.y - PIN_UP,
-      y1: p.y + PIN_DOWN,
-    }))
   const own = {
-    x0: point.x - PIN_SIDE,
-    x1: point.x + PIN_SIDE,
-    y0: point.y - PIN_UP,
-    y1: point.y + PIN_DOWN,
+    x0: point.x - 82,
+    x1: point.x + 82,
+    y0: point.y - 34,
+    y1: point.y + 78,
   }
-  const hits = (r, b) =>
-    r.left + CARD_W > b.x0 && r.left < b.x1 && r.top + CARD_H > b.y0 && r.top < b.y1
 
-  const cx = point.x - CARD_W / 2
-  const cy = point.y - CARD_H / 2
-  const preferDown = point.y < ch / 2
+  const overlaps = (
+    rect,
+    obstacle,
+  ) =>
+    rect.left +
+      CARD_W >
+      obstacle.x0 &&
+    rect.left <
+      obstacle.x1 &&
+    rect.top +
+      CARD_H >
+      obstacle.y0 &&
+    rect.top <
+      obstacle.y1
+
+  const centerLeft =
+    point.x -
+    CARD_W / 2
+
+  const centerTop =
+    point.y -
+    CARD_H / 2
+
+  const preferDown =
+    point.y <
+    height / 2
 
   let best = null
-  const consider = (left, top) => {
-    if (left < 0 || top < 0 || left + CARD_W > cw || top + CARD_H > ch) return
-    const r = { left, top }
-    if (hits(r, own)) return
-    const covered = blockers.filter((b) => hits(r, b)).length
-    const dist = Math.hypot(left + CARD_W / 2 - point.x, top + CARD_H / 2 - point.y)
-    const score = dist + covered * 170
-    if (!best || score < best.score) best = { left, top, score }
-  }
 
-  for (let step = 0; step <= 20; step++) {
-    for (const off of step === 0 ? [0] : [-step * 24, step * 24]) {
-      const near = preferDown ? point.y + CARD_GAP : point.y - CARD_GAP - CARD_H
-      const far = preferDown ? point.y - CARD_GAP - CARD_H : point.y + CARD_GAP
-      consider(cx + off, near)
-      consider(cx + off, far)
-      consider(point.x + CARD_SIDE, cy + off)
-      consider(point.x - CARD_W - CARD_SIDE, cy + off)
+  const consider = (
+    left,
+    top,
+  ) => {
+    if (
+      left < 12 ||
+      top < 12 ||
+      left + CARD_W >
+        width - 12 ||
+      top + CARD_H >
+        height - 12
+    ) {
+      return
+    }
+
+    const rect = {
+      left,
+      top,
+    }
+
+    if (
+      overlaps(
+        rect,
+        own,
+      )
+    ) {
+      return
+    }
+
+    const covered =
+      blockers.filter(
+        (obstacle) =>
+          overlaps(
+            rect,
+            obstacle,
+          ),
+      ).length
+
+    const distance =
+      Math.hypot(
+        left +
+          CARD_W / 2 -
+          point.x,
+
+        top +
+          CARD_H / 2 -
+          point.y,
+      )
+
+    const score =
+      distance +
+      covered * 110
+
+    if (
+      !best ||
+      score <
+        best.score
+    ) {
+      best = {
+        left,
+        top,
+        score,
+      }
     }
   }
 
-  if (best) return best
+  for (
+    let step = 0;
+    step <= 18;
+    step++
+  ) {
+    const offset =
+      step * 20
+
+    const down =
+      point.y +
+      CARD_GAP
+
+    const up =
+      point.y -
+      CARD_GAP -
+      CARD_H
+
+    if (preferDown) {
+      consider(
+        centerLeft,
+        down,
+      )
+
+      consider(
+        centerLeft -
+          offset,
+        down,
+      )
+
+      consider(
+        centerLeft +
+          offset,
+        down,
+      )
+
+      consider(
+        centerLeft,
+        up,
+      )
+    } else {
+      consider(
+        centerLeft,
+        up,
+      )
+
+      consider(
+        centerLeft -
+          offset,
+        up,
+      )
+
+      consider(
+        centerLeft +
+          offset,
+        up,
+      )
+
+      consider(
+        centerLeft,
+        down,
+      )
+    }
+
+    consider(
+      point.x + 70,
+      centerTop,
+    )
+
+    consider(
+      point.x -
+        CARD_W +
+        70,
+      centerTop,
+    )
+  }
+
+  if (best) {
+    return best
+  }
+
   return {
-    left: clamp(cx, 0, Math.max(0, cw - CARD_W)),
-    top: clamp(point.y + CARD_GAP, 0, Math.max(0, ch - CARD_H)),
+    left: clamp(
+      centerLeft,
+      12,
+      Math.max(
+        12,
+        width -
+          CARD_W -
+          12,
+      ),
+    ),
+
+    top: clamp(
+      fallbackTop(
+        point,
+        height,
+      ),
+      12,
+      Math.max(
+        12,
+        height -
+          CARD_H -
+          12,
+      ),
+    ),
   }
 }
 
-function Stop({ entry, point, active, dimmed, onEnter }) {
+function fallbackTop(
+  point,
+  height,
+) {
+  if (
+    point.y +
+      CARD_GAP +
+      CARD_H <=
+    height
+  ) {
+    return (
+      point.y +
+      CARD_GAP
+    )
+  }
+
+  return (
+    point.y -
+    CARD_GAP -
+    CARD_H
+  )
+}
+
+/* ==================================================================
+   STOP
+   ================================================================== */
+
+function Stop({
+  entry,
+  point,
+  active,
+  dimmed,
+  onEnter,
+  onClick,
+}) {
+  const labelAbove =
+    point.y > 285
+
   return (
     <button
       type="button"
       onMouseEnter={onEnter}
       onFocus={onEnter}
-      aria-describedby={active ? 'route-card' : undefined}
-      className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity duration-300"
-      style={{ left: point.x, top: point.y, opacity: dimmed ? 0.45 : 1 }}
+      onClick={onClick}
+      aria-describedby={
+        active
+          ? 'route-card'
+          : undefined
+      }
+      aria-label={`${entry.year} ${entry.short || entry.title}`}
+      className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-all duration-300"
+      style={{
+        left: point.x,
+        top: point.y,
+        opacity:
+          dimmed ? 0.45 : 1,
+      }}
     >
-      <StopMark entry={entry} isActive={active} />
+      {labelAbove && (
+        <StopLabel
+          entry={entry}
+          active={active}
+          above
+        />
+      )}
 
-      {/* Idle, the route is the marks and the line and nothing else.
-          Eleven labels standing over it turned a drawn route into a
-          diagram; the name arrives with the card, for whichever stop is
-          being pointed at.
+      <StopMark
+        entry={entry}
+        isActive={active}
+      />
 
-          Kept mounted rather than conditional, so the button's accessible
-          name is always its stop and the label never reflows the row. */}
-      {/* Over imagery rather than flat ground, so the label carries its
-          own dark plate: terrain behind type is the fastest way to lose
-          both. */}
-      <span
-        className="mt-3 flex flex-col items-center gap-1 rounded-sm px-2.5 py-1.5 transition-opacity duration-300"
-        style={{
-          opacity: active ? 1 : 0,
-          background: 'rgba(10,9,8,0.82)',
-          border: `1px solid ${active ? textColor(entry) : 'transparent'}`,
-        }}
-      >
-        <span className="mono-label whitespace-nowrap" style={{ color: textColor(entry) }}>
-          {entry.year}
-        </span>
-        <span
-          className="whitespace-nowrap text-[12.5px] leading-snug"
-          style={{ color: 'var(--ink)' }}
-        >
-          {entry.short}
-        </span>
-      </span>
+      {!labelAbove && (
+        <StopLabel
+          entry={entry}
+          active={active}
+        />
+      )}
     </button>
   )
 }
 
-/** One stop's written detail. Shared by the card and the mobile spine. */
-function Detail({ entry, compact = false }) {
+/* ==================================================================
+   STOP LABEL
+   ================================================================== */
+
+function StopLabel({
+  entry,
+  active,
+  above = false,
+}) {
+  return (
+    <span
+      className={
+        above
+          ? 'mb-3 flex flex-col items-center'
+          : 'mt-3 flex flex-col items-center'
+      }
+    >
+      <span
+        className="rounded-full border px-2.5 py-1 font-mono text-[9px] tracking-[0.12em] shadow-sm"
+        style={{
+          color: '#332A1E',
+          borderColor:
+            'rgba(74,54,33,0.18)',
+          background:
+            'rgba(246,232,201,0.94)',
+        }}
+      >
+        {entry.year}
+      </span>
+
+      <span
+        className="mt-1 max-w-[170px] whitespace-nowrap rounded bg-[#F3E5C5]/90 px-2 py-1 text-center text-[10.5px] font-medium leading-tight shadow-sm"
+        style={{
+          color: '#30291F',
+          opacity:
+            active ? 1 : 0.88,
+        }}
+      >
+        {entry.short ||
+          entry.title}
+      </span>
+
+      {entry.id ===
+        'aston' && (
+        <span
+          className="mt-1 rounded-full px-2 py-0.5 font-mono text-[7px] uppercase tracking-[0.16em]"
+          style={{
+            color: '#FFF4E5',
+            background:
+              '#F4552A',
+          }}
+        >
+          Now
+        </span>
+      )}
+    </span>
+  )
+}
+
+/* ==================================================================
+   STOP MARK
+   ================================================================== */
+
+function StopMark({
+  entry,
+  isActive,
+}) {
+  const accent =
+    routeColor(entry)
+
+  const Mark =
+    markFor(entry)
+
+  const isCurrent =
+    entry.id === 'aston'
+
+  return (
+    <span
+      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
+      style={{
+        background:
+          isActive
+            ? accent
+            : '#F5E8CC',
+
+        border:
+          `3px solid ${accent}`,
+
+        color:
+          isActive
+            ? onFill(accent)
+            : accent,
+
+        transform:
+          isActive
+            ? 'scale(1.10)'
+            : 'scale(1)',
+
+        boxShadow:
+          isActive
+            ? `0 0 0 7px ${accent}35, 0 7px 18px rgba(0,0,0,0.28)`
+            : '0 5px 12px rgba(0,0,0,0.20)',
+
+        transition:
+          'transform 260ms ease, box-shadow 260ms ease, background 260ms ease',
+      }}
+    >
+      {isCurrent && (
+        <span
+          className="absolute inset-[-10px] rounded-full border-2"
+          style={{
+            borderColor:
+              `${accent}65`,
+            animation:
+              'timelinePulse 3s ease-out infinite',
+          }}
+        />
+      )}
+
+      {Mark ? (
+        <Mark
+          width="27"
+          height="27"
+        />
+      ) : (
+        <span
+          className="serif text-[16px]"
+          style={{
+            color:
+              isActive
+                ? onFill(
+                    accent,
+                  )
+                : accent,
+          }}
+        >
+          {entry.monogram}
+        </span>
+      )}
+    </span>
+  )
+}
+
+/* ==================================================================
+   DETAIL
+   ================================================================== */
+
+function Detail({
+  entry,
+  compact = false,
+}) {
   return (
     <>
-      <p className="mono-label" style={{ color: textColor(entry) }}>
-        {entry.year}
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <p
+          className="mono-label"
+          style={{
+            color:
+              textColor(entry),
+          }}
+        >
+          {entry.year}
+        </p>
+
+        {entry.status && (
+          <span
+            className="rounded-full border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em]"
+            style={{
+              color:
+                textColor(
+                  entry,
+                ),
+              borderColor:
+                `${textColor(entry)}55`,
+              background:
+                `${textColor(entry)}12`,
+            }}
+          >
+            {entry.status}
+          </span>
+        )}
+      </div>
+
       <h3
-        className={`serif mt-1.5 leading-tight ${compact ? 'text-[1.15rem]' : 'text-[1.3rem]'}`}
-        style={{ color: 'var(--ink)' }}
+        className={`serif mt-2 leading-tight ${
+          compact
+            ? 'text-[1.15rem]'
+            : 'text-[1.3rem]'
+        }`}
+        style={{
+          color:
+            'var(--ink)',
+        }}
       >
         {entry.title}
       </h3>
-      <p className="mono-label mt-2" style={{ color: 'var(--muted)' }}>
+
+      <p
+        className="mono-label mt-2"
+        style={{
+          color:
+            'var(--muted)',
+        }}
+      >
         {entry.org}
       </p>
-      {entry.status && (
-        <p
-          className="mono-label mt-2 flex items-center gap-1.5"
-          style={{ color: textColor(entry) }}
-        >
-          <span
-            className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{ background: textColor(entry) }}
-          />
-          {entry.status}
-        </p>
-      )}
+
       <p
-        className={`mt-3 leading-relaxed ${compact ? 'text-[13px]' : 'text-[15px]'}`}
-        style={{ color: 'var(--ink-soft)' }}
+        className={`mt-3 leading-relaxed ${
+          compact
+            ? 'text-[13px]'
+            : 'text-[15px]'
+        }`}
+        style={{
+          color:
+            'var(--ink-soft)',
+        }}
       >
         {entry.body}
       </p>
+
       {entry.href && (
         <a
           href={entry.href}
           target="_blank"
           rel="noreferrer"
           className="mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
-          style={{ color: textColor(entry), borderColor: textColor(entry) }}
+          style={{
+            color:
+              textColor(entry),
+            borderColor:
+              textColor(entry),
+          }}
         >
-          {linkLabel(entry.href)}
-          <span aria-hidden="true">↗</span>
+          {linkLabel(
+            entry.href,
+          )}
+
+          <span
+            aria-hidden="true"
+          >
+            ↗
+          </span>
         </a>
       )}
     </>
   )
 }
 
-/**
- * Small text needs 4.5:1; a filled mark and a dotted rule only need 3:1.
- * `tint` carries a lightened variant for the entries whose real brand
- * colour is too dark to set type in on this ground.
- */
-const textColor = (t) => t.tint || t.accent || 'var(--accent)'
+/* ==================================================================
+   LINK LABEL
+   ================================================================== */
 
-/**
- * Picks black or white for whatever sits inside a filled mark. White and
- * near-black give equal contrast at L = 0.187; above it the dark ink wins.
- */
-function onFill(hex) {
-  if (!hex || hex[0] !== '#') return '#fff'
-  const v = [1, 3, 5].map((i) => {
-    const n = parseInt(hex.substr(i, 2), 16) / 255
-    return n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4)
-  })
-  const L = 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]
-  return L > 0.187 ? '#0B0A09' : '#fff'
+function linkLabel(
+  href = '',
+) {
+  if (
+    href.includes(
+      'github.com',
+    )
+  ) {
+    return 'Repository'
+  }
+
+  if (
+    href.includes(
+      'le.ac.uk',
+    ) ||
+    href.includes(
+      'aston.ac.uk',
+    )
+  ) {
+    return 'Course page'
+  }
+
+  if (
+    href.includes(
+      'linkedin.com',
+    )
+  ) {
+    return 'The post'
+  }
+
+  if (
+    href.includes(
+      'classfutures',
+    )
+  ) {
+    return 'Read it'
+  }
+
+  return 'Visit'
 }
 
-/**
- * A stop, as a pin on the map rather than a circle in a list.
- *
- * The disc still carries the institution's mark, but it now sits inside a
- * survey ring with a hairline tick at each quarter, and drops a short
- * stem to a point on the ground. That is what separates a located thing
- * from a bullet: it is planted somewhere.
- *
- * The disc stays opaque. Over satellite imagery a translucent one turns
- * into whatever field it happens to be standing on.
- */
-function StopMark({ entry, isActive }) {
-  const accent = entry.accent || 'var(--accent)'
-  const ink = isActive ? onFill(entry.accent) : textColor(entry)
-  const Mark = markFor(entry)
+/* ==================================================================
+   COLOUR HELPERS
+   ================================================================== */
+
+function routeColor(
+  entry = {},
+) {
+  if (entry.id === 'aston') {
+    return '#F4552A'
+  }
+
+  if (
+    entry.kind ===
+    'education'
+  ) {
+    return (
+      entry.accent ||
+      '#F4552A'
+    )
+  }
+
+  if (
+    entry.kind ===
+    'project'
+  ) {
+    return (
+      entry.accent ||
+      '#4C8FD8'
+    )
+  }
+
+  if (
+    entry.kind ===
+    'experience'
+  ) {
+    return (
+      entry.accent ||
+      '#35B89A'
+    )
+  }
 
   return (
-    <span className="relative flex flex-col items-center">
-      {/* Survey ring: only present on the stop being pointed at, so the
-          idle map stays quiet. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-7 h-[74px] w-[74px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{
-          border: `1px solid ${accent}`,
-          opacity: isActive ? 0.55 : 0,
-          transform: `translate(-50%, -50%) scale(${isActive ? 1 : 0.86})`,
-          transition: 'opacity 300ms ease, transform 300ms ease',
-        }}
-      />
-      {isActive &&
-        [0, 90, 180, 270].map((deg) => (
-          <span
-            key={deg}
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-7 h-[7px] w-px"
-            style={{
-              background: accent,
-              opacity: 0.7,
-              transform: `rotate(${deg}deg) translateY(-42px)`,
-              transformOrigin: 'center top',
-            }}
-          />
-        ))}
-
-      <span
-        className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
-        style={{
-          // Opaque. Over imagery a see-through mark takes on the field
-          // behind it and stops being a mark.
-          background: isActive ? accent : '#0A0908',
-          border: `2px solid ${accent}`,
-          color: ink,
-          transform: isActive ? 'scale(1.06)' : 'scale(1)',
-          boxShadow: isActive
-            ? `0 0 0 6px ${accent}22, 0 10px 26px -10px rgba(0,0,0,0.9)`
-            : '0 10px 26px -12px rgba(0,0,0,0.85)',
-          // Only the motion is transitioned. Fill and ink switch together
-          // on the same frame; letting them ease independently can leave
-          // the mark sitting on the colour it was picked against.
-          transition: 'transform 300ms ease, box-shadow 300ms ease',
-        }}
-      >
-        {Mark ? (
-          <Mark width="27" height="27" />
-        ) : (
-          <span
-            className="serif text-[17px] leading-none tracking-tight"
-            style={{ color: ink }}
-          >
-            {entry.monogram}
-          </span>
-        )}
-      </span>
-
-      {/* Stem and ground point: the pin is planted here. */}
-      <span
-        aria-hidden="true"
-        className="block w-px transition-all duration-300"
-        style={{
-          height: isActive ? 12 : 8,
-          background: accent,
-          opacity: isActive ? 0.9 : 0.55,
-        }}
-      />
-      <span
-        aria-hidden="true"
-        className="block rounded-full transition-all duration-300"
-        style={{
-          width: isActive ? 6 : 4,
-          height: isActive ? 6 : 4,
-          background: accent,
-          boxShadow: isActive ? `0 0 10px ${accent}` : 'none',
-        }}
-      />
-    </span>
+    entry.accent ||
+    entry.tint ||
+    '#F4552A'
   )
 }
 
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(v, hi))
+const textColor = (
+  entry,
+) =>
+  entry.tint ||
+  entry.accent ||
+  routeColor(entry)
+
+function onFill(hex) {
+  if (
+    !hex ||
+    hex[0] !== '#'
+  ) {
+    return '#fff'
+  }
+
+  const rgb = [
+    1,
+    3,
+    5,
+  ].map(
+    (index) => {
+      const value =
+        parseInt(
+          hex.substring(
+            index,
+            index + 2,
+          ),
+          16,
+        ) / 255
+
+      return value <=
+        0.03928
+        ? value / 12.92
+        : Math.pow(
+            (value +
+              0.055) /
+              1.055,
+            2.4,
+          )
+    },
+  )
+
+  const luminance =
+    0.2126 * rgb[0] +
+    0.7152 * rgb[1] +
+    0.0722 * rgb[2]
+
+  return luminance >
+    0.187
+    ? '#0B0A09'
+    : '#fff'
+}
+
+/* ==================================================================
+   CLAMP
+   ================================================================== */
+
+const clamp = (
+  value,
+  min,
+  max,
+) =>
+  Math.max(
+    min,
+    Math.min(
+      value,
+      max,
+    ),
+  )
+
+/* ==================================================================
+   TIMELINE PULSE
+   ================================================================== */
+
+if (
+  typeof document !==
+    'undefined' &&
+  !document.getElementById(
+    'timeline-pulse-style',
+  )
+) {
+  const style =
+    document.createElement(
+      'style',
+    )
+
+  style.id =
+    'timeline-pulse-style'
+
+  style.textContent = `
+    @keyframes timelinePulse {
+      0% {
+        transform: scale(0.82);
+        opacity: 0.65;
+      }
+
+      70% {
+        transform: scale(1.18);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1.18);
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  `
+
+  document.head.appendChild(
+    style,
+  )
+}
