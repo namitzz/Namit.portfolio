@@ -1,19 +1,25 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { timeline } from '../data/content'
 import { markFor } from './TimelineMarks'
 import Reveal from './Reveal'
 
-const TRACK_H = 520
+const TRACK_H = 560
 const CARD_W = 340
 const CARD_H = 280
-const CARD_GAP = 82
+const CARD_GAP = 78
 const EDGE = 80
 
 export default function Experience() {
   const reduce = useReducedMotion()
   const wrapRef = useRef(null)
   const pathRef = useRef(null)
+  const animationRef = useRef(null)
 
   const [box, setBox] = useState({
     w: 0,
@@ -25,6 +31,14 @@ export default function Experience() {
   const [arc, setArc] = useState({
     total: 0,
     at: [],
+  })
+
+  const [traveller, setTraveller] = useState({
+    x: 0,
+    y: 0,
+    rotation: 0,
+    length: 0,
+    visible: false,
   })
 
   const height = TRACK_H
@@ -114,24 +128,176 @@ export default function Experience() {
       return
     }
 
-    const total = el.getTotalLength()
+    const total =
+      el.getTotalLength()
 
-    setArc({
-      total,
-      at: points.map((point) =>
+    const at = points.map(
+      (point) =>
         lengthAt(
           el,
           point,
           total,
         ),
-      ),
+    )
+
+    setArc({
+      total,
+      at,
     })
+
+    if (
+      traveller.length === 0 &&
+      at.length
+    ) {
+      const first =
+        el.getPointAtLength(0)
+
+      setTraveller({
+        x: first.x,
+        y: first.y,
+        rotation: 0,
+        length: 0,
+        visible: true,
+      })
+    }
   }, [d, points])
+
+  const stopAnimation = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(
+        animationRef.current,
+      )
+
+      animationRef.current = null
+    }
+  }
+
+  const walkTo = (index) => {
+    if (
+      !pathRef.current ||
+      !arc.total ||
+      !points[index]
+    ) {
+      setActive(index)
+      return
+    }
+
+    stopAnimation()
+
+    const path =
+      pathRef.current
+
+    const target =
+      arc.at[index] || 0
+
+    const start =
+      traveller.visible
+        ? traveller.length
+        : 0
+
+    const distance = Math.abs(
+      target - start,
+    )
+
+    const duration = reduce
+      ? 0
+      : Math.min(
+          2400,
+          Math.max(
+            850,
+            distance * 3.4,
+          ),
+        )
+
+    const started =
+      performance.now()
+
+    const tick = (now) => {
+      const raw =
+        duration === 0
+          ? 1
+          : Math.min(
+              1,
+              (now - started) /
+                duration,
+            )
+
+      const eased =
+        1 -
+        Math.pow(
+          1 - raw,
+          3,
+        )
+
+      const length =
+        start +
+        (target - start) *
+          eased
+
+      const point =
+        path.getPointAtLength(
+          length,
+        )
+
+      const lookDistance =
+        Math.min(
+          arc.total,
+          Math.max(
+            0,
+            length +
+              (target >= start
+                ? 2
+                : -2),
+          ),
+        )
+
+      const next =
+        path.getPointAtLength(
+          lookDistance,
+        )
+
+      const rotation =
+        Math.atan2(
+          next.y - point.y,
+          next.x - point.x,
+        ) *
+        (180 / Math.PI)
+
+      setTraveller({
+        x: point.x,
+        y: point.y,
+        rotation,
+        length,
+        visible: true,
+      })
+
+      if (raw < 1) {
+        animationRef.current =
+          requestAnimationFrame(
+            tick,
+          )
+      } else {
+        animationRef.current =
+          null
+
+        setActive(index)
+      }
+    }
+
+    animationRef.current =
+      requestAnimationFrame(
+        tick,
+      )
+  }
+
+  useLayoutEffect(() => {
+    return () => stopAnimation()
+  }, [])
 
   const travelled =
     active !== null
       ? arc.at[active] || 0
-      : 0
+      : traveller.length
 
   return (
     <section
@@ -139,12 +305,14 @@ export default function Experience() {
       className="relative px-6 py-24 md:px-16 md:py-32"
       style={{
         background:
-          'linear-gradient(180deg, rgba(244,85,42,0.075) 0%, rgba(244,85,42,0.010) 30%, rgba(244,244,245,0.028) 100%)',
+          'linear-gradient(180deg, rgba(244,85,42,0.075) 0%, rgba(244,244,245,0.015) 42%, rgba(244,244,245,0.025) 100%)',
       }}
     >
       <div className="mx-auto w-full max-w-[1600px]">
 
-        {/* SECTION HEADING */}
+        {/* =========================================================
+            HEADING
+           ========================================================= */}
 
         <Reveal
           className="mb-12 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
@@ -174,6 +342,16 @@ export default function Experience() {
                 .
               </span>
             </h2>
+
+            <p
+              className="mt-4 max-w-xl text-sm leading-relaxed"
+              style={{
+                color:
+                  'var(--muted)',
+              }}
+            >
+              Click a stop and follow the journey.
+            </p>
           </div>
 
           <div className="flex flex-col items-start gap-2 md:items-end">
@@ -194,69 +372,118 @@ export default function Experience() {
                   'var(--muted)',
               }}
             >
-              <span>● EDUCATION</span>
-              <span>● PROJECT</span>
-              <span>● EXPERIENCE</span>
+              <span className="text-[#F4552A]">
+                ● EDUCATION
+              </span>
+
+              <span className="text-[#4C8FD8]">
+                ● PROJECT
+              </span>
+
+              <span className="text-[#35B89A]">
+                ● EXPERIENCE
+              </span>
             </div>
           </div>
         </Reveal>
 
-        {/* DESKTOP TIMELINE */}
+        {/* =========================================================
+            DESKTOP MAP
+           ========================================================= */}
 
         <div
           ref={wrapRef}
-          className="relative hidden md:block"
+          className="relative hidden overflow-hidden rounded-[2rem] border md:block"
           style={{
             height,
+            borderColor:
+              'rgba(244,244,245,0.10)',
+            background:
+              '#17251F',
+            boxShadow:
+              '0 40px 100px -55px rgba(0,0,0,0.9)',
           }}
-          onMouseLeave={() =>
-            setActive(null)
-          }
         >
-          <AnimatedMapBackground />
+          <IllustratedMap />
 
-          {/* ROUTE */}
+          {/* -------------------------------------------------------
+              ROUTE
+             ------------------------------------------------------- */}
 
           {box.w > 0 && (
             <svg
               aria-hidden="true"
               width={box.w}
               height={height}
-              className="absolute left-0 top-0 z-[3]"
+              className="absolute left-0 top-0 z-[4]"
             >
               <defs>
                 <filter
-                  id="routeGlow"
-                  x="-10%"
+                  id="journeyGlow"
+                  x="-20%"
                   y="-20%"
-                  width="120%"
+                  width="140%"
                   height="140%"
                 >
                   <feGaussianBlur
-                    stdDeviation="7"
+                    stdDeviation="6"
                   />
                 </filter>
 
                 <linearGradient
-                  id="routeInk"
+                  id="journeyRoute"
                   gradientUnits="userSpaceOnUse"
                   x1="0"
                   y1="0"
                   x2={box.w}
-                  y2="0"
+                  y2={height}
                 >
                   {inkStops}
                 </linearGradient>
               </defs>
 
+              {/* glow */}
+
               {arc.total > 0 && (
                 <path
                   d={d}
                   fill="none"
-                  stroke="url(#routeInk)"
-                  strokeWidth="5"
+                  stroke="#F4552A"
+                  strokeWidth="12"
                   strokeLinecap="round"
-                  filter="url(#routeGlow)"
+                  filter="url(#journeyGlow)"
+                  opacity="0.18"
+                  style={{
+                    strokeDasharray:
+                      arc.total,
+                    strokeDashoffset:
+                      arc.total -
+                      travelled,
+                  }}
+                />
+              )}
+
+              {/* cream trail */}
+
+              <path
+                d={d}
+                fill="none"
+                stroke="#F7E8C9"
+                strokeWidth="7"
+                strokeLinecap="round"
+                strokeDasharray="2 13"
+                opacity="0.95"
+              />
+
+              {/* orange centre */}
+
+              {arc.total > 0 && (
+                <path
+                  d={d}
+                  fill="none"
+                  stroke="url(#journeyRoute)"
+                  strokeWidth="4"
+                  strokeLinecap="round"
                   style={{
                     strokeDasharray:
                       arc.total,
@@ -265,28 +492,49 @@ export default function Experience() {
                       travelled,
                     opacity:
                       travelled > 0
-                        ? 0.9
+                        ? 1
                         : 0,
-                    transition: reduce
-                      ? 'none'
-                      : 'stroke-dashoffset 460ms cubic-bezier(0.22,1,0.36,1), opacity 220ms ease',
+                    transition:
+                      reduce
+                        ? 'none'
+                        : 'stroke-dashoffset 300ms ease',
                   }}
                 />
               )}
+
+              {/* little trail dashes */}
 
               <path
                 ref={pathRef}
                 d={d}
                 fill="none"
-                stroke="rgba(244,244,245,0.30)"
-                strokeWidth="2"
-                strokeDasharray="3 9"
+                stroke="#A83B20"
+                strokeWidth="1.5"
+                strokeDasharray="5 10"
                 strokeLinecap="round"
+                opacity="0.8"
               />
+
+              {/* ---------------------------------------------------
+                  TRAVELLER
+                 --------------------------------------------------- */}
+
+              {traveller.visible && (
+                <Traveller
+                  x={traveller.x}
+                  y={traveller.y}
+                  rotation={
+                    traveller.rotation
+                  }
+                  reduce={reduce}
+                />
+              )}
             </svg>
           )}
 
-          {/* TIMELINE STOPS */}
+          {/* -------------------------------------------------------
+              DESTINATIONS
+             ------------------------------------------------------- */}
 
           {points.map(
             (point, index) => {
@@ -312,17 +560,22 @@ export default function Experience() {
                   onEnter={() =>
                     setActive(index)
                   }
+                  onClick={() =>
+                    walkTo(index)
+                  }
                 />
               )
             },
           )}
 
-          {/* DETAIL CARD */}
+          {/* -------------------------------------------------------
+              DETAIL CARD
+             ------------------------------------------------------- */}
 
           {card && (
             <div
               id="route-card"
-              className="absolute z-20 border p-5"
+              className="absolute z-30 overflow-hidden rounded-2xl border p-5"
               style={{
                 left: card.left,
                 top: card.top,
@@ -330,19 +583,17 @@ export default function Experience() {
                 maxHeight:
                   height -
                   card.top -
-                  8,
-                overflow: 'hidden',
+                  12,
                 borderColor:
                   textColor(
                     card.entry,
                   ),
                 background:
-                  '#0A0908',
+                  'rgba(17,19,18,0.94)',
+                backdropFilter:
+                  'blur(14px)',
                 boxShadow:
-                  '0 30px 70px -40px rgba(0,0,0,0.95)',
-                transition: reduce
-                  ? 'none'
-                  : 'border-color 260ms ease',
+                  '0 30px 80px -40px rgba(0,0,0,0.95)',
               }}
             >
               <Detail
@@ -351,9 +602,37 @@ export default function Experience() {
               />
             </div>
           )}
+
+          {/* -------------------------------------------------------
+              MAP LABEL
+             ------------------------------------------------------- */}
+
+          <div
+            className="pointer-events-none absolute bottom-5 left-6 z-[6] rounded-full border px-3 py-1.5 backdrop-blur-sm"
+            style={{
+              borderColor:
+                'rgba(244,244,245,0.12)',
+              background:
+                'rgba(10,14,12,0.48)',
+            }}
+          >
+            <span
+              className="font-mono text-[9px] uppercase tracking-[0.16em]"
+              style={{
+                color:
+                  'rgba(244,244,245,0.55)',
+              }}
+            >
+              Interactive journey map
+            </span>
+          </div>
+
+          <Compass />
         </div>
 
-        {/* MOBILE TIMELINE */}
+        {/* =========================================================
+            MOBILE
+           ========================================================= */}
 
         <ol className="md:hidden">
           {timeline.map(
@@ -395,92 +674,67 @@ export default function Experience() {
   )
 }
 
-/* ================================================================
-   ANIMATED CARTOGRAPHIC BACKGROUND
-   ================================================================ */
+/* ==================================================================
+   ILLUSTRATED MAP
+   ================================================================== */
 
-function AnimatedMapBackground() {
+function IllustratedMap() {
+  const trees = [
+    [40, 110, 0.8],
+    [85, 170, 0.65],
+    [140, 90, 0.7],
+    [190, 125, 0.85],
+    [250, 80, 0.6],
+    [315, 150, 0.75],
+    [370, 92, 0.65],
+    [430, 130, 0.9],
+    [505, 75, 0.6],
+    [560, 125, 0.75],
+    [630, 85, 0.7],
+    [700, 145, 0.8],
+    [770, 90, 0.65],
+    [835, 135, 0.85],
+    [905, 80, 0.7],
+    [970, 135, 0.75],
+    [1040, 90, 0.6],
+    [1110, 150, 0.8],
+    [1160, 95, 0.7],
+
+    [55, 420, 0.8],
+    [110, 465, 0.7],
+    [170, 425, 0.9],
+    [230, 480, 0.65],
+    [290, 425, 0.75],
+    [355, 470, 0.8],
+    [420, 420, 0.7],
+    [485, 480, 0.85],
+    [555, 425, 0.65],
+    [620, 470, 0.8],
+    [690, 420, 0.75],
+    [760, 470, 0.65],
+    [825, 420, 0.85],
+    [895, 470, 0.75],
+    [965, 420, 0.7],
+    [1035, 470, 0.8],
+    [1100, 425, 0.7],
+    [1160, 470, 0.85],
+  ]
+
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-[2] overflow-hidden"
-      style={{ opacity: 0.82 }}
+      className="pointer-events-none absolute inset-0 z-[1] overflow-hidden"
     >
-      <style>{`
-        @keyframes mountainDrift {
-          0%, 100% {
-            transform: translate3d(0, 0, 0);
-          }
-          50% {
-            transform: translate3d(-14px, 3px, 0);
-          }
-        }
-
-        @keyframes cloudDrift {
-          0% {
-            transform: translate3d(-40px, 0, 0);
-          }
-          50% {
-            transform: translate3d(30px, -4px, 0);
-          }
-          100% {
-            transform: translate3d(-40px, 0, 0);
-          }
-        }
-
-        @keyframes roadSignal {
-          0%, 100% {
-            opacity: .35;
-          }
-          50% {
-            opacity: 1;
-          }
-        }
-
-        @keyframes carJourney {
-          0% {
-            offset-distance: 0%;
-            opacity: 0;
-          }
-          6% {
-            opacity: 1;
-          }
-          94% {
-            opacity: 1;
-          }
-          100% {
-            offset-distance: 100%;
-            opacity: 0;
-          }
-        }
-
-        @keyframes birds {
-          0%, 100% {
-            transform: translate3d(0, 0, 0);
-          }
-          50% {
-            transform: translate3d(18px, -7px, 0);
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .comic-map-animated {
-            animation: none !important;
-          }
-        }
-      `}</style>
-
       <svg
         width="100%"
         height="100%"
-        viewBox="0 0 1200 520"
+        viewBox="0 0 1200 560"
         preserveAspectRatio="none"
-        className="absolute inset-0 h-full w-full"
+        className="h-full w-full"
       >
         <defs>
-          {/* Atmospheric background */}
           <linearGradient
-            id="comicSky"
+            id="land"
             x1="0"
             y1="0"
             x2="0"
@@ -488,21 +742,16 @@ function AnimatedMapBackground() {
           >
             <stop
               offset="0%"
-              stopColor="rgba(18,20,27,0.92)"
-            />
-            <stop
-              offset="55%"
-              stopColor="rgba(10,12,15,0.72)"
+              stopColor="#315B4B"
             />
             <stop
               offset="100%"
-              stopColor="rgba(4,5,6,0.96)"
+              stopColor="#1D382F"
             />
           </linearGradient>
 
-          {/* Mountain haze */}
           <linearGradient
-            id="mountainFar"
+            id="mountainBack"
             x1="0"
             y1="0"
             x2="1"
@@ -510,16 +759,16 @@ function AnimatedMapBackground() {
           >
             <stop
               offset="0%"
-              stopColor="rgba(100,108,116,0.20)"
+              stopColor="#4E7180"
             />
             <stop
               offset="100%"
-              stopColor="rgba(35,39,43,0.05)"
+              stopColor="#304C55"
             />
           </linearGradient>
 
           <linearGradient
-            id="mountainMid"
+            id="mountainFront"
             x1="0"
             y1="0"
             x2="1"
@@ -527,34 +776,16 @@ function AnimatedMapBackground() {
           >
             <stop
               offset="0%"
-              stopColor="rgba(54,61,67,0.75)"
+              stopColor="#3D6454"
             />
             <stop
               offset="100%"
-              stopColor="rgba(13,16,18,0.92)"
+              stopColor="#203D34"
             />
           </linearGradient>
 
           <linearGradient
-            id="mountainDark"
-            x1="0"
-            y1="0"
-            x2="0"
-            y2="1"
-          >
-            <stop
-              offset="0%"
-              stopColor="rgba(28,32,35,0.92)"
-            />
-            <stop
-              offset="100%"
-              stopColor="rgba(4,5,6,1)"
-            />
-          </linearGradient>
-
-          {/* Road */}
-          <linearGradient
-            id="comicRoad"
+            id="river"
             x1="0"
             y1="0"
             x2="1"
@@ -562,692 +793,779 @@ function AnimatedMapBackground() {
           >
             <stop
               offset="0%"
-              stopColor="rgba(20,21,22,0.98)"
+              stopColor="#4E9EB5"
             />
             <stop
               offset="50%"
-              stopColor="rgba(38,38,37,0.98)"
+              stopColor="#5DB7C5"
             />
             <stop
               offset="100%"
-              stopColor="rgba(17,18,18,0.98)"
+              stopColor="#397C98"
             />
           </linearGradient>
 
-          {/* Road glow */}
-          <filter
-            id="roadGlow"
-            x="-30%"
-            y="-30%"
-            width="160%"
-            height="160%"
-          >
-            <feGaussianBlur stdDeviation="7" />
-          </filter>
-
-          <filter
-            id="softGlow"
-            x="-100%"
-            y="-100%"
-            width="300%"
-            height="300%"
-          >
-            <feGaussianBlur stdDeviation="3" />
-          </filter>
-
-          {/* Mountain texture */}
           <pattern
-            id="comicHatch"
-            width="12"
-            height="12"
+            id="terrainLines"
+            width="35"
+            height="35"
             patternUnits="userSpaceOnUse"
-            patternTransform="rotate(24)"
           >
-            <line
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="12"
-              stroke="rgba(244,244,245,0.055)"
+            <path
+              d="M0 18 C8 8 20 8 35 16"
+              fill="none"
+              stroke="#8EB78A"
               strokeWidth="1"
+              opacity="0.12"
             />
           </pattern>
 
-          {/* Route for the tiny car */}
-          <path
-            id="carRoute"
-            d="
-              M -70 455
-              C 75 425 80 330 205 342
-              C 315 353 305 440 415 414
-              C 530 388 505 274 610 266
-              C 735 257 708 350 830 327
-              C 945 305 900 184 1010 174
-              C 1085 167 1130 130 1270 84
-            "
-          />
+          <filter
+            id="mapShadow"
+            x="-20%"
+            y="-20%"
+            width="140%"
+            height="140%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="4"
+              stdDeviation="5"
+              floodColor="#08120E"
+              floodOpacity="0.4"
+            />
+          </filter>
         </defs>
 
-        {/* =====================================================
-            SKY
-           ===================================================== */}
+        {/* =========================================================
+            LAND
+           ========================================================= */}
 
         <rect
-          x="0"
-          y="0"
           width="1200"
-          height="520"
-          fill="url(#comicSky)"
+          height="560"
+          fill="url(#land)"
         />
 
-        {/* tiny stars / comic specks */}
+        <rect
+          width="1200"
+          height="560"
+          fill="url(#terrainLines)"
+        />
 
-        <g opacity="0.28">
-          <circle cx="120" cy="54" r="1.2" fill="#f4f4f5" />
-          <circle cx="215" cy="88" r="1" fill="#f4f4f5" />
-          <circle cx="350" cy="42" r="1.4" fill="#f4f4f5" />
-          <circle cx="505" cy="75" r="1" fill="#f4f4f5" />
-          <circle cx="675" cy="43" r="1.3" fill="#f4f4f5" />
-          <circle cx="835" cy="82" r="1" fill="#f4f4f5" />
-          <circle cx="1010" cy="50" r="1.2" fill="#f4f4f5" />
-        </g>
-
-        {/* =====================================================
-            CLOUDS
-           ===================================================== */}
-
-        <g
-          className="comic-map-animated"
-          style={{
-            animation:
-              'cloudDrift 24s ease-in-out infinite',
-          }}
-          opacity="0.38"
-        >
-          <path
-            d="
-              M60 125
-              C50 106 70 90 92 94
-              C100 70 138 69 148 96
-              C172 89 190 107 186 126
-              Z
-            "
-            fill="rgba(115,120,125,0.32)"
-            stroke="rgba(244,244,245,0.10)"
-            strokeWidth="1"
-          />
-
-          <path
-            d="
-              M880 112
-              C868 94 890 77 912 84
-              C920 60 958 61 969 87
-              C995 79 1012 99 1006 119
-              Z
-            "
-            fill="rgba(115,120,125,0.30)"
-            stroke="rgba(244,244,245,0.09)"
-            strokeWidth="1"
-          />
-        </g>
-
-        {/* =====================================================
+        {/* =========================================================
             DISTANT MOUNTAINS
-           ===================================================== */}
+           ========================================================= */}
+
+        <path
+          d="
+            M0 210
+            L90 75
+            L145 145
+            L220 35
+            L295 145
+            L375 55
+            L455 160
+            L545 45
+            L630 150
+            L720 25
+            L815 150
+            L900 50
+            L990 155
+            L1080 42
+            L1200 155
+            L1200 300
+            L0 300
+            Z
+          "
+          fill="url(#mountainBack)"
+          stroke="#9BC2C4"
+          strokeWidth="2"
+          opacity="0.75"
+        />
+
+        {/* snow caps */}
 
         <g
-          className="comic-map-animated"
-          style={{
-            animation:
-              'mountainDrift 22s ease-in-out infinite',
-          }}
+          fill="#DDE6DF"
+          opacity="0.65"
         >
-          <path
-            d="
-              M0 260
-              L95 138
-              L145 204
-              L220 95
-              L290 185
-              L375 110
-              L445 210
-              L535 132
-              L610 205
-              L700 100
-              L790 205
-              L875 125
-              L955 212
-              L1050 112
-              L1200 245
-              L1200 360
-              L0 360
-              Z
-            "
-            fill="url(#mountainFar)"
-            stroke="rgba(244,244,245,0.08)"
-            strokeWidth="2"
-          />
-
-          {/* snow-like comic highlights */}
-
-          <g
-            fill="none"
-            stroke="rgba(244,244,245,0.16)"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <path d="M80 158 L95 138 L108 160" />
-            <path d="M202 120 L220 95 L240 121" />
-            <path d="M357 137 L375 110 L395 139" />
-            <path d="M682 126 L700 100 L722 128" />
-            <path d="M1030 138 L1050 112 L1070 140" />
-          </g>
+          <path d="M73 101 L90 75 L108 102 L91 94 Z" />
+          <path d="M201 63 L220 35 L241 66 L220 55 Z" />
+          <path d="M357 80 L375 55 L398 84 L376 73 Z" />
+          <path d="M526 72 L545 45 L568 76 L546 65 Z" />
+          <path d="M700 52 L720 25 L744 56 L721 45 Z" />
+          <path d="M882 77 L900 50 L924 81 L900 70 Z" />
+          <path d="M1060 70 L1080 42 L1105 76 L1080 62 Z" />
         </g>
 
-        {/* =====================================================
-            MID MOUNTAINS
-           ===================================================== */}
+        {/* =========================================================
+            FRONT MOUNTAINS
+           ========================================================= */}
 
         <path
           d="
-            M0 330
-            L105 188
-            L170 272
-            L260 150
-            L340 264
-            L450 170
-            L530 286
-            L630 150
-            L725 274
-            L835 165
-            L920 280
-            L1025 175
-            L1110 270
+            M0 300
+            L110 185
+            L185 285
+            L285 155
+            L360 280
+            L465 175
+            L550 300
+            L655 165
+            L750 285
+            L850 175
+            L935 295
+            L1040 165
+            L1120 270
             L1200 205
-            L1200 520
-            L0 520
+            L1200 560
+            L0 560
             Z
           "
-          fill="url(#mountainMid)"
-          stroke="rgba(244,244,245,0.12)"
+          fill="url(#mountainFront)"
+          stroke="#83A98D"
           strokeWidth="2"
+          opacity="0.92"
         />
 
-        {/* mountain hatch */}
-
-        <path
-          d="
-            M0 330
-            L105 188
-            L170 272
-            L260 150
-            L340 264
-            L450 170
-            L530 286
-            L630 150
-            L725 274
-            L835 165
-            L920 280
-            L1025 175
-            L1110 270
-            L1200 205
-            L1200 520
-            L0 520
-            Z
-          "
-          fill="url(#comicHatch)"
-        />
-
-        {/* mountain ridge highlights */}
+        {/* mountain ink lines */}
 
         <g
           fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          stroke="#B3C89E"
+          strokeWidth="2"
+          opacity="0.23"
         >
-          <path
-            d="M105 188 L170 272"
-            stroke="rgba(244,244,245,0.18)"
-            strokeWidth="3"
-          />
-          <path
-            d="M260 150 L340 264"
-            stroke="rgba(244,244,245,0.16)"
-            strokeWidth="3"
-          />
-          <path
-            d="M450 170 L530 286"
-            stroke="rgba(244,244,245,0.15)"
-            strokeWidth="3"
-          />
-          <path
-            d="M630 150 L725 274"
-            stroke="rgba(244,244,245,0.16)"
-            strokeWidth="3"
-          />
-          <path
-            d="M835 165 L920 280"
-            stroke="rgba(244,244,245,0.14)"
-            strokeWidth="3"
-          />
+          <path d="M110 185 L145 245 L185 285" />
+          <path d="M285 155 L320 230 L360 280" />
+          <path d="M465 175 L510 245 L550 300" />
+          <path d="M655 165 L705 240 L750 285" />
+          <path d="M850 175 L895 245 L935 295" />
+          <path d="M1040 165 L1080 230 L1120 270" />
         </g>
 
-        {/* =====================================================
-            PINE FOREST
-           ===================================================== */}
+        {/* =========================================================
+            RIVER
+           ========================================================= */}
 
-        <g opacity="0.72">
-          {[
-            [45, 350, 34],
-            [82, 372, 28],
-            [126, 342, 38],
-            [174, 380, 30],
-            [235, 344, 35],
-            [300, 365, 28],
-            [355, 342, 40],
-            [405, 375, 28],
-            [470, 350, 36],
-            [525, 372, 28],
-            [585, 345, 34],
-            [655, 365, 30],
-            [710, 342, 38],
-            [770, 375, 28],
-            [825, 350, 34],
-            [890, 370, 30],
-            [945, 345, 38],
-            [1010, 375, 30],
-            [1070, 350, 35],
-            [1140, 370, 30],
-          ].map(([x, y, size], index) => (
-            <path
+        <path
+          d="
+            M0 390
+            C110 340 155 420 245 392
+            C330 365 350 300 440 322
+            C535 345 520 425 610 420
+            C710 415 700 345 790 360
+            C885 375 870 460 960 445
+            C1050 430 1090 360 1200 385
+            L1200 560
+            L0 560
+            Z
+          "
+          fill="url(#river)"
+          opacity="0.88"
+        />
+
+        {/* river highlight */}
+
+        <path
+          d="
+            M-20 420
+            C100 370 155 445 245 416
+            C330 388 355 327 440 348
+            C525 370 530 448 615 444
+            C710 440 715 370 790 382
+            C875 395 875 480 960 466
+            C1050 452 1090 385 1220 408
+          "
+          fill="none"
+          stroke="#BDE1DB"
+          strokeWidth="3"
+          opacity="0.38"
+        />
+
+        {/* =========================================================
+            BRIDGES
+           ========================================================= */}
+
+        <MapBridge x={270} y={398} />
+        <MapBridge x={785} y={369} />
+
+        {/* =========================================================
+            TREES
+           ========================================================= */}
+
+        {trees.map(
+          ([x, y, scale], index) => (
+            <MapTree
               key={index}
-              d={`
-                M ${x} ${y}
-                L ${x - size / 2} ${y + size * 1.5}
-                L ${x - size * 0.18} ${y + size * 1.5}
-                L ${x - size * 0.42} ${y + size * 2.1}
-                L ${x + size * 0.42} ${y + size * 2.1}
-                L ${x + size * 0.18} ${y + size * 1.5}
-                L ${x + size / 2} ${y + size * 1.5}
-                Z
-              `}
-              fill="rgba(5,7,8,0.92)"
-              stroke="rgba(244,244,245,0.06)"
-              strokeWidth="1"
+              x={x}
+              y={y}
+              scale={scale}
             />
-          ))}
-        </g>
+          ),
+        )}
 
-        {/* =====================================================
-            WINDING MOUNTAIN ROAD
-           ===================================================== */}
+        {/* =========================================================
+            CABINS
+           ========================================================= */}
 
-        {/* soft road glow */}
+        <MapCabin x={365} y={255} />
+        <MapCabin x={905} y={310} />
 
-        <path
-          d="
-            M-70 455
-            C75 425 80 330 205 342
-            C315 353 305 440 415 414
-            C530 388 505 274 610 266
-            C735 257 708 350 830 327
-            C945 305 900 184 1010 174
-            C1085 167 1130 130 1270 84
-          "
-          fill="none"
-          stroke="rgba(244,85,42,0.25)"
-          strokeWidth="20"
-          strokeLinecap="round"
-          filter="url(#roadGlow)"
+        {/* =========================================================
+            UNIVERSITY / CITY LANDMARK
+           ========================================================= */}
+
+        <MapBuilding
+          x={700}
+          y={255}
         />
 
-        {/* road body */}
-
-        <path
-          d="
-            M-70 455
-            C75 425 80 330 205 342
-            C315 353 305 440 415 414
-            C530 388 505 274 610 266
-            C735 257 708 350 830 327
-            C945 305 900 184 1010 174
-            C1085 167 1130 130 1270 84
-          "
-          fill="none"
-          stroke="rgba(3,4,5,0.96)"
-          strokeWidth="30"
-          strokeLinecap="round"
-        />
-
-        {/* road surface */}
-
-        <path
-          d="
-            M-70 455
-            C75 425 80 330 205 342
-            C315 353 305 440 415 414
-            C530 388 505 274 610 266
-            C735 257 708 350 830 327
-            C945 305 900 184 1010 174
-            C1085 167 1130 130 1270 84
-          "
-          fill="none"
-          stroke="url(#comicRoad)"
-          strokeWidth="24"
-          strokeLinecap="round"
-        />
-
-        {/* road outer comic outlines */}
-
-        <path
-          d="
-            M-70 455
-            C75 425 80 330 205 342
-            C315 353 305 440 415 414
-            C530 388 505 274 610 266
-            C735 257 708 350 830 327
-            C945 305 900 184 1010 174
-            C1085 167 1130 130 1270 84
-          "
-          fill="none"
-          stroke="rgba(244,244,245,0.16)"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-
-        {/* yellow/orange road markings */}
-
-        <path
-          d="
-            M-70 455
-            C75 425 80 330 205 342
-            C315 353 305 440 415 414
-            C530 388 505 274 610 266
-            C735 257 708 350 830 327
-            C945 305 900 184 1010 174
-            C1085 167 1130 130 1270 84
-          "
-          fill="none"
-          stroke="rgba(244,85,42,0.72)"
-          strokeWidth="2"
-          strokeDasharray="12 14"
-          strokeLinecap="round"
-        />
-
-        {/* =====================================================
-            ROAD MARKERS
-           ===================================================== */}
-
-        {[
-          [72, 418],
-          [205, 342],
-          [320, 427],
-          [515, 322],
-          [705, 294],
-          [900, 250],
-          [1015, 173],
-          [1115, 137],
-        ].map(([cx, cy], index) => (
-          <g
-            key={index}
-            style={{
-              animation:
-                `roadSignal ${2.2 + index * 0.12}s ease-in-out infinite`,
-              animationDelay: `${index * 180}ms`,
-            }}
-          >
-            <circle
-              cx={cx}
-              cy={cy}
-              r="10"
-              fill="rgba(244,85,42,0.14)"
-              filter="url(#softGlow)"
-            />
-
-            <circle
-              cx={cx}
-              cy={cy}
-              r="3"
-              fill="rgba(244,85,42,0.8)"
-            />
-          </g>
-        ))}
-
-        {/* =====================================================
-            LITTLE CAR
-           ===================================================== */}
+        {/* =========================================================
+            LITTLE MAP CLOUDS
+           ========================================================= */}
 
         <g
-          className="comic-map-animated"
-          style={{
-            offsetPath:
-              "path('M -70 455 C75 425 80 330 205 342 C315 353 305 440 415 414 C530 388 505 274 610 266 C735 257 708 350 830 327 C945 305 900 184 1010 174 C1085 167 1130 130 1270 84')",
-            animation:
-              'carJourney 32s linear infinite',
-          }}
+          fill="#F4EBD9"
+          opacity="0.62"
         >
-          {/* car shadow */}
-
-          <ellipse
-            cx="0"
-            cy="10"
-            rx="17"
-            ry="5"
-            fill="rgba(0,0,0,0.55)"
+          <path
+            d="
+              M90 52
+              C82 42 92 30 106 34
+              C111 20 133 22 136 37
+              C151 32 161 44 157 55
+              Z
+            "
           />
-
-          {/* car body */}
 
           <path
             d="
-              M-18 3
-              L-12 -6
-              L-4 -9
-              L7 -8
-              L15 -2
-              L19 5
-              L16 9
-              L-16 9
+              M980 62
+              C970 50 982 38 996 42
+              C1001 27 1023 30 1027 45
+              C1043 41 1054 54 1048 67
               Z
             "
-            fill="#111315"
-            stroke="rgba(244,85,42,0.9)"
-            strokeWidth="1.5"
-          />
-
-          {/* windows */}
-
-          <path
-            d="M-9 -5 L-3 -7 L3 -6 L7 -2 L-8 -2 Z"
-            fill="rgba(180,190,195,0.18)"
-            stroke="rgba(244,244,245,0.22)"
-            strokeWidth="0.8"
-          />
-
-          {/* headlights */}
-
-          <circle
-            cx="18"
-            cy="3"
-            r="1.5"
-            fill="rgba(255,214,150,0.95)"
-          />
-
-          <circle
-            cx="-16"
-            cy="3"
-            r="1.2"
-            fill="rgba(244,85,42,0.8)"
-          />
-
-          {/* wheels */}
-
-          <circle
-            cx="-10"
-            cy="9"
-            r="3"
-            fill="#050505"
-            stroke="rgba(244,244,245,0.25)"
-            strokeWidth="1"
-          />
-
-          <circle
-            cx="11"
-            cy="9"
-            r="3"
-            fill="#050505"
-            stroke="rgba(244,244,245,0.25)"
-            strokeWidth="1"
           />
         </g>
 
-        {/* =====================================================
-            COMIC BIRDS
-           ===================================================== */}
+        {/* =========================================================
+            MAP TEXT
+           ========================================================= */}
 
         <g
-          className="comic-map-animated"
-          style={{
-            animation:
-              'birds 7s ease-in-out infinite',
-          }}
-          fill="none"
-          stroke="rgba(244,244,245,0.30)"
-          strokeWidth="1.5"
-          strokeLinecap="round"
+          fill="#E9E0C9"
+          fontFamily="monospace"
+          letterSpacing="2"
+          opacity="0.42"
         >
-          <path d="M420 105 q5 -5 10 0 q5 -5 10 0" />
-          <path d="M452 124 q4 -4 8 0 q4 -4 8 0" />
-          <path d="M780 92 q5 -5 10 0 q5 -5 10 0" />
-        </g>
-
-        {/* =====================================================
-            WOODEN SIGNPOST
-           ===================================================== */}
-
-        <g transform="translate(1020 355) rotate(-4)">
-          <path
-            d="M0 0 L5 90"
-            stroke="rgba(19,13,9,0.9)"
-            strokeWidth="7"
-          />
-
-          <path
-            d="
-              M-45 15
-              L28 4
-              L35 29
-              L-38 40
-              Z
-            "
-            fill="rgba(35,25,18,0.92)"
-            stroke="rgba(244,244,245,0.13)"
-            strokeWidth="1"
-          />
-
-          <path
-            d="
-              M-42 49
-              L32 38
-              L39 63
-              L-35 74
-              Z
-            "
-            fill="rgba(35,25,18,0.92)"
-            stroke="rgba(244,244,245,0.13)"
-            strokeWidth="1"
-          />
-
           <text
-            x="-29"
-            y="30"
-            fill="rgba(244,244,245,0.55)"
+            x="55"
+            y="325"
             fontSize="9"
-            fontFamily="monospace"
-            fontWeight="700"
-            letterSpacing="1"
           >
-            AHEAD
+            LEICESTER HILLS
           </text>
 
           <text
-            x="-27"
-            y="64"
-            fill="rgba(244,244,245,0.42)"
+            x="460"
+            y="205"
             fontSize="8"
-            fontFamily="monospace"
-            fontWeight="700"
-            letterSpacing="1"
           >
-            NEXT
+            NORTH TRAIL
+          </text>
+
+          <text
+            x="930"
+            y="290"
+            fontSize="8"
+          >
+            BIRMINGHAM
           </text>
         </g>
 
-        {/* =====================================================
-            SMALL CAMPS / LANDMARKS
-           ===================================================== */}
+        {/* =========================================================
+            DECORATIVE MAP LINES
+           ========================================================= */}
 
-        <g opacity="0.55">
-          {/* cabin */}
-          <g transform="translate(150 395)">
-            <path
-              d="M0 15 L22 0 L44 15 V38 H0 Z"
-              fill="rgba(8,9,9,0.92)"
-              stroke="rgba(244,244,245,0.13)"
-              strokeWidth="1"
-            />
-            <path
-              d="M-3 16 L22 -3 L47 16"
-              fill="none"
-              stroke="rgba(244,85,42,0.45)"
-              strokeWidth="2"
-            />
-            <rect
-              x="17"
-              y="24"
-              width="8"
-              height="14"
-              fill="rgba(244,85,42,0.18)"
-            />
-          </g>
-
-          {/* tiny flag */}
-          <g transform="translate(860 210)">
-            <line
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="42"
-              stroke="rgba(244,244,245,0.28)"
-              strokeWidth="1"
-            />
-            <path
-              d="M0 2 L22 7 L0 13 Z"
-              fill="rgba(244,85,42,0.45)"
-            />
-          </g>
+        <g
+          fill="none"
+          stroke="#D6C49B"
+          strokeWidth="1"
+          strokeDasharray="3 7"
+          opacity="0.22"
+        >
+          <path d="M25 285 C180 235 300 250 410 210" />
+          <path d="M780 200 C910 180 1040 220 1175 190" />
+          <path d="M420 500 C530 475 610 495 720 475" />
         </g>
 
-        {/* =====================================================
-            VIGNETTE
-           ===================================================== */}
+        {/* =========================================================
+            MAP BORDER
+           ========================================================= */}
 
         <rect
-          x="0"
-          y="0"
-          width="1200"
-          height="520"
+          x="8"
+          y="8"
+          width="1184"
+          height="544"
+          rx="26"
           fill="none"
-          stroke="rgba(0,0,0,0.55)"
-          strokeWidth="80"
+          stroke="#F4EBD9"
+          strokeWidth="2"
+          opacity="0.10"
         />
       </svg>
     </div>
   )
 }
-/* ================================================================
-   BUILD STOPS
-   ================================================================ */
+
+/* ==================================================================
+   TRAVELLER
+   ================================================================== */
+
+function Traveller({
+  x,
+  y,
+  rotation = 0,
+  reduce,
+}) {
+  return (
+    <g
+      transform={`
+        translate(${x} ${y})
+        rotate(${rotation})
+      `}
+      style={{
+        transition: reduce
+          ? 'none'
+          : 'transform 45ms linear',
+      }}
+    >
+      {/* shadow */}
+
+      <ellipse
+        cx="0"
+        cy="9"
+        rx="8"
+        ry="3"
+        fill="rgba(0,0,0,0.38)"
+      />
+
+      {/* backpack */}
+
+      <rect
+        x="-8"
+        y="-8"
+        width="7"
+        height="12"
+        rx="2"
+        fill="#245D4A"
+        stroke="#13251E"
+        strokeWidth="1"
+      />
+
+      {/* backpack strap */}
+
+      <path
+        d="M-4 -7 Q0 -10 4 -6"
+        fill="none"
+        stroke="#CFAE72"
+        strokeWidth="1"
+      />
+
+      {/* body */}
+
+      <path
+        d="
+          M-3 -6
+          Q1 -9 4 -5
+          L5 5
+          L-4 5
+          Z
+        "
+        fill="#F4552A"
+        stroke="#35150D"
+        strokeWidth="1"
+      />
+
+      {/* head */}
+
+      <circle
+        cx="1"
+        cy="-11"
+        r="4.2"
+        fill="#D99A70"
+        stroke="#35150D"
+        strokeWidth="1"
+      />
+
+      {/* hair */}
+
+      <path
+        d="
+          M-3 -12
+          Q0 -16 4 -13
+          L5 -10
+          L-3 -10
+          Z
+        "
+        fill="#241A16"
+      />
+
+      {/* arm */}
+
+      <path
+        d="M3 -4 L8 1"
+        fill="none"
+        stroke="#D99A70"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      {/* legs */}
+
+      <path
+        d="M-2 5 L-6 11"
+        fill="none"
+        stroke="#24282A"
+        strokeWidth="2.3"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M3 5 L7 10"
+        fill="none"
+        stroke="#24282A"
+        strokeWidth="2.3"
+        strokeLinecap="round"
+      />
+
+      {/* walking spark */}
+
+      <circle
+        cx="-8"
+        cy="12"
+        r="1"
+        fill="#F4552A"
+        opacity="0.8"
+      />
+
+      <circle
+        cx="9"
+        cy="11"
+        r="0.8"
+        fill="#F5B447"
+        opacity="0.7"
+      />
+    </g>
+  )
+}
+
+/* ==================================================================
+   MAP TREE
+   ================================================================== */
+
+function MapTree({
+  x,
+  y,
+  scale = 1,
+}) {
+  return (
+    <g
+      transform={`translate(${x} ${y}) scale(${scale})`}
+      opacity="0.86"
+    >
+      <path
+        d="M0 0 L-18 34 L-8 34 L-24 52 L24 52 L8 34 L18 34 Z"
+        fill="#17372D"
+        stroke="#10231E"
+        strokeWidth="1.5"
+      />
+
+      <path
+        d="M0 7 L-11 27 L-4 27"
+        fill="none"
+        stroke="#70926E"
+        strokeWidth="1.5"
+        opacity="0.45"
+      />
+
+      <rect
+        x="-2"
+        y="50"
+        width="4"
+        height="9"
+        fill="#5C4830"
+      />
+    </g>
+  )
+}
+
+/* ==================================================================
+   MAP CABIN
+   ================================================================== */
+
+function MapCabin({
+  x,
+  y,
+}) {
+  return (
+    <g
+      transform={`translate(${x} ${y})`}
+      opacity="0.82"
+      filter="url(#mapShadow)"
+    >
+      <path
+        d="
+          M0 20
+          L22 3
+          L44 20
+          V45
+          H0
+          Z
+        "
+        fill="#76523B"
+        stroke="#E0C29A"
+        strokeWidth="1.5"
+      />
+
+      <path
+        d="
+          M-4 20
+          L22 0
+          L48 20
+        "
+        fill="none"
+        stroke="#D7B887"
+        strokeWidth="3"
+      />
+
+      <rect
+        x="17"
+        y="29"
+        width="9"
+        height="16"
+        fill="#35251C"
+      />
+
+      <rect
+        x="5"
+        y="25"
+        width="8"
+        height="8"
+        fill="#E6B45C"
+        opacity="0.72"
+      />
+
+      <rect
+        x="31"
+        y="25"
+        width="8"
+        height="8"
+        fill="#E6B45C"
+        opacity="0.72"
+      />
+    </g>
+  )
+}
+
+/* ==================================================================
+   MAP BRIDGE
+   ================================================================== */
+
+function MapBridge({
+  x,
+  y,
+}) {
+  return (
+    <g
+      transform={`translate(${x} ${y})`}
+      opacity="0.75"
+    >
+      <path
+        d="M0 0 Q24 22 48 0"
+        fill="none"
+        stroke="#6B4932"
+        strokeWidth="7"
+      />
+
+      <path
+        d="M0 0 Q24 22 48 0"
+        fill="none"
+        stroke="#D1A875"
+        strokeWidth="3"
+        strokeDasharray="5 4"
+      />
+
+      <line
+        x1="6"
+        y1="8"
+        x2="6"
+        y2="22"
+        stroke="#62442F"
+        strokeWidth="2"
+      />
+
+      <line
+        x1="42"
+        y1="8"
+        x2="42"
+        y2="22"
+        stroke="#62442F"
+        strokeWidth="2"
+      />
+    </g>
+  )
+}
+
+/* ==================================================================
+   UNIVERSITY / CITY BUILDING
+   ================================================================== */
+
+function MapBuilding({
+  x,
+  y,
+}) {
+  return (
+    <g
+      transform={`translate(${x} ${y})`}
+      opacity="0.86"
+      filter="url(#mapShadow)"
+    >
+      <rect
+        x="0"
+        y="20"
+        width="80"
+        height="48"
+        rx="2"
+        fill="#D7C39B"
+        stroke="#6D5237"
+        strokeWidth="2"
+      />
+
+      <path
+        d="M-8 21 L40 -4 L88 21 Z"
+        fill="#B18A5C"
+        stroke="#6D5237"
+        strokeWidth="2"
+      />
+
+      <rect
+        x="32"
+        y="42"
+        width="16"
+        height="26"
+        fill="#5C4836"
+      />
+
+      {[10, 27, 54, 67].map(
+        (xPos) => (
+          <rect
+            key={xPos}
+            x={xPos}
+            y="32"
+            width="8"
+            height="10"
+            fill="#7E9AA0"
+            stroke="#5B4632"
+            strokeWidth="1"
+          />
+        ),
+      )}
+
+      <circle
+        cx="40"
+        cy="10"
+        r="5"
+        fill="#F4552A"
+      />
+
+      <path
+        d="M40 5 L40 -12"
+        stroke="#5C4836"
+        strokeWidth="2"
+      />
+    </g>
+  )
+}
+
+/* ==================================================================
+   COMPASS
+   ================================================================== */
+
+function Compass() {
+  return (
+    <div
+      className="pointer-events-none absolute bottom-5 right-6 z-[6] flex h-16 w-16 items-center justify-center rounded-full border"
+      style={{
+        borderColor:
+          'rgba(244,235,217,0.24)',
+        background:
+          'rgba(13,25,20,0.5)',
+        backdropFilter:
+          'blur(8px)',
+      }}
+    >
+      <svg
+        viewBox="0 0 64 64"
+        width="52"
+        height="52"
+      >
+        <circle
+          cx="32"
+          cy="32"
+          r="25"
+          fill="none"
+          stroke="#E6D7B8"
+          strokeWidth="1"
+          opacity="0.35"
+        />
+
+        <path
+          d="M32 9 L37 32 L32 55 L27 32 Z"
+          fill="#F4552A"
+          opacity="0.8"
+        />
+
+        <path
+          d="M32 9 L37 32 L32 55 L27 32 Z"
+          fill="none"
+          stroke="#E6D7B8"
+          strokeWidth="1"
+        />
+
+        <text
+          x="32"
+          y="7"
+          textAnchor="middle"
+          fill="#E6D7B8"
+          fontSize="6"
+          fontFamily="monospace"
+        >
+          N
+        </text>
+
+        <text
+          x="32"
+          y="62"
+          textAnchor="middle"
+          fill="#E6D7B8"
+          fontSize="6"
+          fontFamily="monospace"
+        >
+          S
+        </text>
+      </svg>
+    </div>
+  )
+}
+
+/* ==================================================================
+   ROUTE STOPS
+   ================================================================== */
 
 function buildStops(
   count,
@@ -1261,12 +1579,13 @@ function buildStops(
     width - EDGE
 
   const center =
-    height / 2
+    height * 0.57
 
-  const amplitude = Math.min(
-    145,
-    height * 0.28,
-  )
+  const amplitude =
+    Math.min(
+      115,
+      height * 0.22,
+    )
 
   for (
     let i = 0;
@@ -1275,7 +1594,8 @@ function buildStops(
   ) {
     const progress =
       count > 1
-        ? i / (count - 1)
+        ? i /
+          (count - 1)
         : 0
 
     const x =
@@ -1296,7 +1616,7 @@ function buildStops(
           Math.PI *
           5.1 +
           0.7,
-      ) * 18
+      ) * 14
 
     const y =
       center +
@@ -1307,8 +1627,8 @@ function buildStops(
       x,
       y: clamp(
         y,
-        78,
-        height - 78,
+        100,
+        height - 90,
       ),
     })
   }
@@ -1316,9 +1636,9 @@ function buildStops(
   return out
 }
 
-/* ================================================================
+/* ==================================================================
    WAYPOINTS
-   ================================================================ */
+   ================================================================== */
 
 function buildWaypoints(
   stops,
@@ -1333,7 +1653,7 @@ function buildWaypoints(
     x:
       stops[0].x - 42,
     y:
-      stops[0].y - 24,
+      stops[0].y - 20,
   })
 
   for (
@@ -1374,9 +1694,9 @@ function buildWaypoints(
         ? -1
         : 1
 
-    const amplitude =
-      28 +
-      (i % 3) * 8
+    const amount =
+      25 +
+      (i % 3) * 7
 
     waypoints.push({
       x:
@@ -1384,7 +1704,7 @@ function buildWaypoints(
           next.x) /
           2 +
         (-dy / length) *
-          amplitude *
+          amount *
           direction,
 
       y:
@@ -1392,7 +1712,7 @@ function buildWaypoints(
           next.y) /
           2 +
         (dx / length) *
-          amplitude *
+          amount *
           direction,
     })
   }
@@ -1406,15 +1726,15 @@ function buildWaypoints(
     x:
       last.x + 42,
     y:
-      last.y + 24,
+      last.y + 20,
   })
 
   return waypoints
 }
 
-/* ================================================================
+/* ==================================================================
    ROUTE PATH
-   ================================================================ */
+   ================================================================== */
 
 function routePath(
   stops,
@@ -1435,7 +1755,8 @@ function routePath(
 
   for (
     let i = 0;
-    i < points.length - 1;
+    i <
+    points.length - 1;
     i++
   ) {
     const p0 =
@@ -1481,9 +1802,9 @@ function routePath(
   return d
 }
 
-/* ================================================================
+/* ==================================================================
    ROUTE GRADIENT
-   ================================================================ */
+   ================================================================== */
 
 function gradientStops(
   points,
@@ -1516,19 +1837,23 @@ function gradientStops(
             entry.id ||
             index
           }
-          offset={offset}
-          stopColor={textColor(
-            entry,
-          )}
+          offset={
+            `${offset * 100}%`
+          }
+          stopColor={
+            routeColor(
+              entry,
+            )
+          }
         />
       )
     },
   )
 }
 
-/* ================================================================
+/* ==================================================================
    ROUTE DISTANCE
-   ================================================================ */
+   ================================================================== */
 
 function lengthAt(
   element,
@@ -1539,7 +1864,7 @@ function lengthAt(
   let bestDistance =
     Infinity
 
-  const steps = 260
+  const steps = 320
 
   for (
     let i = 0;
@@ -1557,9 +1882,11 @@ function lengthAt(
 
     const difference =
       (point.x -
-        target.x) ** 2 +
+        target.x) **
+        2 +
       (point.y -
-        target.y) ** 2
+        target.y) **
+        2
 
     if (
       difference <
@@ -1567,9 +1894,7 @@ function lengthAt(
     ) {
       bestDistance =
         difference
-
-      best =
-        distance
+      best = distance
     }
   }
 
@@ -1597,9 +1922,11 @@ function lengthAt(
 
     const difference =
       (point.x -
-        target.x) ** 2 +
+        target.x) **
+        2 +
       (point.y -
-        target.y) ** 2
+        target.y) **
+        2
 
     if (
       difference <
@@ -1607,18 +1934,16 @@ function lengthAt(
     ) {
       bestDistance =
         difference
-
-      best =
-        distance
+      best = distance
     }
   }
 
   return best
 }
 
-/* ================================================================
+/* ==================================================================
    CARD PLACEMENT
-   ================================================================ */
+   ================================================================== */
 
 function placeCard(
   point,
@@ -1634,25 +1959,17 @@ function placeCard(
           i !== index,
       )
       .map((p) => ({
-        x0:
-          p.x - 78,
-        x1:
-          p.x + 78,
-        y0:
-          p.y - 32,
-        y1:
-          p.y + 84,
+        x0: p.x - 82,
+        x1: p.x + 82,
+        y0: p.y - 34,
+        y1: p.y + 78,
       }))
 
   const own = {
-    x0:
-      point.x - 78,
-    x1:
-      point.x + 78,
-    y0:
-      point.y - 32,
-    y1:
-      point.y + 84,
+    x0: point.x - 82,
+    x1: point.x + 82,
+    y0: point.y - 34,
+    y1: point.y + 78,
   }
 
   const overlaps = (
@@ -1689,12 +2006,12 @@ function placeCard(
     top,
   ) => {
     if (
-      left < 0 ||
-      top < 0 ||
+      left < 12 ||
+      top < 12 ||
       left + CARD_W >
-        width ||
+        width - 12 ||
       top + CARD_H >
-        height
+        height - 12
     ) {
       return
     }
@@ -1735,7 +2052,7 @@ function placeCard(
 
     const score =
       distance +
-      covered * 100
+      covered * 110
 
     if (
       !best ||
@@ -1756,7 +2073,7 @@ function placeCard(
     step++
   ) {
     const offset =
-      step * 22
+      step * 20
 
     const down =
       point.y +
@@ -1814,14 +2131,14 @@ function placeCard(
     }
 
     consider(
-      point.x + 72,
+      point.x + 70,
       centerTop,
     )
 
     consider(
       point.x -
-        CARD_W -
-        72,
+        CARD_W +
+        70,
       centerTop,
     )
   }
@@ -1833,10 +2150,12 @@ function placeCard(
   return {
     left: clamp(
       centerLeft,
-      0,
+      12,
       Math.max(
-        0,
-        width - CARD_W,
+        12,
+        width -
+          CARD_W -
+          12,
       ),
     ),
 
@@ -1845,10 +2164,12 @@ function placeCard(
         point,
         height,
       ),
-      0,
+      12,
       Math.max(
-        0,
-        height - CARD_H,
+        12,
+        height -
+          CARD_H -
+          12,
       ),
     ),
   }
@@ -1877,9 +2198,9 @@ function fallbackTop(
   )
 }
 
-/* ================================================================
-   DESKTOP STOP
-   ================================================================ */
+/* ==================================================================
+   STOP
+   ================================================================== */
 
 function Stop({
   entry,
@@ -1887,30 +2208,29 @@ function Stop({
   active,
   dimmed,
   onEnter,
+  onClick,
 }) {
   const labelAbove =
-    point.y > 255
+    point.y > 285
 
   return (
     <button
       type="button"
       onMouseEnter={onEnter}
       onFocus={onEnter}
+      onClick={onClick}
       aria-describedby={
         active
           ? 'route-card'
           : undefined
       }
-      aria-label={`${entry.year} — ${
-        entry.short ||
-        entry.title
-      }`}
-      className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity duration-300"
+      aria-label={`${entry.year} ${entry.short || entry.title}`}
+      className="absolute z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-all duration-300"
       style={{
         left: point.x,
         top: point.y,
         opacity:
-          dimmed ? 0.42 : 1,
+          dimmed ? 0.45 : 1,
       }}
     >
       {labelAbove && (
@@ -1936,9 +2256,9 @@ function Stop({
   )
 }
 
-/* ================================================================
+/* ==================================================================
    STOP LABEL
-   ================================================================ */
+   ================================================================== */
 
 function StopLabel({
   entry,
@@ -1954,24 +2274,24 @@ function StopLabel({
       }
     >
       <span
-        className="mono-label whitespace-nowrap text-[10px] tracking-[0.14em] transition-opacity duration-300"
+        className="rounded-full border px-2.5 py-1 font-mono text-[9px] tracking-[0.12em] shadow-sm"
         style={{
-          color:
-            textColor(entry),
-          opacity:
-            active ? 1 : 0.78,
+          color: '#332A1E',
+          borderColor:
+            'rgba(74,54,33,0.18)',
+          background:
+            'rgba(246,232,201,0.94)',
         }}
       >
         {entry.year}
       </span>
 
       <span
-        className="mt-1 max-w-[160px] whitespace-nowrap text-center text-[11.5px] leading-tight transition-opacity duration-300"
+        className="mt-1 max-w-[170px] whitespace-nowrap rounded bg-[#F3E5C5]/90 px-2 py-1 text-center text-[10.5px] font-medium leading-tight shadow-sm"
         style={{
-          color:
-            'var(--ink)',
+          color: '#30291F',
           opacity:
-            active ? 1 : 0.68,
+            active ? 1 : 0.88,
         }}
       >
         {entry.short ||
@@ -1981,14 +2301,11 @@ function StopLabel({
       {entry.id ===
         'aston' && (
         <span
-          className="mt-1 font-mono text-[8px] uppercase tracking-[0.16em]"
+          className="mt-1 rounded-full px-2 py-0.5 font-mono text-[7px] uppercase tracking-[0.16em]"
           style={{
-            color:
-              textColor(
-                entry,
-              ),
-            opacity:
-              active ? 1 : 0.9,
+            color: '#FFF4E5',
+            background:
+              '#F4552A',
           }}
         >
           Now
@@ -1998,9 +2315,93 @@ function StopLabel({
   )
 }
 
-/* ================================================================
+/* ==================================================================
+   STOP MARK
+   ================================================================== */
+
+function StopMark({
+  entry,
+  isActive,
+}) {
+  const accent =
+    routeColor(entry)
+
+  const Mark =
+    markFor(entry)
+
+  const isCurrent =
+    entry.id === 'aston'
+
+  return (
+    <span
+      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
+      style={{
+        background:
+          isActive
+            ? accent
+            : '#F5E8CC',
+
+        border:
+          `3px solid ${accent}`,
+
+        color:
+          isActive
+            ? onFill(accent)
+            : accent,
+
+        transform:
+          isActive
+            ? 'scale(1.10)'
+            : 'scale(1)',
+
+        boxShadow:
+          isActive
+            ? `0 0 0 7px ${accent}35, 0 7px 18px rgba(0,0,0,0.28)`
+            : '0 5px 12px rgba(0,0,0,0.20)',
+
+        transition:
+          'transform 260ms ease, box-shadow 260ms ease, background 260ms ease',
+      }}
+    >
+      {isCurrent && (
+        <span
+          className="absolute inset-[-10px] rounded-full border-2"
+          style={{
+            borderColor:
+              `${accent}65`,
+            animation:
+              'timelinePulse 3s ease-out infinite',
+          }}
+        />
+      )}
+
+      {Mark ? (
+        <Mark
+          width="27"
+          height="27"
+        />
+      ) : (
+        <span
+          className="serif text-[16px]"
+          style={{
+            color:
+              isActive
+                ? onFill(
+                    accent,
+                  )
+                : accent,
+          }}
+        >
+          {entry.monogram}
+        </span>
+      )}
+    </span>
+  )
+}
+
+/* ==================================================================
    DETAIL
-   ================================================================ */
+   ================================================================== */
 
 function Detail({
   entry,
@@ -2008,18 +2409,38 @@ function Detail({
 }) {
   return (
     <>
-      <p
-        className="mono-label"
-        style={{
-          color:
-            textColor(entry),
-        }}
-      >
-        {entry.year}
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <p
+          className="mono-label"
+          style={{
+            color:
+              textColor(entry),
+          }}
+        >
+          {entry.year}
+        </p>
+
+        {entry.status && (
+          <span
+            className="rounded-full border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.12em]"
+            style={{
+              color:
+                textColor(
+                  entry,
+                ),
+              borderColor:
+                `${textColor(entry)}55`,
+              background:
+                `${textColor(entry)}12`,
+            }}
+          >
+            {entry.status}
+          </span>
+        )}
+      </div>
 
       <h3
-        className={`serif mt-1.5 leading-tight ${
+        className={`serif mt-2 leading-tight ${
           compact
             ? 'text-[1.15rem]'
             : 'text-[1.3rem]'
@@ -2041,30 +2462,6 @@ function Detail({
       >
         {entry.org}
       </p>
-
-      {entry.status && (
-        <p
-          className="mono-label mt-2 flex items-center gap-1.5"
-          style={{
-            color:
-              textColor(
-                entry,
-              ),
-          }}
-        >
-          <span
-            className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{
-              background:
-                textColor(
-                  entry,
-                ),
-            }}
-          />
-
-          {entry.status}
-        </p>
-      )}
 
       <p
         className={`mt-3 leading-relaxed ${
@@ -2088,20 +2485,18 @@ function Detail({
           className="mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
           style={{
             color:
-              textColor(
-                entry,
-              ),
+              textColor(entry),
             borderColor:
-              textColor(
-                entry,
-              ),
+              textColor(entry),
           }}
         >
           {linkLabel(
             entry.href,
           )}
 
-          <span aria-hidden="true">
+          <span
+            aria-hidden="true"
+          >
             ↗
           </span>
         </a>
@@ -2110,9 +2505,9 @@ function Detail({
   )
 }
 
-/* ================================================================
+/* ==================================================================
    LINK LABEL
-   ================================================================ */
+   ================================================================== */
 
 function linkLabel(
   href = '',
@@ -2155,117 +2550,60 @@ function linkLabel(
   return 'Visit'
 }
 
-/* ================================================================
-   STOP MARK
-   ================================================================ */
+/* ==================================================================
+   COLOUR HELPERS
+   ================================================================== */
 
-function StopMark({
-  entry,
-  isActive,
-}) {
-  const accent =
-    entry.accent ||
-    'var(--accent)'
+function routeColor(
+  entry = {},
+) {
+  if (entry.id === 'aston') {
+    return '#F4552A'
+  }
 
-  const ink = isActive
-    ? onFill(
-        entry.accent,
-      )
-    : textColor(entry)
+  if (
+    entry.kind ===
+    'education'
+  ) {
+    return (
+      entry.accent ||
+      '#F4552A'
+    )
+  }
 
-  const Mark =
-    markFor(entry)
+  if (
+    entry.kind ===
+    'project'
+  ) {
+    return (
+      entry.accent ||
+      '#4C8FD8'
+    )
+  }
 
-  const isCurrent =
-    entry.id === 'aston'
+  if (
+    entry.kind ===
+    'experience'
+  ) {
+    return (
+      entry.accent ||
+      '#35B89A'
+    )
+  }
 
   return (
-    <span
-      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
-      style={{
-        background:
-          isActive
-            ? accent
-            : '#0A0908',
-
-        border:
-          `2px solid ${accent}`,
-
-        color: ink,
-
-        transform:
-          isActive
-            ? 'scale(1.06)'
-            : 'scale(1)',
-
-        boxShadow:
-          isActive
-            ? `0 0 0 6px ${accent}22`
-            : isCurrent
-              ? `0 0 0 5px ${accent}12`
-              : 'none',
-
-        transition:
-          'transform 300ms ease, box-shadow 300ms ease',
-      }}
-    >
-      {isCurrent && (
-        <>
-          <span
-            className="absolute inset-[-10px] rounded-full border"
-            style={{
-              borderColor:
-                `${accent}30`,
-              animation:
-                'timelinePulse 3.2s ease-out infinite',
-            }}
-          />
-
-          <span
-            className="absolute -right-3 -top-3 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.12em]"
-            style={{
-              color:
-                accent,
-              background:
-                '#0A0908',
-              border:
-                `1px solid ${accent}55`,
-            }}
-          >
-            NOW
-          </span>
-        </>
-      )}
-
-      {Mark ? (
-        <Mark
-          width="27"
-          height="27"
-        />
-      ) : (
-        <span
-          className="serif text-[17px] leading-none tracking-tight"
-          style={{
-            color: ink,
-          }}
-        >
-          {entry.monogram}
-        </span>
-      )}
-    </span>
+    entry.accent ||
+    entry.tint ||
+    '#F4552A'
   )
 }
-
-/* ================================================================
-   COLOUR HELPERS
-   ================================================================ */
 
 const textColor = (
   entry,
 ) =>
   entry.tint ||
   entry.accent ||
-  'var(--accent)'
+  routeColor(entry)
 
 function onFill(hex) {
   if (
@@ -2275,13 +2613,17 @@ function onFill(hex) {
     return '#fff'
   }
 
-  const rgb = [1, 3, 5].map(
+  const rgb = [
+    1,
+    3,
+    5,
+  ].map(
     (index) => {
       const value =
         parseInt(
-          hex.substr(
+          hex.substring(
             index,
-            2,
+            index + 2,
           ),
           16,
         ) / 255
@@ -2290,7 +2632,8 @@ function onFill(hex) {
         0.03928
         ? value / 12.92
         : Math.pow(
-            (value + 0.055) /
+            (value +
+              0.055) /
               1.055,
             2.4,
           )
@@ -2302,14 +2645,15 @@ function onFill(hex) {
     0.7152 * rgb[1] +
     0.0722 * rgb[2]
 
-  return luminance > 0.187
+  return luminance >
+    0.187
     ? '#0B0A09'
     : '#fff'
 }
 
-/* ================================================================
+/* ==================================================================
    CLAMP
-   ================================================================ */
+   ================================================================== */
 
 const clamp = (
   value,
@@ -2324,9 +2668,9 @@ const clamp = (
     ),
   )
 
-/* ================================================================
-   CURRENT NODE ANIMATION
-   ================================================================ */
+/* ==================================================================
+   TIMELINE PULSE
+   ================================================================== */
 
 if (
   typeof document !==
@@ -2362,8 +2706,9 @@ if (
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .timeline-map-motion {
-        animation: none !important;
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
       }
     }
   `
