@@ -9,18 +9,27 @@ import { timeline } from '../data/content'
 import { markFor } from './TimelineMarks'
 import Reveal from './Reveal'
 import PixelMap from './PixelMap'
-import Building, { buildingFor, BUILDING_H } from './MapBuildings'
+import Building, {
+  useBuildings,
+  BUILDING_H,
+  BUILDING_W,
+} from './MapBuildings'
+import { SCALE, TILE as ART_TILE } from '../lib/tileset'
 
-// The map is a town now, not a band. Taller gives the buildings somewhere
-// to stand and the roads somewhere to turn.
-const TRACK_H = 720
+// The map is a town, not a band. Tall enough for three streets with room
+// between them for a building and the label hanging under it, which is
+// what eleven stops need before they start crowding each other.
+const TRACK_H = 840
 // Everything on the map is snapped to this, so roads meet buildings
 // squarely and corners land on tile boundaries rather than between them.
-const TILE = 16
+// One tile of art, at the scale the art is shown.
+const TILE = ART_TILE * SCALE
 const CARD_W = 340
 const CARD_H = 280
 const CARD_GAP = 78
-const EDGE = 80
+// Half a building plus the treeline: enough that the outermost house on
+// each street stands on open ground rather than in the wood.
+const EDGE = 176
 
 export default function Experience() {
   const reduce = useReducedMotion()
@@ -49,6 +58,7 @@ export default function Experience() {
   })
 
   const height = TRACK_H
+  const sprites = useBuildings()
 
   useLayoutEffect(() => {
     const el = wrapRef.current
@@ -413,7 +423,12 @@ export default function Experience() {
         >
           {/* Tiles, drawn from the route: the dirt road on the map and
               the journey through the timeline are the same line. */}
-          <PixelMap d={d} width={box.w} height={height} />
+          <PixelMap
+            d={d}
+            width={box.w}
+            height={height}
+            stops={points}
+          />
 
           {/* -------------------------------------------------------
               ROUTE
@@ -528,17 +543,21 @@ export default function Experience() {
                   TRAVELLER
                  --------------------------------------------------- */}
 
-              {traveller.visible && (
-                <Traveller
-                  x={traveller.x}
-                  y={traveller.y}
-                  rotation={
-                    traveller.rotation
-                  }
-                  reduce={reduce}
-                />
-              )}
             </svg>
+          )}
+
+          {/* -------------------------------------------------------
+              TRAVELLER
+             ------------------------------------------------------- */}
+
+          {traveller.visible && (
+            <Traveller
+              x={traveller.x}
+              y={traveller.y}
+              rotation={traveller.rotation}
+              length={traveller.length}
+              reduce={reduce}
+            />
           )}
 
           {/* -------------------------------------------------------
@@ -559,6 +578,7 @@ export default function Experience() {
                   key={entry.id}
                   entry={entry}
                   point={point}
+                  sprites={sprites}
                   active={
                     active === index
                   }
@@ -639,6 +659,25 @@ export default function Experience() {
           <Compass />
         </div>
 
+        {/* The tileset is public domain and asks for nothing. The credit
+            is here because taking someone's work without naming them is
+            a poor way to use a gift. */}
+        <p
+          className="mono-label mt-4 hidden text-right md:block"
+          style={{ color: 'rgba(244,244,245,0.34)' }}
+        >
+          Map art:{' '}
+          <a
+            href="https://opengameart.org/content/zelda-like-tilesets-and-sprites"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-dotted underline-offset-2 transition-colors hover:text-[rgba(244,244,245,0.7)]"
+          >
+            ArMM1998
+          </a>
+          , CC0
+        </p>
+
         {/* =========================================================
             MOBILE
            ========================================================= */}
@@ -663,10 +702,7 @@ export default function Experience() {
                 )}
 
                 <div className="pt-1">
-                  <StopMark
-                    entry={entry}
-                    isActive
-                  />
+                  <MobileMark entry={entry} />
                 </div>
 
                 <div className="pb-10 pt-1">
@@ -683,141 +719,62 @@ export default function Experience() {
   )
 }
 
-function Traveller({
-  x,
-  y,
-  rotation = 0,
-  reduce,
-}) {
+/**
+ * The person walking the route.
+ *
+ * A sprite from the tileset's own character sheet rather than a drawn
+ * figure: the map is pixel art now, and a smooth vector walker standing
+ * on it looked like a cursor rather than like someone on the road.
+ *
+ * The walk cycle is driven by distance covered, not by a clock. Stepping
+ * every fourteen pixels means the legs move in time with the ground, so
+ * the character never moonwalks through a fast stretch or marches on the
+ * spot through a slow one.
+ */
+
+/** One frame of the sheet, in its own pixels. */
+const WALK_W = 16
+const WALK_H = 32
+
+/** Sheet rows, in the order the sheet stores them. */
+const FACING = { down: 0, right: 1, up: 2, left: 3 }
+
+function Traveller({ x, y, rotation = 0, length = 0, reduce }) {
+  // Rotation is measured off the +x axis, which is how the route reports
+  // its own heading, so the quadrants fall out of it directly.
+  const a = ((rotation % 360) + 360) % 360
+  const row =
+    a < 45 || a >= 315
+      ? FACING.right
+      : a < 135
+        ? FACING.down
+        : a < 225
+          ? FACING.left
+          : FACING.up
+
+  // Standing still shows the passing pose rather than a mid-stride one.
+  const frame = reduce ? 0 : Math.floor(length / 14) % 4
+
   return (
-    <g
-      transform={`
-        translate(${x} ${y})
-        rotate(${rotation})
-      `}
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute z-[6]"
       style={{
-        transition: reduce
-          ? 'none'
-          : 'transform 45ms linear',
+        left: x,
+        top: y,
+        width: WALK_W * SCALE,
+        height: WALK_H * SCALE,
+        // The feet land on the point, not the middle of the sprite, so
+        // the character stands on the road rather than hovering over it.
+        transform: `translate(-50%, -${WALK_H * SCALE - 8}px)`,
+        backgroundImage: 'url(/tiles/character.png)',
+        backgroundPosition: `-${frame * WALK_W * SCALE}px -${row * WALK_H * SCALE}px`,
+        backgroundSize: `${272 * SCALE}px ${256 * SCALE}px`,
+        imageRendering: 'pixelated',
+        transition: reduce ? 'none' : 'left 45ms linear, top 45ms linear',
+        filter: 'drop-shadow(0 2px 2px rgba(12,26,12,0.5))',
       }}
-    >
-      {/* shadow */}
-
-      <ellipse
-        cx="0"
-        cy="9"
-        rx="8"
-        ry="3"
-        fill="rgba(0,0,0,0.38)"
-      />
-
-      {/* backpack */}
-
-      <rect
-        x="-8"
-        y="-8"
-        width="7"
-        height="12"
-        rx="2"
-        fill="#245D4A"
-        stroke="#13251E"
-        strokeWidth="1"
-      />
-
-      {/* backpack strap */}
-
-      <path
-        d="M-4 -7 Q0 -10 4 -6"
-        fill="none"
-        stroke="#CFAE72"
-        strokeWidth="1"
-      />
-
-      {/* body */}
-
-      <path
-        d="
-          M-3 -6
-          Q1 -9 4 -5
-          L5 5
-          L-4 5
-          Z
-        "
-        fill="#F4552A"
-        stroke="#35150D"
-        strokeWidth="1"
-      />
-
-      {/* head */}
-
-      <circle
-        cx="1"
-        cy="-11"
-        r="4.2"
-        fill="#D99A70"
-        stroke="#35150D"
-        strokeWidth="1"
-      />
-
-      {/* hair */}
-
-      <path
-        d="
-          M-3 -12
-          Q0 -16 4 -13
-          L5 -10
-          L-3 -10
-          Z
-        "
-        fill="#241A16"
-      />
-
-      {/* arm */}
-
-      <path
-        d="M3 -4 L8 1"
-        fill="none"
-        stroke="#D99A70"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-
-      {/* legs */}
-
-      <path
-        d="M-2 5 L-6 11"
-        fill="none"
-        stroke="#24282A"
-        strokeWidth="2.3"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M3 5 L7 10"
-        fill="none"
-        stroke="#24282A"
-        strokeWidth="2.3"
-        strokeLinecap="round"
-      />
-
-      {/* walking spark */}
-
-      <circle
-        cx="-8"
-        cy="12"
-        r="1"
-        fill="#F4552A"
-        opacity="0.8"
-      />
-
-      <circle
-        cx="9"
-        cy="11"
-        r="0.8"
-        fill="#F5B447"
-        opacity="0.7"
-      />
-    </g>
+    />
   )
 }
 
@@ -897,33 +854,55 @@ function Compass() {
    ================================================================== */
 
 /** Deterministic noise, so the town is the same town on every load. */
-function seededRandom(seed) {
-  let s = seed >>> 0
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0
-    return s / 4294967296
-  }
-}
-
+/**
+ * Three streets, walked as a serpentine: left to right, down, right to
+ * left, down, left to right again.
+ *
+ * The stops used to be spread across one axis with each one dropped into
+ * a different band, which kept them in order but scattered the road into
+ * eleven separate dog-legs. A serpentine gives the same reading order
+ * with a road that is one continuous line, and it puts real distance
+ * between neighbours: four buildings across the full width rather than
+ * eleven, so nothing overlaps its neighbour's roof.
+ *
+ * Because each row hands off at the x it ended on, every turn between
+ * rows is a single straight drop. No dog-legs, and nothing doubles back.
+ */
 function buildStops(count, width, height) {
   const snap = (v) => Math.round(v / TILE) * TILE + TILE / 2
   const left = EDGE
   const right = width - EDGE
-  const rand = seededRandom(0x7f4a7c15)
   const out = []
 
-  // Stops walk left to right so the timeline still reads in order, but
-  // each one steps to a different band so the roads between them have to
-  // turn. A town where every building sits on one line is a street.
-  const bands = [0.2, 0.44, 0.68, 0.34, 0.58, 0.24, 0.5, 0.74, 0.3, 0.62, 0.42]
+  const rows = [0.25, 0.55, 0.85]
+  const perRow = spread(count, rows.length)
 
-  for (let i = 0; i < count; i++) {
-    const t = count > 1 ? i / (count - 1) : 0
-    const band = bands[i % bands.length]
-    out.push({
-      x: snap(left + (right - left) * t),
-      y: snap(height * band + (rand() - 0.5) * 26),
-    })
+  for (let r = 0; r < rows.length; r++) {
+    const n = perRow[r]
+    const y = snap(height * rows[r])
+    const xs = []
+    for (let i = 0; i < n; i++) {
+      const t = n > 1 ? i / (n - 1) : 0.5
+      xs.push(snap(left + (right - left) * t))
+    }
+    // Odd rows run the other way, which is what makes it a serpentine
+    // and what lets the drop between rows be vertical.
+    if (r % 2) xs.reverse()
+    for (const x of xs) out.push({ x, y })
+  }
+
+  return out.slice(0, count)
+}
+
+/** Stops per row, front-loaded, so the last street is never the crowded one. */
+function spread(count, rows) {
+  const base = Math.ceil(count / rows)
+  const out = []
+  let left = count
+  for (let r = 0; r < rows; r++) {
+    const take = Math.min(base, left - (rows - r - 1))
+    out.push(Math.max(1, take))
+    left -= out[r]
   }
   return out
 }
@@ -1114,6 +1093,23 @@ function lengthAt(
    CARD PLACEMENT
    ================================================================== */
 
+/**
+ * What a stop takes up on the map: its building, which stands from the
+ * road up, plus room for the label that hangs off it.
+ *
+ * These numbers used to describe the old 96px SVG marker and were never
+ * moved when the buildings became sprites, so the card thought every
+ * house was a third of its real height and happily parked on the roofs.
+ */
+function occupies(p) {
+  return {
+    x0: p.x - BUILDING_W / 2 - 8,
+    x1: p.x + BUILDING_W / 2 + 8,
+    y0: p.y - BUILDING_H - 10,
+    y1: p.y + 70,
+  }
+}
+
 function placeCard(
   point,
   index,
@@ -1127,19 +1123,9 @@ function placeCard(
         (_, i) =>
           i !== index,
       )
-      .map((p) => ({
-        x0: p.x - 82,
-        x1: p.x + 82,
-        y0: p.y - 34,
-        y1: p.y + 78,
-      }))
+      .map(occupies)
 
-  const own = {
-    x0: point.x - 82,
-    x1: point.x + 82,
-    y0: point.y - 34,
-    y1: point.y + 78,
-  }
+  const own = occupies(point)
 
   const overlaps = (
     rect,
@@ -1376,52 +1362,45 @@ function Stop({
   point,
   active,
   dimmed,
+  sprites,
   onEnter,
   onClick,
 }) {
-  const labelAbove =
-    point.y > 285
-
   return (
     <button
       type="button"
       onMouseEnter={onEnter}
       onFocus={onEnter}
       onClick={onClick}
-      aria-describedby={
-        active
-          ? 'route-card'
-          : undefined
-      }
+      aria-describedby={active ? 'route-card' : undefined}
       aria-label={`${entry.year} ${entry.short || entry.title}`}
-      className="absolute z-10 flex -translate-x-1/2 flex-col items-center transition-all duration-300"
+      className="absolute z-10 -translate-x-1/2 transition-opacity duration-300"
       style={{
         left: point.x,
-        // The building's base sits on the road, so the whole sprite is
-        // lifted by its own height rather than centred on the point.
-        top: point.y - BUILDING_H + 10,
+        // The button box IS the building, with its base on the road, so
+        // the footprint lands on the tile the route passes through. The
+        // label is floated off that box rather than stacked with it: in
+        // a flex column a label above the building pushed the building
+        // down off its own plot.
+        top: point.y - BUILDING_H,
+        width: BUILDING_W,
+        height: BUILDING_H,
         opacity: dimmed ? 0.55 : 1,
       }}
     >
-      {labelAbove && (
-        <StopLabel
-          entry={entry}
-          active={active}
-          above
-        />
-      )}
-
       <StopMark
         entry={entry}
         isActive={active}
+        sprites={sprites}
       />
 
-      {!labelAbove && (
-        <StopLabel
-          entry={entry}
-          active={active}
-        />
-      )}
+      {/* Every label hangs under its own building. Alternating the side
+          by row put one street's labels directly on top of the next
+          street's, because a label above a building and a label below
+          the one behind it land in the same band of the map. */}
+      <span className="absolute left-1/2 top-full -translate-x-1/2">
+        <StopLabel entry={entry} active={active} />
+      </span>
     </button>
   )
 }
@@ -1430,19 +1409,39 @@ function Stop({
    STOP LABEL
    ================================================================== */
 
-function StopLabel({
-  entry,
-  active,
-  above = false,
-}) {
+/**
+ * The mobile stand-in for a building.
+ *
+ * The map is a desktop thing: a town seen from above needs room, and a
+ * phone has none. The list gets the institution's own outline mark
+ * instead, at the size the rest of the list is set in.
+ */
+function MobileMark({ entry }) {
+  const Mark = markFor(entry)
+  const accent = entry.accent || 'var(--accent)'
   return (
     <span
-      className={
-        above
-          ? 'mb-3 flex flex-col items-center'
-          : 'mt-3 flex flex-col items-center'
-      }
+      className="flex h-11 w-11 items-center justify-center rounded-full border"
+      style={{
+        color: accent,
+        borderColor: `${accent}55`,
+        background: 'rgba(244,244,245,0.04)',
+      }}
     >
+      {Mark ? (
+        <Mark width="22" height="22" />
+      ) : (
+        <span className="font-mono text-[11px] tracking-[0.08em]">
+          {entry.monogram || entry.year}
+        </span>
+      )}
+    </span>
+  )
+}
+
+function StopLabel({ entry, active }) {
+  return (
+    <span className="mt-2 flex flex-col items-center">
       <span
         className="rounded-full border px-2.5 py-1 font-mono text-[9px] tracking-[0.12em] shadow-sm"
         style={{
@@ -1500,29 +1499,13 @@ function StopLabel({
  * shadow together reads as picking something up off the ground, which is
  * what "pops" has to mean on a map seen from above.
  */
-function StopMark({ entry, isActive }) {
-  const accent = entry.accent || 'var(--accent)'
+function StopMark({ entry, isActive, sprites }) {
   return (
-    <span
-      className="block"
-      style={{
-        // Anchored at the base, so the building stands on its plot.
-        transformOrigin: '50% 100%',
-        transform: isActive
-          ? 'translateY(-7px) scale(1.14)'
-          : 'translateY(0) scale(1)',
-        transition: 'transform 260ms cubic-bezier(0.22,1,0.36,1)',
-        filter: isActive
-          ? `drop-shadow(0 10px 14px rgba(0,0,0,0.45)) drop-shadow(0 0 10px ${accent}66)`
-          : 'drop-shadow(0 6px 8px rgba(0,0,0,0.35))',
-      }}
-    >
-      <Building
-        type={buildingFor(entry)}
-        accent={accent}
-        active={isActive}
-      />
-    </span>
+    <Building
+      entry={entry}
+      sprites={sprites}
+      active={isActive}
+    />
   )
 }
 
