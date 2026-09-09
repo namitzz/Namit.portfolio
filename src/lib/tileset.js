@@ -52,7 +52,6 @@ export const SPRITES = {
   tree: [80, 256, 32, 32],
   bush: [32, 224, 16, 16],
   rocks: [176, 160, 32, 16],
-  fountain: [352, 144, 48, 48],
 }
 
 /** Flower beds. Warm ground, and the only warm thing on the grass. */
@@ -63,21 +62,33 @@ export const FLOWERS = [
 ]
 
 /**
- * The two houses. `hall` is the wider one with dormers in its roof and no
- * door on the face; `cottage` has the door, the windows and the rose
- * light in the gable.
+ * Every structure the map can stand at a stop, as [x, y, w, h].
  *
- * The hall is cropped to 76 rather than its apparent 79: the three
- * columns past that belong to the water tile sitting next to it on the
- * sheet, and they came through as a blue stripe down its side.
+ * Eleven of them, and no two alike. The sheet has exactly two houses, so
+ * a town built only out of houses can never be more than two shapes in
+ * eleven colours. These are the rest of what the artist drew that stands
+ * on the ground: gates, arches, a market stall, a fountain, a walled
+ * court, a shrine. A journey has more kinds of place in it than houses.
+ *
+ * Each box was cut to the sprite's own pixels and checked against the
+ * grass. The sheet packs sprites tightly, so a lazy crop brings in a
+ * neighbour: `hall` is 76 wide rather than its apparent 79 because the
+ * next three columns are the water tile beside it, which arrived as a
+ * blue stripe down its side.
  */
-export const HOUSES = {
+export const STRUCTURES = {
   cottage: [99, 0, 74, 80],
   hall: [179, 0, 76, 80],
+  stall: [288, 359, 80, 86],
+  gatehouse: [409, 361, 62, 94],
+  keep: [313, 457, 62, 71],
+  woodgate: [512, 155, 48, 85],
+  roof: [390, 196, 87, 72],
+  archLight: [392, 504, 48, 40],
+  archDark: [168, 504, 48, 40],
+  fountain: [352, 144, 48, 48],
+  shrine: [98, 355, 26, 30],
 }
-
-export const HOUSE_W = 74
-export const HOUSE_H = 80
 
 /* ---------------------------------------------------------------- */
 /* Loading                                                           */
@@ -119,26 +130,41 @@ export function loadTileset() {
  * door and the shadow, and because doing it once at load costs nothing
  * while doing it per frame in the compositor costs every frame.
  */
-export function tintSprite(img, [sx, sy, sw, sh], hueShift = 0, sat = 1, lift = 1) {
+export function tintSprite(img, [sx, sy, sw, sh], look = {}) {
+  const { hue = null, rot = 0, sat = 1, lift = 1, floor = 0 } = look
   const canvas = document.createElement('canvas')
   canvas.width = sw
   canvas.height = sh
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
   ctx.imageSmoothingEnabled = false
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh)
-  if (!hueShift && sat === 1 && lift === 1) return canvas
+  if (!rot && sat === 1 && lift === 1 && !floor) return canvas
 
   const data = ctx.getImageData(0, 0, sw, sh)
   const p = data.data
   for (let i = 0; i < p.length; i += 4) {
     if (p[i + 3] === 0) continue
     const [h, s, l] = rgbToHsl(p[i], p[i + 1], p[i + 2])
+    let hh
+    let ss
+    if (floor > 0 && s < 0.18) {
+      // Grey stone. Rotating its hue does nothing at all, because grey
+      // has no hue to rotate, so half the structures on the sheet would
+      // have come out identical. These get a hue outright and enough
+      // saturation to read as a colour, pulled back in the highlights so
+      // the masonry keeps its modelling instead of going flat.
+      hh = hue
+      ss = floor * (1 - 1.1 * Math.max(0, l - 0.5))
+    } else {
+      hh = (h + rot / 360 + 1) % 1
+      ss = Math.min(1, s * sat)
+    }
     // Cool hues read darker than warm ones at the same lightness, so a
-    // roof rotated to blue or violet comes out muddy unless it is lifted
-    // to compensate. That is a fact about eyes, not about the maths.
+    // roof turned blue or violet comes out muddy unless it is lifted to
+    // compensate. That is a fact about eyes, not about the maths.
     const [r, g, b] = hslToRgb(
-      (h + hueShift / 360 + 1) % 1,
-      Math.min(1, s * sat),
+      (hh + 1) % 1,
+      Math.max(0, Math.min(1, ss)),
       Math.min(1, l * lift),
     )
     p[i] = r

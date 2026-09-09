@@ -345,6 +345,12 @@ export const timeline = [
     org: 'Competition',
     markKey: 'competition',
     accent: '#F5B447',
+    // The result was announced by a teammate rather than by me, so the
+    // link goes to their post and says so. Calling it "the post" would
+    // imply I wrote it.
+    href:
+      'https://www.linkedin.com/posts/aaronmconnor_mathsmodelling-teamsuccess-universityofleicester-activity-7330994498153369601-YyOT',
+    linkText: 'The announcement',
     body:
       'Led a Newsvendor inventory model that supported pricing and output recommendations.',
   },
@@ -357,6 +363,8 @@ export const timeline = [
     org: 'Competition',
     markKey: 'competition',
     accent: '#F5B447',
+    href:
+      'https://www.linkedin.com/feed/update/urn:li:activity:7313203488254054401/',
     body:
       'Co-led the Global Career Navigator pitch for international students.',
   },
@@ -371,6 +379,8 @@ export const timeline = [
     markKey: 'leicester',
     accent: '#d5203d',
     tint: '#E8455F',
+    href:
+      'https://www.linkedin.com/feed/update/urn:li:activity:7331009104217260036/',
     body:
       'Selected to represent Indian students during the official visit of Dr Venkatachalam Murugan, Consul General of India to the UK. Took part in a roundtable with university leadership on international student experience and collaboration.',
   },
@@ -383,6 +393,8 @@ export const timeline = [
     org: 'De Montfort University',
     markKey: 'competition',
     accent: '#34F5C5',
+    href:
+      'https://www.linkedin.com/feed/update/urn:li:activity:7335065116863860736/',
     body:
       'Contributed across OSINT, cipher analysis, LFSR and geolocation challenges, finishing on 2030 points.',
   },
@@ -397,6 +409,8 @@ export const timeline = [
     markKey: 'placement',
     accent: '#d5203d',
     tint: '#E8455F',
+    href:
+      'https://www.linkedin.com/feed/update/urn:li:activity:7349195973199368192/',
     body:
       'Led technical work in a cross-disciplinary team exploring responsible generative AI use in higher education. Built learning-assistant prototypes and supported non-CS teammates on engineering decisions and delivery.',
   },
@@ -451,7 +465,8 @@ export const timeline = [
     status: 'First Class Honours',
     accent: '#d5203d',
     tint: '#E8455F',
-    href: 'https://le.ac.uk/',
+    href:
+      'https://www.linkedin.com/feed/update/urn:li:activity:7474843238294654976/',
     body:
       'Three years across AI, software engineering, databases, cloud and applied data science, closing with UniWise as the dissertation project.',
   },

@@ -11,15 +11,14 @@ import Reveal from './Reveal'
 import PixelMap from './PixelMap'
 import Building, {
   useBuildings,
-  BUILDING_H,
-  BUILDING_W,
+  footprintFor,
 } from './MapBuildings'
 import { SCALE, TILE as ART_TILE } from '../lib/tileset'
 
-// The map is a town, not a band. Tall enough for three streets with room
-// between them for a building and the label hanging under it, which is
-// what eleven stops need before they start crowding each other.
-const TRACK_H = 840
+// The map is a town, not a band. Tall enough for three streets, with room
+// between them for a structure, the label hanging under it, and the
+// stagger that stops the streets reading as ruled lines.
+const TRACK_H = 900
 // Everything on the map is snapped to this, so roads meet buildings
 // squarely and corners land on tile boundaries rather than between them.
 // One tile of art, at the scale the art is shown.
@@ -27,9 +26,17 @@ const TILE = ART_TILE * SCALE
 const CARD_W = 340
 const CARD_H = 280
 const CARD_GAP = 78
-// Half a building plus the treeline: enough that the outermost house on
+// Half the widest structure plus the treeline, so the outermost stop on
 // each street stands on open ground rather than in the wood.
-const EDGE = 176
+const EDGE = 190
+
+// The three streets, and how far every other stop steps off its street.
+// Solved rather than guessed: with eleven structures of eleven different
+// sizes, the numbers that stagger the rows without any building, label
+// or frame colliding are a narrow set, and they have to hold at every
+// plate width the page can reach.
+const ROWS = [0.2, 0.52, 0.84]
+const STAGGER = 0.06
 
 export default function Experience() {
   const reduce = useReducedMotion()
@@ -109,27 +116,39 @@ export default function Experience() {
     [points, box.w],
   )
 
+  // Where each structure actually stands, so the map can clear its plot
+  // before anything grows on it, and so the card knows what it must not
+  // park on. Every structure is a different size, so this is not a
+  // constant and nothing downstream may treat it as one.
+  const plots = useMemo(
+    () =>
+      points.map((p, i) => ({
+        ...p,
+        ...footprintFor(timeline[i] || {}),
+      })),
+    [points],
+  )
+
   const card = useMemo(() => {
-    if (
-      active === null ||
-      !points[active]
-    ) {
+    if (active === null || !plots[active]) {
       return null
     }
 
+    // Placed against the plots, not the points: the card has to know how
+    // big each structure is to stay off it.
     return {
       entry: timeline[active],
       ...placeCard(
-        points[active],
+        plots[active],
         active,
-        points,
+        plots,
         box.w,
         height,
       ),
     }
   }, [
     active,
-    points,
+    plots,
     box.w,
     height,
   ])
@@ -427,7 +446,7 @@ export default function Experience() {
             d={d}
             width={box.w}
             height={height}
-            stops={points}
+            plots={plots}
           />
 
           {/* -------------------------------------------------------
@@ -853,33 +872,28 @@ function Compass() {
    ROUTE STOPS
    ================================================================== */
 
-/** Deterministic noise, so the town is the same town on every load. */
 /**
  * Three streets, walked as a serpentine: left to right, down, right to
- * left, down, left to right again.
+ * left, down, left to right again, with every other stop stepped off its
+ * street so the road has to climb and fall between neighbours.
  *
- * The stops used to be spread across one axis with each one dropped into
- * a different band, which kept them in order but scattered the road into
- * eleven separate dog-legs. A serpentine gives the same reading order
- * with a road that is one continuous line, and it puts real distance
- * between neighbours: four buildings across the full width rather than
- * eleven, so nothing overlaps its neighbour's roof.
+ * The stagger is the difference between a plan and a place. Without it
+ * the three rows are ruled lines and the road is three straight bars.
+ * With it the road meanders, and it still reads in order, because the
+ * rows underneath it are still rows.
  *
- * Because each row hands off at the x it ended on, every turn between
- * rows is a single straight drop. No dog-legs, and nothing doubles back.
+ * Because each row hands off at the x it ended on, the turn between rows
+ * is a single drop. No dog-legs, and nothing doubles back.
  */
 function buildStops(count, width, height) {
   const snap = (v) => Math.round(v / TILE) * TILE + TILE / 2
   const left = EDGE
   const right = width - EDGE
   const out = []
+  const perRow = spread(count, ROWS.length)
 
-  const rows = [0.25, 0.55, 0.85]
-  const perRow = spread(count, rows.length)
-
-  for (let r = 0; r < rows.length; r++) {
+  for (let r = 0; r < ROWS.length; r++) {
     const n = perRow[r]
-    const y = snap(height * rows[r])
     const xs = []
     for (let i = 0; i < n; i++) {
       const t = n > 1 ? i / (n - 1) : 0.5
@@ -888,7 +902,9 @@ function buildStops(count, width, height) {
     // Odd rows run the other way, which is what makes it a serpentine
     // and what lets the drop between rows be vertical.
     if (r % 2) xs.reverse()
-    for (const x of xs) out.push({ x, y })
+    xs.forEach((x, i) => {
+      out.push({ x, y: snap(height * (ROWS[r] + (i % 2 ? STAGGER : 0))) })
+    })
   }
 
   return out.slice(0, count)
@@ -1094,18 +1110,19 @@ function lengthAt(
    ================================================================== */
 
 /**
- * What a stop takes up on the map: its building, which stands from the
- * road up, plus room for the label that hangs off it.
+ * What a stop takes up on the map: its structure, which stands from the
+ * road up, plus room for the label that hangs under it.
  *
- * These numbers used to describe the old 96px SVG marker and were never
- * moved when the buildings became sprites, so the card thought every
- * house was a third of its real height and happily parked on the roofs.
+ * Measured from the structure rather than assumed. These numbers once
+ * described a 96px SVG marker and were left behind when the marker
+ * became a sprite, so the card thought every building was a third of its
+ * real height and parked happily on the roofs.
  */
 function occupies(p) {
   return {
-    x0: p.x - BUILDING_W / 2 - 8,
-    x1: p.x + BUILDING_W / 2 + 8,
-    y0: p.y - BUILDING_H - 10,
+    x0: p.x - (p.w || 0) / 2 - 8,
+    x1: p.x + (p.w || 0) / 2 + 8,
+    y0: p.y - (p.h || 0) - 10,
     y1: p.y + 70,
   }
 }
@@ -1366,6 +1383,8 @@ function Stop({
   onEnter,
   onClick,
 }) {
+  const { w, h } = footprintFor(entry)
+
   return (
     <button
       type="button"
@@ -1377,14 +1396,14 @@ function Stop({
       className="absolute z-10 -translate-x-1/2 transition-opacity duration-300"
       style={{
         left: point.x,
-        // The button box IS the building, with its base on the road, so
+        // The button box IS the structure, with its base on the road, so
         // the footprint lands on the tile the route passes through. The
         // label is floated off that box rather than stacked with it: in
         // a flex column a label above the building pushed the building
         // down off its own plot.
-        top: point.y - BUILDING_H,
-        width: BUILDING_W,
-        height: BUILDING_H,
+        top: point.y - h,
+        width: w,
+        height: h,
         opacity: dimmed ? 0.55 : 1,
       }}
     >
@@ -1394,10 +1413,13 @@ function Stop({
         sprites={sprites}
       />
 
-      {/* Every label hangs under its own building. Alternating the side
-          by row put one street's labels directly on top of the next
+      {/* Every label hangs under its own structure. Alternating the
+          side by row put one street's labels directly on top of the next
           street's, because a label above a building and a label below
-          the one behind it land in the same band of the map. */}
+          the one behind it land in the same band of the map.
+
+          It sits inside the button, so it is part of the target. Without
+          that the shrine would be a 52px thing to hit. */}
       <span className="absolute left-1/2 top-full -translate-x-1/2">
         <StopLabel entry={entry} active={active} />
       </span>
@@ -1513,6 +1535,12 @@ function StopMark({ entry, isActive, sprites }) {
    LINK LABEL
    ================================================================== */
 
+/**
+ * What the button on a card should say. An entry can override it with
+ * `linkText` where the generic answer would be wrong: the modelling
+ * award was announced by a teammate, so "the post" would claim I wrote
+ * something I did not.
+ */
 function linkLabel(
   href = '',
 ) {
@@ -1813,9 +1841,8 @@ function Detail({
               textColor(entry),
           }}
         >
-          {linkLabel(
-            entry.href,
-          )}
+          {entry.linkText ||
+            linkLabel(entry.href)}
 
           <span
             aria-hidden="true"

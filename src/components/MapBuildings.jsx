@@ -1,85 +1,79 @@
 import { useEffect, useState } from 'react'
-import {
-  HOUSES,
-  HOUSE_H,
-  HOUSE_W,
-  SCALE,
-  loadTileset,
-  tintSprite,
-} from '../lib/tileset'
+import { SCALE, STRUCTURES, loadTileset, tintSprite } from '../lib/tileset'
 
 /**
- * The building that stands at each stop.
+ * The structure that stands at each stop.
  *
- * Two house sprites from the tileset, each hue-rotated to its stop's own
- * colour. That is how an overworld town is built: one or two roof
- * shapes, many roof colours, so a street reads as a street rather than
- * as eleven unrelated landmarks.
+ * Eleven stops, eleven different things: a university gatehouse, a
+ * shrine, a triumphal arch, a fountain, a tunnel mouth, a timber gate, a
+ * market stall, a long tiled hall, a workshop, a walled court, a
+ * cottage. Not eleven houses in eleven colours, which is what the map
+ * had before and what made every stop read as the same kind of place.
  *
- * The previous version drew these as SVG — a trapezoid roof, some
- * shingle courses, framed windows. It was as far as drawing can get, and
- * it was not far enough. These are the real thing.
- *
- * The institution marks are not here. At this size a shield is a smudge,
- * so they live in the card where they can be seen.
+ * Each one is then tinted to its own colour. The timber sprites have a
+ * hue to rotate; the stone ones do not, so those are given a hue and a
+ * saturation outright. Assigned by hand rather than generated, so
+ * neighbours on the road never land on the same colour and no two stops
+ * in a row are the same material.
  */
 
-export const BUILDING_W = HOUSE_W * SCALE
-export const BUILDING_H = HOUSE_H * SCALE
-
-/**
- * Which sprite and which colour each stop gets.
- *
- * `hue` is a rotation in degrees off the sheet's own timber brown, `sat`
- * pulls the wood back towards grey where a fully saturated roof would
- * shout, and `lift` brightens it. The cool roofs need the lift: rotated
- * to blue or violet at their original lightness they came out muddy,
- * which made half the street look like it was standing in shade.
- *
- * Assigned by hand rather than generated, so neighbours on the road
- * never land on the same colour.
- */
 const LOOK = {
-  leicester: { house: 'cottage', hue: 0, sat: 1, lift: 1 },
-  modelling: { house: 'hall', hue: -24, sat: 0.95, lift: 1.06 },
-  consultancy: { house: 'cottage', hue: 44, sat: 0.9, lift: 1.04 },
-  consul: { house: 'hall', hue: 132, sat: 0.62, lift: 1.22 },
-  ctf: { house: 'cottage', hue: -66, sat: 0.72, lift: 1.24 },
-  microinternship: { house: 'hall', hue: 196, sat: 0.55, lift: 1.26 },
-  cloudseven: { house: 'cottage', hue: 22, sat: 1, lift: 1.04 },
-  classfutures: { house: 'hall', hue: -104, sat: 0.6, lift: 1.26 },
-  uniwise: { house: 'cottage', hue: 78, sat: 0.62, lift: 1.2 },
-  graduation: { house: 'hall', hue: -40, sat: 0.9, lift: 1.08 },
-  aston: { house: 'cottage', hue: 166, sat: 0.6, lift: 1.24 },
+  // Stone, entered rather than lived in: the gate you go through to
+  // start a degree.
+  leicester: { of: 'gatehouse', hue: 0.985, floor: 0.52, lift: 0.86 },
+  // A small shrine on a plinth, which is what an award is.
+  modelling: { of: 'shrine', hue: 0.11, floor: 0.44, lift: 1.05 },
+  // A triumphal arch for a win.
+  consultancy: { of: 'archLight', hue: 0.07, floor: 0.52, lift: 0.96 },
+  // A fountain: the civic square where a delegation is received.
+  consul: { of: 'fountain', hue: 0.55, floor: 0.2 },
+  // A way in through the dark, which is the whole shape of a CTF.
+  ctf: { of: 'archDark', hue: 0.45, floor: 0.42, lift: 1.3 },
+  microinternship: { of: 'woodgate', rot: -52, sat: 0.85, lift: 1.12 },
+  // Commerce, and the only awning on the map.
+  cloudseven: { of: 'stall', rot: 150, sat: 0.7, lift: 1.1 },
+  // A long low hall: a press.
+  classfutures: { of: 'roof', rot: -120, sat: 0.62, lift: 1.18 },
+  // The workshop the dissertation was built in.
+  uniwise: { of: 'hall', rot: 80, sat: 0.7, lift: 1.15 },
+  // Blue rather than violet: at 0.73 this walled court and the press's
+  // purple roof were the same colour from across the map.
+  graduation: { of: 'keep', hue: 0.6, floor: 0.42, lift: 0.9 },
+  // The warmest, most worked sprite on the sheet, for where I am now.
+  aston: { of: 'cottage' },
 }
 
-const FALLBACK = { house: 'cottage', hue: 0, sat: 1, lift: 1 }
+const FALLBACK = { of: 'cottage' }
 
-export function buildingFor(entry) {
-  return LOOK[entry.id] || FALLBACK
+const lookFor = (entry) => LOOK[entry.id] || FALLBACK
+
+/**
+ * What a stop takes up on the map, in CSS pixels.
+ *
+ * Every structure is a different size, so nothing downstream may assume
+ * one. The card placement, the hover target and the map's own clearing
+ * of building plots all ask here.
+ */
+export function footprintFor(entry) {
+  const [, , w, h] = STRUCTURES[lookFor(entry).of] || STRUCTURES.cottage
+  return { w: w * SCALE, h: h * SCALE }
 }
 
 /* ------------------------------------------------------------------ */
 
 /**
- * Every tinted sprite, built once and shared. Tinting walks the sprite's
+ * Every tinted sprite, built once and shared. Tinting walks a sprite's
  * pixels, so doing it per stop per render would be eleven passes over
- * 5,920 pixels on every hover. Doing it once at load costs nothing.
+ * the whole set on every hover. Doing it once at load costs nothing.
  */
 let cache = null
 
 function buildAll(sheet) {
   const out = {}
   for (const [id, look] of Object.entries(LOOK)) {
-    out[id] = tintSprite(
-      sheet,
-      HOUSES[look.house],
-      look.hue,
-      look.sat,
-      look.lift,
-    ).toDataURL()
+    out[id] = tintSprite(sheet, STRUCTURES[look.of], look).toDataURL()
   }
-  out._fallback = tintSprite(sheet, HOUSES.cottage).toDataURL()
+  out._fallback = tintSprite(sheet, STRUCTURES.cottage).toDataURL()
   return out
 }
 
@@ -107,11 +101,12 @@ export function useBuildings() {
 }
 
 export default function Building({ entry, sprites, active }) {
+  const { w, h } = footprintFor(entry)
   const src = sprites?.[entry.id] || sprites?._fallback
   // Nothing is drawn until the art is here. A placeholder box would be a
-  // grey rectangle standing where a house goes, which is worse than a
+  // grey rectangle standing where a building goes, which is worse than a
   // gap for the fraction of a second it takes to decode one PNG.
-  if (!src) return <span style={{ display: 'block', width: BUILDING_W, height: BUILDING_H }} />
+  if (!src) return <span style={{ display: 'block', width: w, height: h }} />
 
   return (
     <img
@@ -119,12 +114,12 @@ export default function Building({ entry, sprites, active }) {
       alt=""
       aria-hidden="true"
       draggable="false"
-      width={BUILDING_W}
-      height={BUILDING_H}
+      width={w}
+      height={h}
       style={{
         display: 'block',
         imageRendering: 'pixelated',
-        // Anchored at the base, so hovering lifts the building off its
+        // Anchored at the base, so hovering lifts the structure off its
         // plot rather than zooming it. Scale alone reads as a zoom;
         // lifting and shadowing together reads as picking something up,
         // which is what "pops" has to mean on a map seen from above.

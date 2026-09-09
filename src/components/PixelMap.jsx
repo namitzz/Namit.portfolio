@@ -28,12 +28,12 @@ import {
  */
 
 /** Half-width of the road, in sheet pixels, before any widening. */
-const PATH_HALF = 15
+const PATH_HALF = 11
 
 /** Cleared ground around a stop, so a building has a forecourt. */
-const PLAZA = 26
+const PLAZA = 19
 
-export default function PixelMap({ d, width, height, stops = [] }) {
+export default function PixelMap({ d, width, height, plots = [] }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function PixelMap({ d, width, height, stops = [] }) {
     let cancelled = false
     loadTileset()
       .then((sheet) => {
-        if (!cancelled) paint(canvas, sheet, d, width, height, stops)
+        if (!cancelled) paint(canvas, sheet, d, width, height, plots)
       })
       .catch(() => {
         // A missing sheet leaves the plate's own green showing, which is
@@ -52,7 +52,7 @@ export default function PixelMap({ d, width, height, stops = [] }) {
     return () => {
       cancelled = true
     }
-  }, [d, width, height, stops])
+  }, [d, width, height, plots])
 
   return (
     <canvas
@@ -66,7 +66,7 @@ export default function PixelMap({ d, width, height, stops = [] }) {
 
 /* ------------------------------------------------------------------ */
 
-function paint(canvas, sheet, d, width, height, stops) {
+function paint(canvas, sheet, d, width, height, plots) {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
@@ -84,9 +84,25 @@ function paint(canvas, sheet, d, width, height, stops) {
   const cols = Math.ceil(aw / TILE) + 1
   const rows = Math.ceil(ah / TILE) + 1
 
-  // Stops arrive in CSS pixels; everything in here is sheet pixels.
-  const marks = stops.map((s) => ({ x: s.x / SCALE, y: s.y / SCALE }))
+  // Plots arrive in CSS pixels; everything in here is sheet pixels.
+  const marks = plots.map((p) => ({
+    x: p.x / SCALE,
+    y: p.y / SCALE,
+    w: (p.w || 0) / SCALE,
+    h: (p.h || 0) / SCALE,
+  }))
   const route = sampleRoute(d, 1400, SCALE)
+  // The road does not begin at the first stop and end at the last one.
+  // It arrives from somewhere and carries on somewhere, which is what
+  // makes this a town on a route rather than the whole world.
+  if (route.length) {
+    const first = route[0]
+    const last = route[route.length - 1]
+    for (let i = 1; i <= 140; i++) {
+      route.push({ x: first.x - i, y: first.y })
+      route.push({ x: last.x + i, y: last.y })
+    }
+  }
 
   const blit = ([sx, sy, sw = TILE, sh = TILE], dx, dy) =>
     ctx.drawImage(sheet, sx, sy, sw, sh, dx, dy, sw, sh)
@@ -102,7 +118,7 @@ function paint(canvas, sheet, d, width, height, stops) {
       // The wobble may only widen the road. Letting it narrow the road
       // punched holes through it: below one tile of half-width the
       // stretch between two stops stopped being continuous.
-      const widen = hash2(c >> 1, r >> 1) * 6 + hash2(c, r) * 2
+      const widen = hash2(c >> 1, r >> 1) * 5 + hash2(c, r) * 2
       const plaza = nearest(marks, x, y)
 
       if (dRoute < PATH_HALF + widen || plaza < PLAZA) {
@@ -110,10 +126,15 @@ function paint(canvas, sheet, d, width, height, stops) {
         continue
       }
 
-      // A building's plot is cleared before anything grows on it, so no
-      // canopy ever sits across a roof.
+      // A structure's plot is cleared before anything grows on it, so
+      // no canopy ever sits across a roof. Measured per structure: they
+      // are all different sizes, and one fixed box left canopies over
+      // the wide ones and bald patches around the small ones.
       const onPlot = marks.some(
-        (m) => Math.abs(m.x - x) < 46 && y - m.y > -86 && y - m.y < 14,
+        (m) =>
+          Math.abs(m.x - x) < m.w / 2 + 10 &&
+          y - m.y > -(m.h + 8) &&
+          y - m.y < 14,
       )
       // Woodland clumps: a per-tile coin toss scatters shrubs evenly,
       // while a low-frequency term makes neighbours agree and become a
@@ -157,17 +178,6 @@ function paint(canvas, sheet, d, width, height, stops) {
       if (hash2(c + 31, r + 17) < 0.34) continue
       blit(SPRITES.tree, c * TILE - 8, r * TILE - 14)
     }
-  }
-
-  /* --- town square --- */
-  // One fountain, on the open ground between the first and second rows.
-  if (marks.length > 4) {
-    const [fw, fh] = [SPRITES.fountain[2], SPRITES.fountain[3]]
-    blit(
-      SPRITES.fountain,
-      Math.round(aw / 2 - fw / 2),
-      Math.round((marks[0].y + marks[4].y) / 2 - fh / 2),
-    )
   }
 }
 
