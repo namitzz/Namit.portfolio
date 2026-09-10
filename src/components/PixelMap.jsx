@@ -351,9 +351,9 @@ function regions(aw, ah) {
    * white and leave the middle looking like a hole.
    */
   const altitude = (x, y) => {
-    const band = 1 - y / (ah * 0.34)
+    const band = 1 - y / (ah * 0.17)
     if (band <= 0) return 0
-    return Math.max(0, Math.min(1, band * (0.72 + fbm(x, y, 3, 0.02) * 0.6)))
+    return Math.max(0, Math.min(1, band * (0.62 + fbm(x, y, 3, 0.03) * 0.7)))
   }
   return { sea, lake, river, water, altitude }
 }
@@ -370,12 +370,15 @@ function ground(ctx, aw, ah, geo) {
   // field is not static: it is patchy.
   for (let y = 0; y < ah; y += 4) {
     for (let x = 0; x < aw; x += 4) {
+      // Snow only on the last strip before the summits, and never at
+      // full strength. A generous band turned the whole northern third of
+      // the map into a pale slab and buried the range it was meant to
+      // explain: the snow-capped peaks already say "high ground", and the
+      // ground below them only has to agree, not shout.
       const alt = geo.altitude(x, y)
-      if (alt > 0.5) {
-        // The snow line is ragged rather than level, because a treeline
-        // follows the shape of the ground, not a contour on a diagram.
+      if (alt > 0.82) {
         ctx.fillStyle = rgb(SNOW_GROUND)
-        ctx.globalAlpha = Math.min(1, (alt - 0.5) / 0.28)
+        ctx.globalAlpha = Math.min(0.75, (alt - 0.82) / 0.18)
         ctx.fillRect(x, y, 4, 4)
         ctx.globalAlpha = 1
         continue
@@ -481,7 +484,7 @@ function woodland(world, aw, ah, geo, nearRoad, plots, blit) {
       const row = up && down ? 1 : up ? 2 : 0
       const col = left && right ? 1 : left ? 2 : 0
       const set =
-        geo.altitude(c * TILE + TILE / 2, r * TILE + TILE / 2) > 0.42
+        geo.altitude(c * TILE + TILE / 2, r * TILE + TILE / 2) > 0.62
           ? FOREST_SNOW
           : FOREST
       blit(world, set[row][col], c * TILE, r * TILE)
