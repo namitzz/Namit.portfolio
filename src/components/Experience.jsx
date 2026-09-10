@@ -138,9 +138,11 @@ export default function Experience() {
 
     const from = walker.visible ? walker.at : stations[0] || 0
     const distance = Math.abs(target - from)
-    // Longer journeys take longer, but not proportionally: crossing the
-    // whole map should feel like a walk, not like waiting.
-    const duration = reduce ? 0 : Math.min(2600, Math.max(700, distance * 7))
+    // A walk, not a scene change. Longer journeys take longer but not
+    // proportionally, so crossing the whole country is unhurried without
+    // becoming a wait, and a hop to the next milestone still reads as a
+    // walk rather than a jump.
+    const duration = reduce ? 0 : Math.min(7000, Math.max(1300, distance * 18))
     const started = performance.now()
 
     const tick = (now) => {
@@ -161,6 +163,14 @@ export default function Experience() {
     }
     tick(performance.now())
   }
+
+  // He stands at the first milestone from the start. The artwork used to
+  // have him painted in at both ends; now there is one of him and he is
+  // the live one, so the map should not begin empty.
+  useLayoutEffect(() => {
+    if (walker.visible || !stations.length || !path.length) return
+    setWalker({ at: stations[0], facing: 0, visible: true })
+  }, [stations, path, walker.visible])
 
   const walkerAt = path[Math.round(walker.at)] || path[0]
 
