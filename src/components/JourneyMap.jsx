@@ -153,7 +153,7 @@ function resample(points, step) {
  * rounds everything between, which is what keeps the travelling light on
  * a road that bends rather than cutting the corners off it.
  */
-export function smoothRoute(points, per = 14) {
+function smoothRoute(points, per = 14) {
   if (points.length < 3) return points.slice()
   const at = (i) => points[Math.max(0, Math.min(points.length - 1, i))]
   const out = []
