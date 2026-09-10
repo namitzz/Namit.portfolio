@@ -1,135 +1,150 @@
 import { useEffect, useState } from 'react'
-import { SCALE, STRUCTURES, loadTileset, tintSprite } from '../lib/tileset'
+import { PLACES, SCALE, loadSheet, nightPixel, WORLD_SRC } from '../lib/tileset'
+import { markFor } from './TimelineMarks'
 
 /**
- * The structure that stands at each stop.
+ * What stands at each stop.
  *
- * Eleven stops, eleven different things: a university gatehouse, a
- * shrine, a triumphal arch, a fountain, a tunnel mouth, a timber gate, a
- * market stall, a long tiled hall, a workshop, a walled court, a
- * cottage. Not eleven houses in eleven colours, which is what the map
- * had before and what made every stop read as the same kind of place.
+ * Two kinds, because the journey has two kinds of place in it. The
+ * universities at either end are cities, drawn from the tileset: they
+ * are where you arrive and where you are, and they should have weight on
+ * the map. Everything between is a marker — a dark plate with the
+ * institution's own outline mark on it — because a competition or a
+ * paper is a thing that happened at a point, not a settlement, and
+ * giving each one a building made nine identical-looking towns.
  *
- * Each one is then tinted to its own colour. The timber sprites have a
- * hue to rotate; the stone ones do not, so those are given a hue and a
- * saturation outright. Assigned by hand rather than generated, so
- * neighbours on the road never land on the same colour and no two stops
- * in a row are the same material.
+ * The marks are the site's existing line art, reused rather than
+ * reinvented. Drawing nine pixel icons would have meant nine pieces of
+ * art that answer to nothing else on the page.
  */
 
-const LOOK = {
-  // Stone, entered rather than lived in: the gate you go through to
-  // start a degree.
-  leicester: { of: 'gatehouse', hue: 0.985, floor: 0.52, lift: 0.86 },
-  // A small shrine on a plinth, which is what an award is.
-  modelling: { of: 'shrine', hue: 0.11, floor: 0.44, lift: 1.05 },
-  // A triumphal arch for a win.
-  consultancy: { of: 'archLight', hue: 0.07, floor: 0.52, lift: 0.96 },
-  // A fountain: the civic square where a delegation is received.
-  consul: { of: 'fountain', hue: 0.55, floor: 0.2 },
-  // A way in through the dark, which is the whole shape of a CTF.
-  ctf: { of: 'archDark', hue: 0.45, floor: 0.42, lift: 1.3 },
-  microinternship: { of: 'woodgate', rot: -52, sat: 0.85, lift: 1.12 },
-  // Commerce, and the only awning on the map.
-  cloudseven: { of: 'stall', rot: 150, sat: 0.7, lift: 1.1 },
-  // A long low hall: a press.
-  classfutures: { of: 'roof', rot: -120, sat: 0.62, lift: 1.18 },
-  // The workshop the dissertation was built in.
-  uniwise: { of: 'hall', rot: 80, sat: 0.7, lift: 1.15 },
-  // Blue rather than violet: at 0.73 this walled court and the press's
-  // purple roof were the same colour from across the map.
-  graduation: { of: 'keep', hue: 0.6, floor: 0.42, lift: 0.9 },
-  // The warmest, most worked sprite on the sheet, for where I am now.
-  aston: { of: 'cottage' },
-}
+/** Which stops are cities. Everything else gets a marker. */
+const CITIES = { leicester: 'city', aston: 'city' }
 
-const FALLBACK = { of: 'cottage' }
+export const MARKER = 34
+const CITY_W = PLACES.city[2] * SCALE
+const CITY_H = PLACES.city[3] * SCALE
 
-const lookFor = (entry) => LOOK[entry.id] || FALLBACK
-
-/**
- * What a stop takes up on the map, in CSS pixels.
- *
- * Every structure is a different size, so nothing downstream may assume
- * one. The card placement, the hover target and the map's own clearing
- * of building plots all ask here.
- */
 export function footprintFor(entry) {
-  const [, , w, h] = STRUCTURES[lookFor(entry).of] || STRUCTURES.cottage
-  return { w: w * SCALE, h: h * SCALE }
+  return CITIES[entry.id]
+    ? { w: CITY_W, h: CITY_H }
+    : { w: MARKER, h: MARKER }
 }
 
 /* ------------------------------------------------------------------ */
 
-/**
- * Every tinted sprite, built once and shared. Tinting walks a sprite's
- * pixels, so doing it per stop per render would be eleven passes over
- * the whole set on every hover. Doing it once at load costs nothing.
- */
 let cache = null
 
-function buildAll(sheet) {
-  const out = {}
-  for (const [id, look] of Object.entries(LOOK)) {
-    out[id] = tintSprite(sheet, STRUCTURES[look.of], look).toDataURL()
+/**
+ * The city sprite, taken to night once and shared.
+ *
+ * The terrain is graded on the canvas, so a sprite drawn over it at full
+ * daylight would be the one bright thing on a dark map. It goes through
+ * the same grade, on its own offscreen canvas, once at load.
+ */
+function buildCity(sheet) {
+  const [sx, sy, sw, sh] = PLACES.city
+  const canvas = document.createElement('canvas')
+  canvas.width = sw
+  canvas.height = sh
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  ctx.imageSmoothingEnabled = false
+  ctx.drawImage(sheet, sx, sy, sw, sh, 0, 0, sw, sh)
+  const data = ctx.getImageData(0, 0, sw, sh)
+  const p = data.data
+  for (let i = 0; i < p.length; i += 4) {
+    if (p[i + 3] === 0) continue
+    const [r, g, b] = nightPixel(p[i], p[i + 1], p[i + 2])
+    p[i] = r
+    p[i + 1] = g
+    p[i + 2] = b
   }
-  out._fallback = tintSprite(sheet, STRUCTURES.cottage).toDataURL()
-  return out
+  ctx.putImageData(data, 0, 0)
+  return canvas.toDataURL()
 }
 
-/** The tinted sprites, once the sheet has arrived. */
+/** The city sprite, once the sheet has arrived. */
 export function useBuildings() {
-  const [sprites, setSprites] = useState(cache)
+  const [city, setCity] = useState(cache)
 
   useEffect(() => {
     if (cache) return
     let live = true
-    loadTileset()
+    loadSheet(WORLD_SRC)
       .then((sheet) => {
-        cache = buildAll(sheet)
-        if (live) setSprites(cache)
+        cache = buildCity(sheet)
+        if (live) setCity(cache)
       })
       .catch(() => {
-        // No sheet, no buildings. The road and the labels still read.
+        // No sheet, no cities. The road and the labels still read.
       })
     return () => {
       live = false
     }
   }, [])
 
-  return sprites
+  return city
 }
 
-export default function Building({ entry, sprites, active }) {
-  const { w, h } = footprintFor(entry)
-  const src = sprites?.[entry.id] || sprites?._fallback
-  // Nothing is drawn until the art is here. A placeholder box would be a
-  // grey rectangle standing where a building goes, which is worse than a
-  // gap for the fraction of a second it takes to decode one PNG.
-  if (!src) return <span style={{ display: 'block', width: w, height: h }} />
+/* ------------------------------------------------------------------ */
 
+export default function Building({ entry, sprites, active }) {
+  const accent = entry.accent || 'var(--accent)'
+  const { w, h } = footprintFor(entry)
+
+  if (CITIES[entry.id]) {
+    if (!sprites) {
+      return <span style={{ display: 'block', width: w, height: h }} />
+    }
+    return (
+      <img
+        src={sprites}
+        alt=""
+        aria-hidden="true"
+        draggable="false"
+        width={w}
+        height={h}
+        style={{
+          display: 'block',
+          imageRendering: 'pixelated',
+          // Anchored at the base, so hovering lifts the city off its
+          // ground rather than zooming it.
+          transformOrigin: '50% 100%',
+          transform: active ? 'translateY(-6px) scale(1.06)' : 'none',
+          transition: 'transform 240ms cubic-bezier(0.22,1,0.36,1)',
+          filter: active
+            ? `drop-shadow(0 10px 14px rgba(4,10,18,0.7)) drop-shadow(0 0 14px ${accent}66)`
+            : 'drop-shadow(0 4px 6px rgba(4,10,18,0.6))',
+        }}
+      />
+    )
+  }
+
+  const Mark = markFor(entry)
   return (
-    <img
-      src={src}
-      alt=""
-      aria-hidden="true"
-      draggable="false"
-      width={w}
-      height={h}
+    <span
+      className="flex items-center justify-center rounded-[7px] border"
       style={{
-        display: 'block',
-        imageRendering: 'pixelated',
-        // Anchored at the base, so hovering lifts the structure off its
-        // plot rather than zooming it. Scale alone reads as a zoom;
-        // lifting and shadowing together reads as picking something up,
-        // which is what "pops" has to mean on a map seen from above.
-        transformOrigin: '50% 100%',
-        transform: active ? 'translateY(-8px) scale(1.07)' : 'none',
-        transition: 'transform 240ms cubic-bezier(0.22,1,0.36,1)',
-        filter: active
-          ? 'drop-shadow(0 12px 12px rgba(12,26,12,0.55))'
-          : 'drop-shadow(0 4px 3px rgba(12,26,12,0.4))',
+        width: w,
+        height: h,
+        color: active ? '#FFE6BC' : '#E6EDF6',
+        borderColor: active
+          ? 'rgba(255,200,120,0.62)'
+          : 'rgba(190,208,226,0.28)',
+        background: active ? 'rgba(20,26,34,0.96)' : 'rgba(12,18,26,0.9)',
+        boxShadow: active
+          ? `0 0 18px ${accent}55, 0 6px 14px rgba(0,0,0,0.6)`
+          : '0 4px 10px rgba(0,0,0,0.55)',
+        transform: active ? 'translateY(-4px) scale(1.1)' : 'none',
+        transition:
+          'transform 220ms cubic-bezier(0.22,1,0.36,1), box-shadow 220ms ease, border-color 220ms ease',
       }}
-    />
+    >
+      {Mark ? (
+        <Mark width="19" height="19" />
+      ) : (
+        <span className="font-mono text-[10px]">{entry.monogram || '·'}</span>
+      )}
+    </span>
   )
 }

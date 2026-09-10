@@ -13,12 +13,12 @@ import Building, {
   useBuildings,
   footprintFor,
 } from './MapBuildings'
-import { SCALE, TILE as ART_TILE } from '../lib/tileset'
+import { SCALE, TILE as ART_TILE, smoothRoute } from '../lib/tileset'
 
-// The map is a town, not a band. Tall enough for three streets, with room
-// between them for a structure, the label hanging under it, and the
-// stagger that stops the streets reading as ruled lines.
-const TRACK_H = 980
+// The map is a country now, not a town, so it is shaped like a map: a
+// little wider than tall, with room around the road for the ground it
+// crosses.
+const TRACK_H = 760
 // Everything on the map is snapped to this, so roads meet buildings
 // squarely and corners land on tile boundaries rather than between them.
 // One tile of art, at the scale the art is shown.
@@ -26,21 +26,31 @@ const TILE = ART_TILE * SCALE
 const CARD_W = 340
 const CARD_H = 280
 const CARD_GAP = 78
-// Half the widest structure, the treeline, and the width of the chrome
-// pinned down each side, so the outermost stop on each street stands on
-// open ground and never behind a caption.
-const EDGE = 215
-
-// The three streets, and how far every other stop steps off its street.
-//
-// Solved rather than guessed, against every box on the map at once:
-// eleven structures of eleven different sizes, their labels, and the six
-// pieces of chrome pinned to the frame. The combinations that collide
-// with none of them at any plate width the page can reach are a narrow
-// set. The top row in particular is held down far enough that the
-// gatehouse, which is the tallest thing here, clears the title block.
-const ROWS = [0.26, 0.55, 0.84]
-const STAGGER = 0.05
+/**
+ * Where each stop sits, as a fraction of the map.
+ *
+ * Not a grid and not a serpentine: a line that wanders, which is what a
+ * journey across a country looks like from above. It runs from the city
+ * in the north-west, out east along the high ground, then turns back on
+ * itself and works south to the city in the south-east.
+ *
+ * Hand-placed rather than generated. A generated path is evenly spaced
+ * and therefore reads as a diagram; the point of a route is that its
+ * turns mean something.
+ */
+const ROUTE = [
+  [0.121, 0.229],
+  [0.358, 0.142],
+  [0.348, 0.276],
+  [0.484, 0.331],
+  [0.628, 0.379],
+  [0.734, 0.402],
+  [0.838, 0.505],
+  [0.688, 0.558],
+  [0.646, 0.655],
+  [0.482, 0.71],
+  [0.812, 0.773],
+]
 
 export default function Experience() {
   const reduce = useReducedMotion()
@@ -433,7 +443,7 @@ export default function Experience() {
 
         <div
           ref={wrapRef}
-          className="relative hidden overflow-hidden rounded-[2rem] border md:block"
+          className="relative hidden overflow-hidden rounded-[2rem] border lg:block"
           style={{
             height,
             borderColor:
@@ -447,10 +457,10 @@ export default function Experience() {
           {/* Tiles, drawn from the route: the dirt road on the map and
               the journey through the timeline are the same line. */}
           <PixelMap
-            d={d}
             width={box.w}
             height={height}
             plots={plots}
+            stops={points}
           />
 
           {/* -------------------------------------------------------
@@ -712,7 +722,7 @@ export default function Experience() {
             is here because taking someone's work without naming them is
             a poor way to use a gift. */}
         <p
-          className="mono-label mt-4 hidden text-right md:block"
+          className="mono-label mt-4 hidden text-right lg:block"
           style={{ color: 'rgba(244,244,245,0.34)' }}
         >
           Map art:{' '}
@@ -731,7 +741,7 @@ export default function Experience() {
             MOBILE
            ========================================================= */}
 
-        <ol className="md:hidden">
+        <ol className="lg:hidden">
           {timeline.map(
             (entry, index) => (
               <li
@@ -1011,96 +1021,43 @@ function Compass() {
    ================================================================== */
 
 /**
- * Three streets, walked as a serpentine: left to right, down, right to
- * left, down, left to right again, with every other stop stepped off its
- * street so the road has to climb and fall between neighbours.
+ * The stops, in map coordinates.
  *
- * The stagger is the difference between a plan and a place. Without it
- * the three rows are ruled lines and the road is three straight bars.
- * With it the road meanders, and it still reads in order, because the
- * rows underneath it are still rows.
- *
- * Because each row hands off at the x it ended on, the turn between rows
- * is a single drop. No dog-legs, and nothing doubles back.
+ * Snapped to the tile grid so the road meets each milestone squarely
+ * rather than a few pixels off it, which at this scale is visible.
  */
 function buildStops(count, width, height) {
   const snap = (v) => Math.round(v / TILE) * TILE + TILE / 2
-  const left = EDGE
-  const right = width - EDGE
-  const out = []
-  const perRow = spread(count, ROWS.length)
-
-  for (let r = 0; r < ROWS.length; r++) {
-    const n = perRow[r]
-    const xs = []
-    for (let i = 0; i < n; i++) {
-      const t = n > 1 ? i / (n - 1) : 0.5
-      xs.push(snap(left + (right - left) * t))
-    }
-    // Odd rows run the other way, which is what makes it a serpentine
-    // and what lets the drop between rows be vertical.
-    if (r % 2) xs.reverse()
-    xs.forEach((x, i) => {
-      out.push({ x, y: snap(height * (ROWS[r] + (i % 2 ? STAGGER : 0))) })
-    })
-  }
-
-  return out.slice(0, count)
-}
-
-/** Stops per row, front-loaded, so the last street is never the crowded one. */
-function spread(count, rows) {
-  const base = Math.ceil(count / rows)
-  const out = []
-  let left = count
-  for (let r = 0; r < rows; r++) {
-    const take = Math.min(base, left - (rows - r - 1))
-    out.push(Math.max(1, take))
-    left -= out[r]
-  }
-  return out
+  return ROUTE.slice(0, count).map(([fx, fy]) => ({
+    x: snap(width * fx),
+    y: snap(height * fy),
+  }))
 }
 
 /* ==================================================================
    WAYPOINTS
    ================================================================== */
 
-/**
- * The road between two stops, as tiles rather than as a curve: out along
- * one axis, a square corner, then in along the other. Alternating which
- * axis leads stops every junction looking the same.
- */
-function buildWaypoints(stops) {
-  if (!stops.length) return []
-  const pts = [stops[0]]
-  for (let i = 0; i < stops.length - 1; i++) {
-    const a = stops[i]
-    const b = stops[i + 1]
-    // Always out along x, then in along y. Alternating which axis led
-    // looked more varied but made the road retrace itself: a segment that
-    // arrived vertically and then left vertically ran back down the line
-    // it had just come up, so the traveller walked the same stretch twice
-    // and the glow doubled back over it.
-    pts.push({ x: b.x, y: a.y }, { x: b.x, y: b.y })
-  }
-  return pts
-}
-
 /* ==================================================================
    ROUTE PATH
    ================================================================== */
 
 /**
- * Straight segments and square corners. The spline is gone: it fought the
- * tile grid, and a road that meets a building at an angle never looks
- * like it was built there.
+ * The route, as one smooth line through every stop.
+ *
+ * An earlier version squared every corner because the map was a town and
+ * a street meets a house at a right angle. This map is a country, and a
+ * road across country bends.
  */
 function routePath(stops) {
-  const p = buildWaypoints(stops)
+  const p = smoothRoute(stops)
   if (p.length < 2) return ''
   return (
     `M ${p[0].x} ${p[0].y} ` +
-    p.slice(1).map((q) => `L ${q.x} ${q.y}`).join(' ')
+    p
+      .slice(1)
+      .map((q) => `L ${q.x.toFixed(1)} ${q.y.toFixed(1)}`)
+      .join(' ')
   )
 }
 

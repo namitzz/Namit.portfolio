@@ -1,14 +1,22 @@
-overworld.png, character.png
+Map art
+=======
 
+world.png, mountains.png
+------------------------
+"Worldmap/Overworld tileset" by MrBeast, commissioned by OpenGameArt.org.
+Source: https://opengameart.org/content/worldmapoverworld-tileset
+Licence: CC BY 3.0 — https://creativecommons.org/licenses/by/3.0/
+Attribution is required by this licence and is shown under the map on
+the site itself, not only here.
+
+Used unmodified as source pixels. The map composes them at runtime and
+applies a night grade; no tile is redrawn.
+
+character.png
+-------------
 "Zelda-like tilesets and sprites" by ArMM1998.
 Source: https://opengameart.org/content/zelda-like-tilesets-and-sprites
-Licence: CC0 1.0 Universal (public domain dedication).
-https://creativecommons.org/publicdomain/zero/1.0/
-
-No rights reserved by the author. Attribution is kept here, and in a line
-under the map itself, because it is the decent thing to do, not because
-the licence demands it.
-
-Used unmodified except for two things done at runtime, in the browser:
-the house sprites are hue-rotated per stop, and everything is drawn at
-twice its native size with nearest-neighbour sampling.
+Licence: CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
+Only the walk-cycle sheet is still used; the overworld tiles from this
+pack were replaced by the worldmap set above, which has the mountains,
+rivers and coastline the village set had no way to draw.
