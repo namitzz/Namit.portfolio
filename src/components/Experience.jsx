@@ -718,14 +718,24 @@ export default function Experience() {
           <Compass />
         </div>
 
-        {/* The tileset is public domain and asks for nothing. The credit
-            is here because taking someone's work without naming them is
-            a poor way to use a gift. */}
+        {/* The worldmap tileset is CC BY: this credit is a condition of
+            using it, not a courtesy, so it stays visible on the page and
+            not only in CREDITS.txt. The walking figure is CC0 and is
+            named anyway. */}
         <p
           className="mono-label mt-4 hidden text-right lg:block"
           style={{ color: 'rgba(244,244,245,0.34)' }}
         >
           Map art:{' '}
+          <a
+            href="https://opengameart.org/content/worldmapoverworld-tileset"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-dotted underline-offset-2 transition-colors hover:text-[rgba(244,244,245,0.7)]"
+          >
+            MrBeast
+          </a>
+          , CC BY 3.0 · figure by{' '}
           <a
             href="https://opengameart.org/content/zelda-like-tilesets-and-sprites"
             target="_blank"
