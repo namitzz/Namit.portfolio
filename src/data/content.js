@@ -14,17 +14,6 @@ export const profile = {
   // terms rather than a sentence. The separator is what About splits on.
  positioning: 'AI · Business Transformation · Software',
 
-  // NOT CURRENTLY RENDERED. About used to list these under a Highlights
-  // heading; that list is gone and the heading is now only the marker
-  // handing over to the next section. Kept because the claims are still
-  // true and worth a home, not because anything reads them today.
-  highlights: [
-    'Built UniWise: a source-grounded RAG study assistant with reranking, citations, and an evaluation harness.',
-    'Shipped Cloud Seven Realty, a live production frontend for a paying client.',
-    'Modelled ~1M+ Met Police records for LSOA-level regression and area profiling.',
-    'Contributor to ClassFutures guidance on responsible Generative AI use.',
-  ],
-
   // About carries no education: the timeline is where study belongs, and
   // saying it twice made the section longer without making it stronger.
   about: [

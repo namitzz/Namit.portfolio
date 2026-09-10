@@ -7,7 +7,6 @@ import IntroOverlay from './components/IntroOverlay'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import About from './components/About'
-import Highlights from './components/Highlights'
 import ProjectIndex from './components/ProjectIndex'
 import ProjectSection from './components/ProjectSection'
 import Experience from './components/Experience'
@@ -61,10 +60,6 @@ export default function App() {
 
         <SectionTrigger onEnter={() => activate('base')}>
           <About />
-        </SectionTrigger>
-
-        <SectionTrigger onEnter={() => activate('base')}>
-          <Highlights />
         </SectionTrigger>
 
         <SectionTrigger onEnter={() => activate('base')}>
