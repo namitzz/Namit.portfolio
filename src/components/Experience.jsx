@@ -938,7 +938,11 @@ function Detail({
           href={entry.href}
           target="_blank"
           rel="noreferrer"
-          className="mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
+          // The map's card is pointer-transparent, so that moving towards
+          // it does not leave the milestone and dismiss it. Everything
+          // inside inherits that, which left this link unclickable. Each
+          // interactive child has to opt back in for itself.
+          className="pointer-events-auto mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
           style={{
             color:
               textColor(entry),
