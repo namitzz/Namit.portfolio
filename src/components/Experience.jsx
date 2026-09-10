@@ -116,10 +116,16 @@ export default function Experience() {
   // Measured before paint, so a card that turns out taller than the last
   // one is moved in the same frame rather than appearing in the wrong
   // place and then jumping.
+  //
+  // scrollHeight, not the rendered height. The card is capped so it cannot
+  // hang off the bottom of the map, and a capped card measured by its box
+  // reports the cap: it then places itself for a height it does not have,
+  // stays capped, and measures the cap again. Cloud Seven's card sat in
+  // that loop with its own link cut off below the fold.
   useLayoutEffect(() => {
     const el = cardRef.current
     if (!el) return
-    const h = el.getBoundingClientRect().height
+    const h = el.scrollHeight
     if (Math.abs(h - cardH) > 4) setCardH(h)
   }, [active, cardH, box.w])
 
@@ -281,16 +287,26 @@ export default function Experience() {
           </div>
 
           {/* The card sits outside the transform: it is text, and text
-              should not be magnified by a map zoom. */}
+              should not be magnified by a map zoom.
+
+              It also takes the pointer rather than letting it through.
+              Transparent, it let the milestone underneath fire its own
+              hover as the mouse crossed it, so reaching for Cloud Seven's
+              link passed over UniWise and the card being aimed at
+              vanished. Opaque to the pointer, nothing underneath fires and
+              the card survives the trip to its own link. */}
           {card && (
             <div
               id="route-card"
               ref={cardRef}
-              className="pointer-events-none absolute z-30 overflow-hidden rounded-xl border p-4"
+              className="absolute z-30 overflow-y-auto overscroll-contain rounded-xl border p-4"
               style={{
                 left: map.project(card.left, card.top).x,
                 top: map.project(card.left, card.top).y,
                 width: card.width,
+                // A last guard rather than the mechanism: placement should
+                // already have found room. If it ever cannot, the card
+                // scrolls rather than losing the bottom of itself.
                 maxHeight: height - map.project(card.left, card.top).y - 12,
                 borderColor: textColor(card.entry),
                 background: 'rgba(10,15,22,0.95)',
@@ -302,11 +318,7 @@ export default function Experience() {
               {SECTIONS[card.entry.id] && (
                 <button
                   type="button"
-                  // The card cannot take the pointer, or moving towards it
-                  // would leave the milestone and dismiss it. This one
-                  // button opts back in, so the shortcut is reachable by
-                  // mouse and by keyboard rather than only by double-click.
-                  className="pointer-events-auto mt-3 flex w-full items-center justify-between rounded-lg border px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors"
+                  className="mt-3 flex w-full items-center justify-between rounded-lg border px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors"
                   style={{
                     borderColor: textColor(card.entry),
                     color: textColor(card.entry),
@@ -938,11 +950,7 @@ function Detail({
           href={entry.href}
           target="_blank"
           rel="noreferrer"
-          // The map's card is pointer-transparent, so that moving towards
-          // it does not leave the milestone and dismiss it. Everything
-          // inside inherits that, which left this link unclickable. Each
-          // interactive child has to opt back in for itself.
-          className="pointer-events-auto mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
+          className="mt-4 inline-flex items-center gap-1.5 border-b pb-0.5 font-mono text-[11px] uppercase tracking-[0.1em]"
           style={{
             color:
               textColor(entry),
