@@ -4,7 +4,7 @@ import { timeline } from '../data/content'
 import { markFor } from './TimelineMarks'
 import Reveal from './Reveal'
 import JourneyMap from './JourneyMap'
-import { MAP_H, MAP_W, PLACES, TRAIL } from '../data/journeyMap'
+import { MAP_H, MAP_W, PLACES, SECTIONS, TRAIL } from '../data/journeyMap'
 import { useMapView } from './useMapView'
 
 /**
@@ -174,6 +174,20 @@ export default function Experience() {
 
   const walkerAt = path[Math.round(walker.at)] || path[0]
 
+  /**
+   * Jump to the milestone's own section further down the page.
+   *
+   * Only three of the eleven have one. The rest are a competition, a
+   * visit or a placement, and their reference is the link in the card.
+   */
+  const goToSection = (entry) => {
+    const target = SECTIONS[entry.id]
+    if (!target) return
+    document
+      .getElementById(target.id)
+      ?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+  }
+
   return (
     <section
       id="experience"
@@ -250,6 +264,7 @@ export default function Experience() {
                   active={active === index}
                   onEnter={() => setActive(index)}
                   onClick={() => walkTo(index)}
+                  onOpen={() => goToSection(entry)}
                 />
               ))}
 
@@ -284,6 +299,24 @@ export default function Experience() {
               }}
             >
               <Detail entry={card.entry} compact />
+              {SECTIONS[card.entry.id] && (
+                <button
+                  type="button"
+                  // The card cannot take the pointer, or moving towards it
+                  // would leave the milestone and dismiss it. This one
+                  // button opts back in, so the shortcut is reachable by
+                  // mouse and by keyboard rather than only by double-click.
+                  className="pointer-events-auto mt-3 flex w-full items-center justify-between rounded-lg border px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors"
+                  style={{
+                    borderColor: textColor(card.entry),
+                    color: textColor(card.entry),
+                  }}
+                  onClick={() => goToSection(card.entry)}
+                >
+                  {SECTIONS[card.entry.id].label}
+                  <span aria-hidden="true">↓</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -343,16 +376,22 @@ export default function Experience() {
  * Its accessible name carries the text the artwork shows, so the map is
  * navigable without seeing it.
  */
-function Hotspot({ entry, hit, width, height, active, onEnter, onClick }) {
+function Hotspot({ entry, hit, width, height, active, onEnter, onClick, onOpen }) {
   const [fx, fy, fw, fh] = hit
+  const section = SECTIONS[entry.id]
   return (
     <button
       type="button"
       onMouseEnter={onEnter}
       onFocus={onEnter}
       onClick={onClick}
+      onDoubleClick={section ? onOpen : undefined}
       aria-describedby={active ? 'route-card' : undefined}
-      aria-label={`${entry.year} — ${entry.short || entry.title}`}
+      aria-label={
+        section
+          ? `${entry.year} — ${entry.short || entry.title}. Double-click to open its section.`
+          : `${entry.year} — ${entry.short || entry.title}`
+      }
       className="absolute rounded-lg border transition-all duration-200"
       style={{
         left: fx * width,

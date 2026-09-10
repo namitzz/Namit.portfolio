@@ -73,9 +73,90 @@ export const projects = [
     },
   },
   {
+    id: 'cloud',
+    themeKey: 'cloud',
+    index: '02',
+    domain: 'Digital Transformation · Product',
+    year: '2025',
+    title: 'Cloud Seven Realty',
+    tagline:
+  
+  'A production digital platform for a real estate client, designed around business workflows rather than just a website.',
+    problem:
+      'The business needed an online presence that showed its local knowledge, verified-title focus, and on-ground support. Generic listing templates would have flattened the things that make the business trustworthy, and the team needed to update listings themselves without touching code.',
+    solution:
+      'A calm, premium site built around three signals buyers care about: verified titles, local presence, and curated listings. Properties, project pages, and images live in Google Sheets and Google Drive, fetched via API and revalidated on a short ISR cache so the team can update listings without a deploy.',
+    stack: [
+      'Next.js 15',
+      'React 19',
+      'TypeScript',
+      'Tailwind CSS',
+      'Google Sheets API',
+      'Google Drive API',
+      'ISR / 5-minute cache',
+      'Responsive design',
+    ],
+    features: [
+      'Hero framed around the brand promise: verified titles and on-ground support.',
+      'Featured listings sourced live from a Google Sheet, no redeploy needed.',
+      'Property images pulled from a connected Google Drive folder.',
+      'Trust strip dedicated to local credibility, not generic certifications.',
+      'Property pages structured by area and listing type (Rent, Buy, Land).',
+      'Fully responsive, since most traffic for this market is on mobile.',
+    ],
+    impact:
+      'I went in thinking this was a frontend job and came out understanding it was a client job. Most of the decisions had nothing to do with code. They were about how a non-technical team would actually keep the site alive, who buyers trust in this market, and what could be safely changed in a spreadsheet without a deploy. The code was the easy half.',
+    cta: {
+      caseStudy: null,
+      // Repository is private, so the GitHub button is omitted.
+      github: null,
+      demo: 'https://www.cloudsevenrealty.com/',
+    },
+  },
+  {
+    id: 'tovo',
+    themeKey: 'tovo',
+    index: '03',
+    domain: 'React · Supabase',
+    year: '2026',
+    title: 'Tovo',
+    status: 'Live',
+    tagline:
+      'A React + Supabase app for learning German across CEFR levels A1 to C1.',
+    problem:
+      'Language apps tend to gamify everything but drift from real curriculum. Learners want structured practice tied to actual proficiency levels, not just streaks.',
+    solution:
+      'Tovo is structured around the CEFR framework (A1 to C1), with a personalised onboarding flow, level-appropriate content, audio prompts, and progress tracking backed by Supabase. Built with React 19, TypeScript, Zustand for state, and Framer Motion for the interaction feel.',
+    stack: [
+      'React 19',
+      'TypeScript',
+      'Vite',
+      'Supabase',
+      'Zustand',
+      'Framer Motion',
+      'Recharts',
+      'Sentry',
+    ],
+    features: [
+      'Personalised onboarding: name, current level, learning goals.',
+      'Structured CEFR levels A1 through C1 with level-appropriate content.',
+      'Supabase backend for auth and persistent progress.',
+      'Zustand state store for a fast, reactive UI.',
+      'Audio prompts to reinforce listening and pronunciation.',
+      'Recharts-based progress visualisation.',
+    ],
+    impact:
+      'Working on Tovo taught me how much of a language product lives outside the language: onboarding, streak logic, level gating, latency on audio. The interesting engineering was making the CEFR structure feel like a companion rather than a syllabus.',
+    cta: {
+      caseStudy: null,
+      github: 'https://github.com/namitzz/Tovo',
+      demo: 'https://namitzz.github.io/Tovo/',
+    },
+  },
+  {
     id: 'vision',
     themeKey: 'vision',
-    index: '02',
+    index: '04',
     domain: 'Computer Vision',
     year: '2025',
     title: 'Posture AI',
@@ -119,50 +200,9 @@ export const projects = [
     },
   },
   {
-    id: 'cloud',
-    themeKey: 'cloud',
-    index: '03',
-    domain: 'Digital Transformation · Product',
-    year: '2025',
-    title: 'Cloud Seven Realty',
-    tagline:
-  
-  'A production digital platform for a real estate client, designed around business workflows rather than just a website.',
-    problem:
-      'The business needed an online presence that showed its local knowledge, verified-title focus, and on-ground support. Generic listing templates would have flattened the things that make the business trustworthy, and the team needed to update listings themselves without touching code.',
-    solution:
-      'A calm, premium site built around three signals buyers care about: verified titles, local presence, and curated listings. Properties, project pages, and images live in Google Sheets and Google Drive, fetched via API and revalidated on a short ISR cache so the team can update listings without a deploy.',
-    stack: [
-      'Next.js 15',
-      'React 19',
-      'TypeScript',
-      'Tailwind CSS',
-      'Google Sheets API',
-      'Google Drive API',
-      'ISR / 5-minute cache',
-      'Responsive design',
-    ],
-    features: [
-      'Hero framed around the brand promise: verified titles and on-ground support.',
-      'Featured listings sourced live from a Google Sheet, no redeploy needed.',
-      'Property images pulled from a connected Google Drive folder.',
-      'Trust strip dedicated to local credibility, not generic certifications.',
-      'Property pages structured by area and listing type (Rent, Buy, Land).',
-      'Fully responsive, since most traffic for this market is on mobile.',
-    ],
-    impact:
-      'I went in thinking this was a frontend job and came out understanding it was a client job. Most of the decisions had nothing to do with code. They were about how a non-technical team would actually keep the site alive, who buyers trust in this market, and what could be safely changed in a spreadsheet without a deploy. The code was the easy half.',
-    cta: {
-      caseStudy: null,
-      // Repository is private, so the GitHub button is omitted.
-      github: null,
-      demo: 'https://www.cloudsevenrealty.com/',
-    },
-  },
-  {
     id: 'crime',
     themeKey: 'crime',
-    index: '04',
+    index: '05',
     domain: 'Data Science',
     year: '2024',
     title: 'Crime Prediction Dashboard',
@@ -192,7 +232,7 @@ export const projects = [
   {
     id: 'course',
     themeKey: 'course',
-    index: '05',
+    index: '06',
     domain: 'Spring Boot · MySQL',
     year: '2024',
     title: 'Course Companion Web App',
@@ -228,46 +268,6 @@ export const projects = [
       caseStudy: null,
       github: 'https://github.com/namitzz/Course-Companion-Web-App-',
       demo: null,
-    },
-  },
-  {
-    id: 'tovo',
-    themeKey: 'tovo',
-    index: '06',
-    domain: 'React · Supabase',
-    year: '2026',
-    title: 'Tovo',
-    status: 'Live',
-    tagline:
-      'A React + Supabase app for learning German across CEFR levels A1 to C1.',
-    problem:
-      'Language apps tend to gamify everything but drift from real curriculum. Learners want structured practice tied to actual proficiency levels, not just streaks.',
-    solution:
-      'Tovo is structured around the CEFR framework (A1 to C1), with a personalised onboarding flow, level-appropriate content, audio prompts, and progress tracking backed by Supabase. Built with React 19, TypeScript, Zustand for state, and Framer Motion for the interaction feel.',
-    stack: [
-      'React 19',
-      'TypeScript',
-      'Vite',
-      'Supabase',
-      'Zustand',
-      'Framer Motion',
-      'Recharts',
-      'Sentry',
-    ],
-    features: [
-      'Personalised onboarding: name, current level, learning goals.',
-      'Structured CEFR levels A1 through C1 with level-appropriate content.',
-      'Supabase backend for auth and persistent progress.',
-      'Zustand state store for a fast, reactive UI.',
-      'Audio prompts to reinforce listening and pronunciation.',
-      'Recharts-based progress visualisation.',
-    ],
-    impact:
-      'Working on Tovo taught me how much of a language product lives outside the language: onboarding, streak logic, level gating, latency on audio. The interesting engineering was making the CEFR structure feel like a companion rather than a syllabus.',
-    cta: {
-      caseStudy: null,
-      github: 'https://github.com/namitzz/Tovo',
-      demo: 'https://namitzz.github.io/Tovo/',
     },
   },
 ]

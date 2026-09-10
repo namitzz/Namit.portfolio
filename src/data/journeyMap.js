@@ -75,6 +75,21 @@ export const TRAIL = [
 ]
 
 /**
+ * Which milestones are written up further down the page.
+ *
+ * Three of the eleven have a section of their own; the rest are a
+ * competition, a visit or a placement, and their reference is the link
+ * in the card rather than anything on this page. Double-clicking one of
+ * these three jumps to it, and the card says so, because a shortcut
+ * nobody is told about is not a feature.
+ */
+export const SECTIONS = {
+  uniwise: { id: 'uniwise', label: 'Read the case study' },
+  cloudseven: { id: 'cloud', label: 'Read the case study' },
+  classfutures: { id: 'writing', label: 'See it in writing' },
+}
+
+/**
  * Each milestone: the lit node it sits on, and the box you can click.
  *
  * `at` is the glowing node on the road, which is what the walking figure
