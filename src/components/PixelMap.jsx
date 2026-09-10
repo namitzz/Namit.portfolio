@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import {
   BRIDGE,
   FOAM,
   FOREST,
+  FOREST_SNOW,
   GROUND,
   GROUND_DARK,
   GROUND_LIGHT,
@@ -11,8 +13,10 @@ import {
   ROAD,
   ROAD_EDGE,
   SCALE,
+  SAND,
   SEA_DEEP,
   SEA_SHALLOW,
+  SNOW_GROUND,
   TILE,
   fbm,
   hash2,
@@ -24,42 +28,104 @@ import {
 
 /**
  * The world the journey crosses: coast, river, woodland, mountains and
- * the road between them, drawn to a canvas from a worldmap tileset.
+ * the road between them.
+ *
+ * Drawn in two layers, because most of a world does not move and a little
+ * of it does. The static layer - ground, water, forest, road, bridges,
+ * mountains, the night grade, the lamps along the road - is painted once
+ * to an offscreen canvas at full size. The live layer is repainted every
+ * frame over the top: cloud drifting across the peaks, light moving on
+ * the water, the lamp at each milestone breathing.
+ *
+ * Splitting them is what makes the map affordable. Repainting the world
+ * every frame would mean re-evaluating fractal noise for a quarter of a
+ * million pixels sixty times a second, which no browser will do. Blitting
+ * one finished image and drawing a dozen gradients over it costs almost
+ * nothing.
+ *
+ * The view is a window onto that offscreen world, so panning and zooming
+ * are a change of source rectangle rather than a redraw.
  *
  * The regions are placed by hand and detailed by noise. Pure noise gives
  * a plausible island and no composition: the mountains end up wherever,
- * and the eye has nothing to travel along. So the sea, the lake, the
- * river and the four ranges are put where the map wants them, and
- * fractal noise only decides where each edge actually falls, which is
- * the part a hand is bad at.
- *
- * The canvas is drawn once per size. Nothing here animates.
+ * and the eye has nothing to travel along. Noise only decides where each
+ * edge actually falls, which is the part a hand is bad at.
  */
 
 /** Half-width of the road surface and of its shoulder, in sheet pixels. */
 const ROAD_HALF = 2.7
 const SHOULDER = 4.0
 
-export default function PixelMap({ width, height, plots = [], stops = [] }) {
+export default function PixelMap({
+  width,
+  height,
+  plots = [],
+  stops = [],
+  view,
+}) {
   const ref = useRef(null)
+  const worldRef = useRef(null)
+  const viewRef = useRef(view)
+  const reduce = useReducedMotion()
+
+  // The loop reads the view from a ref rather than from a dependency, so
+  // dragging the map does not tear the animation down and rebuild it.
+  viewRef.current = view
 
   useEffect(() => {
     const canvas = ref.current
-    if (!canvas || !width || !height || !stops.length) return
+    if (!canvas || !width || !height || !stops.length) return undefined
 
     let cancelled = false
+    let raf = 0
+
     loadTileset()
       .then((sheets) => {
-        if (!cancelled) paint(canvas, sheets, width, height, plots, stops)
+        if (cancelled) return
+        const aw = Math.ceil(width / SCALE)
+        const ah = Math.ceil(height / SCALE)
+        worldRef.current = buildWorld(sheets, aw, ah, plots, stops)
+        canvas.width = aw
+        canvas.height = ah
+
+        const ctx = canvas.getContext('2d')
+        ctx.imageSmoothingEnabled = false
+
+        // The first frame is painted straight away rather than waiting on
+        // an animation frame, so the map is there even where frames never
+        // come: a background tab, a reduced-motion setting, or a renderer
+        // that has stalled its own loop.
+        present(ctx, worldRef.current, viewRef.current, 0)
+        if (reduce) return
+
+        const started = performance.now()
+        const tick = (now) => {
+          if (cancelled) return
+          present(ctx, worldRef.current, viewRef.current, now - started)
+          raf = requestAnimationFrame(tick)
+        }
+        raf = requestAnimationFrame(tick)
       })
       .catch(() => {
         // A missing sheet leaves the plate's own ground showing, which is
         // a map without its detail rather than a hole in the page.
       })
+
     return () => {
       cancelled = true
+      if (raf) cancelAnimationFrame(raf)
     }
-  }, [width, height, plots, stops])
+  }, [width, height, plots, stops, reduce])
+
+  // A still map still has to follow the view when it is dragged, and with
+  // no loop running nothing else would repaint it.
+  useEffect(() => {
+    if (!reduce) return
+    const canvas = ref.current
+    const world = worldRef.current
+    if (!canvas || !world) return
+    present(canvas.getContext('2d'), world, view, 0)
+  }, [view, reduce])
 
   return (
     <canvas
@@ -72,19 +138,139 @@ export default function PixelMap({ width, height, plots = [], stops = [] }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Presenting                                                          */
 
-function paint(canvas, { world, mountains }, width, height, plots, stops) {
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
+/**
+ * One frame: the window onto the world, then everything that moves.
+ *
+ * `zoom` is always a whole number, so a source pixel still lands on a
+ * whole number of screen pixels and the art stays sharp. Pixel art at a
+ * fractional scale is mush.
+ */
+function present(ctx, world, view, t) {
+  if (!world) return
+  const { canvas: img, aw, ah, sparkles, marks } = world
+  const zoom = view?.zoom || 1
+  const sx = (view?.x || 0) / SCALE
+  const sy = (view?.y || 0) / SCALE
 
-  // The canvas is sized in sheet pixels and stretched to its CSS box, so
-  // one source pixel always lands on exactly SCALE device pixels and the
-  // art stays square. Rendering at devicePixelRatio instead would put
-  // source pixels on fractional boundaries and soften every edge.
-  const aw = Math.ceil(width / SCALE)
-  const ah = Math.ceil(height / SCALE)
+  ctx.setTransform(1, 0, 0, 1, 0, 0)
+  ctx.imageSmoothingEnabled = false
+  ctx.clearRect(0, 0, aw, ah)
+  ctx.drawImage(img, sx, sy, aw / zoom, ah / zoom, 0, 0, aw, ah)
+
+  // Everything below is in world coordinates; the transform puts it
+  // through the same window the blit above went through.
+  ctx.save()
+  ctx.setTransform(zoom, 0, 0, zoom, -sx * zoom, -sy * zoom)
+  shimmer(ctx, sparkles, t)
+  clouds(ctx, aw, ah, t)
+  beacons(ctx, marks, t)
+  ctx.restore()
+
+  // The vignette belongs to the screen, not to the world: it frames what
+  // you are looking at, so it must not zoom with the ground.
+  vignette(ctx, aw, ah)
+}
+
+/** Light moving on the water. */
+function shimmer(ctx, sparkles, t) {
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  for (const s of sparkles) {
+    // Each sparkle keeps its own phase, so the surface glitters rather
+    // than pulsing all at once like a warning light.
+    const a = Math.sin(t * 0.0016 + s.phase) * 0.5 + 0.5
+    if (a < 0.55) continue
+    ctx.fillStyle = `rgba(150,196,236,${(0.5 * ((a - 0.55) / 0.45)).toFixed(3)})`
+    ctx.fillRect(s.x, s.y, 1, 1)
+  }
+  ctx.restore()
+}
+
+/**
+ * Cloud lying along the ridges, drifting.
+ *
+ * Flattened hard, because cloud on a ridge is a sheet and not a ball: a
+ * circular gradient here reads as fog rather than as weather. Each bank
+ * drifts at its own rate and wraps around, so the sky never visibly
+ * repeats.
+ */
+function clouds(ctx, aw, ah, t) {
+  const banks = [
+    [0.58, 0.05, 0.12, 0.5, 0.0045],
+    [0.72, 0.03, 0.14, 0.55, 0.0031],
+    [0.88, 0.07, 0.11, 0.45, 0.0038],
+    [0.28, 0.03, 0.09, 0.38, 0.0026],
+    [0.02, 0.47, 0.07, 0.32, 0.0021],
+    [0.2, 0.95, 0.08, 0.32, 0.0034],
+  ]
+  for (const [fx, fy, fr, alpha, speed] of banks) {
+    const r = aw * fr
+    const span = aw + r * 4
+    const drift = aw * fx + t * speed
+    const cx = ((drift % span) + span) % span - r * 2
+    ctx.save()
+    ctx.translate(cx, ah * fy)
+    ctx.scale(1, 0.3)
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r)
+    g.addColorStop(0, `rgba(152,170,200,${alpha})`)
+    g.addColorStop(0.55, `rgba(134,152,184,${alpha * 0.4})`)
+    g.addColorStop(1, 'rgba(120,138,170,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.arc(0, 0, r, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  }
+}
+
+/** The lamp at each milestone, breathing. */
+function beacons(ctx, marks, t) {
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  marks.forEach((m, i) => {
+    // Offset per stop, so the lamps never fall into step with each other.
+    const a = 0.1 + 0.07 * Math.sin(t * 0.0013 + i * 1.7)
+    ctx.save()
+    ctx.translate(m.x, m.y)
+    ctx.scale(1, 0.68)
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 30)
+    g.addColorStop(0, `rgba(255,190,110,${a.toFixed(3)})`)
+    g.addColorStop(1, 'rgba(150,80,20,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.arc(0, 0, 30, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  })
+  ctx.restore()
+}
+
+function vignette(ctx, aw, ah) {
+  const g = ctx.createRadialGradient(
+    aw / 2,
+    ah / 2,
+    Math.min(aw, ah) * 0.34,
+    aw / 2,
+    ah / 2,
+    Math.max(aw, ah) * 0.7,
+  )
+  g.addColorStop(0, 'rgba(3,7,14,0)')
+  g.addColorStop(1, 'rgba(3,7,14,0.84)')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, aw, ah)
+}
+
+/* ------------------------------------------------------------------ */
+/* Building the world                                                  */
+
+/** Everything that does not move, painted once. */
+function buildWorld({ world, mountains }, aw, ah, plots, stops) {
+  const canvas = document.createElement('canvas')
   canvas.width = aw
   canvas.height = ah
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
   ctx.imageSmoothingEnabled = false
 
   const route = stops.map((s) => ({ x: s.x / SCALE, y: s.y / SCALE }))
@@ -98,18 +284,37 @@ function paint(canvas, { world, mountains }, width, height, plots, stops) {
   const blit = (sheet, [sx, sy, sw = TILE, sh = TILE], dx, dy) =>
     ctx.drawImage(sheet, sx, sy, sw, sh, Math.round(dx), Math.round(dy), sw, sh)
 
-  ground(ctx, aw, ah, geo)
+  const wet = ground(ctx, aw, ah, geo)
   woodland(world, aw, ah, geo, nearRoad, plots, blit)
   ranges(mountains, aw, ah, blit)
-  clouds(ctx, aw, ah)
   places(world, aw, ah, geo, nearRoad, blit)
 
   night(ctx, aw, ah)
-  // The road goes down after the grade, in its own night colours, and
-  // the lamps go on top of that.
+  // The road goes down after the grade, in its own night colours, and the
+  // lamps go on top of that.
   road(ctx, aw, ah, nearRoad)
   crossings(ctx, world, path, geo)
-  lantern(ctx, path, route)
+  lantern(ctx, path)
+
+  return { canvas, aw, ah, marks: route, sparkles: sparkleList(wet, aw, ah) }
+}
+
+/**
+ * A fixed set of points on the water that can catch the light.
+ *
+ * Chosen once from the water mask rather than searched for per frame:
+ * hunting for wet pixels every frame would mean walking the whole map
+ * sixty times a second in order to draw a few dozen dots.
+ */
+function sparkleList(wet, aw, ah, count = 420) {
+  const out = []
+  for (let i = 0; i < count * 40 && out.length < count; i++) {
+    const x = Math.floor(hash2(i, 11) * aw)
+    const y = Math.floor(hash2(i, 29) * ah)
+    if (!wet[y * aw + x]) continue
+    out.push({ x, y, phase: hash2(i, 71) * Math.PI * 2 })
+  }
+  return out
 }
 
 /* ------------------------------------------------------------------ */
@@ -138,10 +343,25 @@ function regions(aw, ah) {
     )
   }
   const water = (x, y) => sea(x, y) || lake(x, y) || river(x, y)
-  return { sea, lake, river, water }
+  /**
+   * How high the ground is, 0 at the coast and 1 on the summits.
+   *
+   * Only the northern range gets a snow line. The grey ranges are lower
+   * ground, and putting snow on all of them would make the whole frame
+   * white and leave the middle looking like a hole.
+   */
+  const altitude = (x, y) => {
+    const band = 1 - y / (ah * 0.34)
+    if (band <= 0) return 0
+    return Math.max(0, Math.min(1, band * (0.72 + fbm(x, y, 3, 0.02) * 0.6)))
+  }
+  return { sea, lake, river, water, altitude }
 }
 
-/** Grass, mottled, and then the water cut out of it. */
+/**
+ * Grass, mottled, and then the water cut out of it. Returns the water
+ * mask, which the sparkles are later chosen from.
+ */
 function ground(ctx, aw, ah, geo) {
   ctx.fillStyle = rgb(GROUND)
   ctx.fillRect(0, 0, aw, ah)
@@ -150,6 +370,16 @@ function ground(ctx, aw, ah, geo) {
   // field is not static: it is patchy.
   for (let y = 0; y < ah; y += 4) {
     for (let x = 0; x < aw; x += 4) {
+      const alt = geo.altitude(x, y)
+      if (alt > 0.5) {
+        // The snow line is ragged rather than level, because a treeline
+        // follows the shape of the ground, not a contour on a diagram.
+        ctx.fillStyle = rgb(SNOW_GROUND)
+        ctx.globalAlpha = Math.min(1, (alt - 0.5) / 0.28)
+        ctx.fillRect(x, y, 4, 4)
+        ctx.globalAlpha = 1
+        continue
+      }
       const n = fbm(x, y, 3, 0.055)
       if (n > 0.6) ctx.fillStyle = rgb(GROUND_LIGHT)
       else if (n < 0.4) ctx.fillStyle = rgb(GROUND_DARK)
@@ -190,7 +420,28 @@ function ground(ctx, aw, ah, geo) {
       p[i + 2] = FOAM[2]
     }
   }
+  // A beach on the dry side of the foam. Land that meets water with no
+  // shore reads as a flooded field rather than as a coast.
+  for (let y = 0; y < ah; y++) {
+    for (let x = 0; x < aw; x++) {
+      if (wet[y * aw + x]) continue
+      let near = false
+      for (let r = 1; r <= 3 && !near; r++) {
+        near =
+          !!wet[y * aw + Math.max(0, x - r)] ||
+          !!wet[y * aw + Math.min(aw - 1, x + r)] ||
+          !!wet[Math.max(0, y - r) * aw + x] ||
+          !!wet[Math.min(ah - 1, y + r) * aw + x]
+      }
+      if (!near) continue
+      const i = (y * aw + x) * 4
+      p[i] = SAND[0]
+      p[i + 1] = SAND[1]
+      p[i + 2] = SAND[2]
+    }
+  }
   ctx.putImageData(img, 0, 0)
+  return wet
 }
 
 /** Woodland, as a nine-slice so a wood has edges rather than corners. */
@@ -229,7 +480,11 @@ function woodland(world, aw, ah, geo, nearRoad, plots, blit) {
       const right = !!tree[r][c + 1]
       const row = up && down ? 1 : up ? 2 : 0
       const col = left && right ? 1 : left ? 2 : 0
-      blit(world, FOREST[row][col], c * TILE, r * TILE)
+      const set =
+        geo.altitude(c * TILE + TILE / 2, r * TILE + TILE / 2) > 0.42
+          ? FOREST_SNOW
+          : FOREST
+      blit(world, set[row][col], c * TILE, r * TILE)
     }
   }
 }
@@ -367,32 +622,6 @@ function ranges(mountains, aw, ah, blit) {
   )
 }
 
-/** Cloud banks lying on the high ground, and only there. */
-function clouds(ctx, aw, ah) {
-  const bank = (cx, cy, r, alpha) => {
-    ctx.save()
-    ctx.translate(cx, cy)
-    // Flattened hard, because cloud lying along a ridge is a sheet, not a
-    // ball. A circular gradient here reads as fog rather than weather.
-    ctx.scale(1, 0.3)
-    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r)
-    g.addColorStop(0, `rgba(238,244,252,${alpha})`)
-    g.addColorStop(0.55, `rgba(232,240,250,${alpha * 0.4})`)
-    g.addColorStop(1, 'rgba(226,236,248,0)')
-    ctx.fillStyle = g
-    ctx.beginPath()
-    ctx.arc(0, 0, r, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.restore()
-  }
-  bank(aw * 0.58, ah * 0.05, aw * 0.12, 0.62)
-  bank(aw * 0.72, ah * 0.03, aw * 0.14, 0.68)
-  bank(aw * 0.88, ah * 0.07, aw * 0.11, 0.55)
-  bank(aw * 0.28, ah * 0.03, aw * 0.09, 0.45)
-  bank(aw * 0.02, ah * 0.47, aw * 0.07, 0.4)
-  bank(aw * 0.2, ah * 0.95, aw * 0.08, 0.4)
-}
-
 /**
  * The places nobody stops at: a lighthouse on the point, a field inland,
  * a hamlet, a cave mouth in the hills.
@@ -449,19 +678,6 @@ function night(ctx, aw, ah) {
     p[i + 2] = b
   }
   ctx.putImageData(data, 0, 0)
-
-  const vignette = ctx.createRadialGradient(
-    aw / 2,
-    ah / 2,
-    Math.min(aw, ah) * 0.34,
-    aw / 2,
-    ah / 2,
-    Math.max(aw, ah) * 0.7,
-  )
-  vignette.addColorStop(0, 'rgba(3,7,14,0)')
-  vignette.addColorStop(1, 'rgba(3,7,14,0.84)')
-  ctx.fillStyle = vignette
-  ctx.fillRect(0, 0, aw, ah)
 }
 
 /**
@@ -471,7 +687,7 @@ function night(ctx, aw, ah) {
  * does. Painting the same amber at partial alpha would wash the ground
  * towards orange instead, and the map would look tinted rather than lit.
  */
-function lantern(ctx, path, stops) {
+function lantern(ctx, path) {
   ctx.save()
   ctx.globalCompositeOperation = 'lighter'
   const pool = (x, y, radius, alpha) => {
@@ -489,7 +705,6 @@ function lantern(ctx, path, stops) {
     ctx.restore()
   }
   for (let i = 0; i < path.length; i += 10) pool(path[i].x, path[i].y, 22, 0.18)
-  for (const s of stops) pool(s.x, s.y, 58, 0.4)
   ctx.restore()
 }
 

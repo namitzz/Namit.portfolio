@@ -67,6 +67,24 @@ export const FOREST = [
 ]
 
 /**
+ * The same wood under snow, for the ground below the northern range.
+ *
+ * A snow line is the cheapest altitude cue there is: the eye reads a
+ * band of white trees under a white summit as high ground without being
+ * told, and the map stops being flat country with mountains stuck round
+ * the edge.
+ */
+export const FOREST_SNOW = [
+  [[96, 160], [112, 160], [128, 160]],
+  [[96, 176], [112, 176], [128, 176]],
+  [[96, 192], [112, 192], [128, 192]],
+]
+
+/** The ground up there, and the ground where the sea meets the land. */
+export const SNOW_GROUND = [214, 222, 230]
+export const SAND = [206, 186, 140]
+
+/**
  * Mountains, as whole ranges rather than tiles: each is a single sprite
  * of a jagged massif, and a chain of them overlapping reads as a range.
  * `s` is snow-capped, for the high ground.
@@ -87,13 +105,41 @@ export const BRIDGE = [208, 240, 16, 16]
 
 /** Places, as [x, y, w, h] on the world sheet. */
 export const PLACES = {
-  city: [32, 248, 64, 48],
-  village: [0, 248, 48, 32],
-  tower: [160, 288, 16, 48],
+  walledCity: [32, 249, 62, 46],
+  village: [2, 250, 44, 28],
+  tower: [146, 294, 11, 35],
   field: [0, 248, 32, 30],
-  hill: [96, 248, 64, 48],
-  cave: [80, 256, 32, 16],
+  cave: [82, 258, 28, 14],
 }
+
+/**
+ * A city, as a skyline of towers rather than as one sprite.
+ *
+ * The sheet has no city: it has a walled keep, which reads as a castle,
+ * and a single tower. A search for a CC0 modern skyline at world-map
+ * scale in this perspective turned up nothing — the packs that exist are
+ * street-scale and flat top-down, which will not stand beside terrain
+ * drawn in elevation.
+ *
+ * So the skyline is composed from that one tower, cut to different
+ * heights and staggered. Seven of them at varying heights give the
+ * silhouette a city has and a castle does not, and it stays in one
+ * style because it is all the same sprite.
+ *
+ * Each entry is [x, topCrop, lift]: where the tower stands, how much of
+ * its top is cut off, and how far it sits forward of the back row.
+ */
+export const SKYLINE = [
+  [0, 14, 2],
+  [11, 0, 0],
+  [23, 20, 4],
+  [34, 6, 1],
+  [45, 18, 3],
+  [56, 2, 0],
+  [67, 16, 2],
+]
+export const SKYLINE_W = 78
+export const SKYLINE_H = 56
 
 /* ---------------------------------------------------------------- */
 /* Loading                                                           */

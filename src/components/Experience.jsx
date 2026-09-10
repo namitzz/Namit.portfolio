@@ -14,6 +14,7 @@ import Building, {
   footprintFor,
 } from './MapBuildings'
 import { SCALE, TILE as ART_TILE, smoothRoute } from '../lib/tileset'
+import { useMapView } from './useMapView'
 
 // The map is a country now, not a town, so it is shaped like a map: a
 // little wider than tall, with room around the road for the ground it
@@ -37,19 +38,24 @@ const CARD_GAP = 78
  * Hand-placed rather than generated. A generated path is evenly spaced
  * and therefore reads as a diagram; the point of a route is that its
  * turns mean something.
+ *
+ * The two cities are pulled a little further down the map than the rest.
+ * A city is six times the size of a milestone plate, so the first one
+ * stood in the title block and the last one stood under a neighbour's
+ * label until they were given the room a city needs.
  */
 const ROUTE = [
-  [0.121, 0.229],
+  [0.121, 0.288],
   [0.358, 0.142],
   [0.348, 0.276],
   [0.484, 0.331],
   [0.628, 0.379],
   [0.734, 0.402],
-  [0.838, 0.505],
+  [0.845, 0.487],
   [0.688, 0.558],
   [0.646, 0.655],
   [0.482, 0.71],
-  [0.812, 0.773],
+  [0.812, 0.802],
 ]
 
 export default function Experience() {
@@ -80,6 +86,7 @@ export default function Experience() {
 
   const height = TRACK_H
   const sprites = useBuildings()
+  const map = useMapView(box.w, height)
 
   useLayoutEffect(() => {
     const el = wrapRef.current
@@ -443,8 +450,10 @@ export default function Experience() {
 
         <div
           ref={wrapRef}
-          className="relative hidden overflow-hidden rounded-[2rem] border lg:block"
+          {...map.handlers}
+          className="relative hidden touch-none select-none overflow-hidden rounded-[2rem] border lg:block"
           style={{
+            cursor: map.dragging ? 'grab' : 'default',
             height,
             borderColor:
               'rgba(244,244,245,0.10)',
@@ -461,6 +470,7 @@ export default function Experience() {
             height={height}
             plots={plots}
             stops={points}
+            view={map.view}
           />
 
           {/* -------------------------------------------------------
@@ -472,7 +482,13 @@ export default function Experience() {
               aria-hidden="true"
               width={box.w}
               height={height}
-              className="absolute left-0 top-0 z-[4]"
+              className="pointer-events-none absolute left-0 top-0 z-[4]"
+              style={{
+                // The route is drawn in map coordinates, so it goes
+                // through the same window the ground does.
+                transform: `scale(${map.view.zoom}) translate(${-map.view.x}px, ${-map.view.y}px)`,
+                transformOrigin: '0 0',
+              }}
             >
               <defs>
                 <filter
@@ -629,8 +645,8 @@ export default function Experience() {
 
           {traveller.visible && (
             <Traveller
-              x={traveller.x}
-              y={traveller.y}
+              x={map.project(traveller.x, traveller.y).x}
+              y={map.project(traveller.x, traveller.y).y}
               rotation={traveller.rotation}
               length={traveller.length}
               reduce={reduce}
@@ -654,7 +670,8 @@ export default function Experience() {
                 <Stop
                   key={entry.id}
                   entry={entry}
-                  point={point}
+                  point={map.project(point.x, point.y)}
+                  zoom={map.view.zoom}
                   sprites={sprites}
                   active={
                     active === index
@@ -683,12 +700,12 @@ export default function Experience() {
               id="route-card"
               className="absolute z-30 overflow-hidden rounded-2xl border p-5"
               style={{
-                left: card.left,
-                top: card.top,
+                left: map.project(card.left, card.top).x,
+                top: map.project(card.left, card.top).y,
                 width: CARD_W,
                 maxHeight:
                   height -
-                  card.top -
+                  map.project(card.left, card.top).y -
                   12,
                 borderColor:
                   textColor(
@@ -714,6 +731,8 @@ export default function Experience() {
              ------------------------------------------------------- */}
 
           <Chrome />
+
+          <ZoomControls map={map} />
 
           <Compass />
         </div>
@@ -860,6 +879,59 @@ function Traveller({ x, y, rotation = 0, length = 0, reduce }) {
  * building. The side columns sit inside the 190px margin the outermost
  * stop is held back from, so they never land on a roof.
  */
+/**
+ * Zoom, on buttons rather than on the wheel.
+ *
+ * Catching the wheel over a section of a page steals the reader's
+ * scroll, and a map that traps you on the way past is worse than a map
+ * you cannot zoom. These are real buttons, so they are reachable by
+ * keyboard and say what they do.
+ */
+function ZoomControls({ map }) {
+  const btn =
+    'flex h-8 w-8 items-center justify-center rounded-[6px] border font-mono text-[13px] leading-none transition-colors disabled:opacity-30'
+  const style = {
+    borderColor: 'rgba(190,208,226,0.24)',
+    background: 'rgba(12,18,26,0.82)',
+    color: '#E6EDF6',
+  }
+  return (
+    <div className="absolute right-7 z-[8] flex flex-col gap-1.5" style={{ bottom: 26 }}>
+      <button
+        type="button"
+        className={btn}
+        style={style}
+        onClick={map.zoomIn}
+        disabled={!map.canZoomIn}
+        aria-label="Zoom in"
+      >
+        +
+      </button>
+      <button
+        type="button"
+        className={btn}
+        style={style}
+        onClick={map.zoomOut}
+        disabled={!map.canZoomOut}
+        aria-label="Zoom out"
+      >
+        −
+      </button>
+      {map.canZoomOut && (
+        <button
+          type="button"
+          className={`${btn} text-[8px] tracking-[0.1em]`}
+          style={style}
+          onClick={map.reset}
+          aria-label="Show the whole map"
+        >
+          ALL
+        </button>
+      )}
+    </div>
+  )
+}
+
 function Chrome() {
   return (
     <div

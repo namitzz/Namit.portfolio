@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react'
-import { PLACES, SCALE, loadSheet, nightPixel, WORLD_SRC } from '../lib/tileset'
+import {
+  PLACES,
+  SCALE,
+  SKYLINE,
+  SKYLINE_H,
+  SKYLINE_W,
+  WORLD_SRC,
+  hash2,
+  loadSheet,
+  nightPixel,
+} from '../lib/tileset'
 import { markFor } from './TimelineMarks'
 
 /**
  * What stands at each stop.
  *
  * Two kinds, because the journey has two kinds of place in it. The
- * universities at either end are cities, drawn from the tileset: they
- * are where you arrive and where you are, and they should have weight on
- * the map. Everything between is a marker — a dark plate with the
- * institution's own outline mark on it — because a competition or a
- * paper is a thing that happened at a point, not a settlement, and
- * giving each one a building made nine identical-looking towns.
+ * universities at either end are cities, and everything between is a
+ * plate carrying the institution's own outline mark. A competition or a
+ * paper happened at a point, not in a settlement, and giving each one a
+ * building made nine identical-looking towns.
  *
  * The marks are the site's existing line art, reused rather than
  * reinvented. Drawing nine pixel icons would have meant nine pieces of
@@ -19,16 +27,14 @@ import { markFor } from './TimelineMarks'
  */
 
 /** Which stops are cities. Everything else gets a marker. */
-const CITIES = { leicester: 'city', aston: 'city' }
+const CITIES = { leicester: true, aston: true }
 
 export const MARKER = 34
-const CITY_W = PLACES.city[2] * SCALE
-const CITY_H = PLACES.city[3] * SCALE
+const CITY_W = SKYLINE_W * SCALE
+const CITY_H = SKYLINE_H * SCALE
 
 export function footprintFor(entry) {
-  return CITIES[entry.id]
-    ? { w: CITY_W, h: CITY_H }
-    : { w: MARKER, h: MARKER }
+  return CITIES[entry.id] ? { w: CITY_W, h: CITY_H } : { w: MARKER, h: MARKER }
 }
 
 /* ------------------------------------------------------------------ */
@@ -36,21 +42,26 @@ export function footprintFor(entry) {
 let cache = null
 
 /**
- * The city sprite, taken to night once and shared.
+ * The city, composed once: towers, then night, then the lights coming on.
  *
- * The terrain is graded on the canvas, so a sprite drawn over it at full
- * daylight would be the one bright thing on a dark map. It goes through
- * the same grade, on its own offscreen canvas, once at load.
+ * The windows are painted after the grade rather than before it. A lit
+ * window is a light source, and a light source does not get darker when
+ * night falls — grading it with the masonry turned the whole skyline off.
  */
 function buildCity(sheet) {
-  const [sx, sy, sw, sh] = PLACES.city
   const canvas = document.createElement('canvas')
-  canvas.width = sw
-  canvas.height = sh
+  canvas.width = SKYLINE_W
+  canvas.height = SKYLINE_H
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
   ctx.imageSmoothingEnabled = false
-  ctx.drawImage(sheet, sx, sy, sw, sh, 0, 0, sw, sh)
-  const data = ctx.getImageData(0, 0, sw, sh)
+
+  const [tx, ty, tw, th] = PLACES.tower
+  for (const [x, cut, lift] of SKYLINE) {
+    const h = th - cut
+    ctx.drawImage(sheet, tx, ty + cut, tw, h, x, SKYLINE_H - h - lift, tw, h)
+  }
+
+  const data = ctx.getImageData(0, 0, SKYLINE_W, SKYLINE_H)
   const p = data.data
   for (let i = 0; i < p.length; i += 4) {
     if (p[i + 3] === 0) continue
@@ -60,6 +71,23 @@ function buildCity(sheet) {
     p[i + 2] = b
   }
   ctx.putImageData(data, 0, 0)
+
+  // Lit windows, on the towers only and never on empty sky: the alpha of
+  // the graded skyline is the mask.
+  ctx.globalCompositeOperation = 'source-atop'
+  for (const [x, cut, lift] of SKYLINE) {
+    const h = th - cut
+    const top = SKYLINE_H - h - lift
+    for (let wy = top + 5; wy < SKYLINE_H - lift - 3; wy += 4) {
+      for (let wx = x + 2; wx < x + tw - 2; wx += 3) {
+        if (hash2(wx * 7, wy * 13) < 0.55) continue
+        ctx.fillStyle =
+          hash2(wx, wy) > 0.75 ? 'rgba(255,226,168,0.95)' : 'rgba(226,186,120,0.7)'
+        ctx.fillRect(wx, wy, 1, 1)
+      }
+    }
+  }
+  ctx.globalCompositeOperation = 'source-over'
   return canvas.toDataURL()
 }
 
