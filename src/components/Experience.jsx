@@ -22,7 +22,15 @@ import { useMapView } from './useMapView'
  * size - which is why every position is a fraction of the image.
  */
 
-const CARD_W = 330
+/**
+ * The card's width, as a share of the map rather than a fixed number.
+ *
+ * A fixed 330 is a quarter of a wide plate and well over a third of a
+ * narrow one, and on the narrow one it stopped being a card beside a
+ * milestone and became a panel over the map. The bounds keep it readable
+ * at the small end and stop it sprawling at the large one.
+ */
+const cardWidth = (width) => Math.round(clamp(width * 0.27, 240, 350))
 const CARD_GAP = 22
 
 export default function Experience() {
@@ -32,6 +40,12 @@ export default function Experience() {
 
   const [box, setBox] = useState({ w: 0, h: 0 })
   const [active, setActive] = useState(null)
+  // The card's real height, measured. Entries differ by a hundred and
+  // forty pixels between the shortest and the longest, so a single
+  // estimate is wrong for almost all of them, and being wrong low puts
+  // the card over the milestone it belongs to.
+  const [cardH, setCardH] = useState(280)
+  const cardRef = useRef(null)
   const [walker, setWalker] = useState({ at: 0, facing: 0, visible: false })
 
   // The plate keeps the artwork's proportions, so the map is never
@@ -80,19 +94,34 @@ export default function Experience() {
     })
   }, [entries, path, box.w, height])
 
+  /** Every milestone's painted box, in map pixels. */
+  const boxes = useMemo(
+    () =>
+      entries.map((entry) => {
+        const [hx, hy, hw, hh] = PLACES[entry.id].hit
+        return { x: hx * box.w, y: hy * height, w: hw * box.w, h: hh * height }
+      }),
+    [entries, box.w, height],
+  )
+
   const card = useMemo(() => {
     if (active === null || !entries[active] || !box.w) return null
-    const entry = entries[active]
-    const [hx, hy, hw, hh] = PLACES[entry.id].hit
     return {
-      entry,
-      ...placeCard(
-        { x: hx * box.w, y: hy * height, w: hw * box.w, h: hh * height },
-        box.w,
-        height,
-      ),
+      entry: entries[active],
+      width: cardWidth(box.w),
+      ...placeCard(boxes[active], boxes, active, box.w, height, cardH),
     }
-  }, [active, entries, box.w, height])
+  }, [active, entries, boxes, box.w, height, cardH])
+
+  // Measured before paint, so a card that turns out taller than the last
+  // one is moved in the same frame rather than appearing in the wrong
+  // place and then jumping.
+  useLayoutEffect(() => {
+    const el = cardRef.current
+    if (!el) return
+    const h = el.getBoundingClientRect().height
+    if (Math.abs(h - cardH) > 4) setCardH(h)
+  }, [active, cardH, box.w])
 
   /* --- the figure walks --- */
 
@@ -231,11 +260,12 @@ export default function Experience() {
           {card && (
             <div
               id="route-card"
+              ref={cardRef}
               className="pointer-events-none absolute z-30 overflow-hidden rounded-xl border p-4"
               style={{
                 left: map.project(card.left, card.top).x,
                 top: map.project(card.left, card.top).y,
-                width: CARD_W,
+                width: card.width,
                 maxHeight: height - map.project(card.left, card.top).y - 12,
                 borderColor: textColor(card.entry),
                 background: 'rgba(10,15,22,0.95)',
@@ -332,32 +362,66 @@ function Hotspot({ entry, hit, width, height, active, onEnter, onClick }) {
    ================================================================== */
 
 /**
- * Where the detail card goes: beside the milestone, on whichever side has
- * room, and always inside the map.
+ * Where the detail card goes.
  *
  * Placed against the milestone's whole painted box rather than against
  * the lit node on the road. Measuring from the node put the card on top
  * of the caption the reader had just pointed at, because the caption is
  * up to a hundred and eighty pixels wide and the node is one point in it.
+ *
+ * Four positions are tried and the least destructive wins. The card is
+ * opaque and the map underneath it is a picture, so wherever it lands it
+ * hides something; the question is only how much, and whether what it
+ * hides is another milestone's caption or a stretch of forest. Covering
+ * forest is free. Covering a caption costs, and covering the milestone
+ * the card is about costs most of all.
  */
-function placeCard(hit, width, height) {
-  const estimate = 260
-  const right = hit.x + hit.w + CARD_GAP
-  const left = hit.x - CARD_GAP - CARD_W
-  // Prefer the right, take the left when the right would run off the map,
-  // and fall back to whichever has more room when neither fits cleanly.
-  const fitsRight = right + CARD_W <= width - 14
-  const fitsLeft = left >= 14
-  const useLeft = !fitsRight && fitsLeft
-  return {
-    left: clamp(useLeft ? left : right, 14, Math.max(14, width - CARD_W - 14)),
-    top: clamp(
-      hit.y + hit.h / 2 - estimate / 2,
-      14,
-      Math.max(14, height - estimate - 14),
-    ),
-  }
+function placeCard(hit, all, index, width, height, cardH) {
+  const CARD_W = cardWidth(width)
+  const estimate = cardH
+  const midY = hit.y + hit.h / 2 - estimate / 2
+  const rightOf = hit.x + hit.w + CARD_GAP
+  const leftOf = hit.x - CARD_GAP - CARD_W
+  const below = hit.y + hit.h + CARD_GAP
+  const above = hit.y - CARD_GAP - estimate
+  const centred = hit.x + hit.w / 2 - CARD_W / 2
+  // Beside first, then under and over, then the corners. A card tucked
+  // diagonally is further from its milestone, so it is only worth taking
+  // when the four square positions all sit on someone else's caption.
+  const candidates = [
+    { left: rightOf, top: midY },
+    { left: leftOf, top: midY },
+    { left: centred, top: below },
+    { left: centred, top: above },
+    { left: rightOf, top: below },
+    { left: leftOf, top: below },
+    { left: rightOf, top: above },
+    { left: leftOf, top: above },
+  ]
+
+  let best = null
+  candidates.forEach((c, order) => {
+    const left = clamp(c.left, 14, Math.max(14, width - CARD_W - 14))
+    const top = clamp(c.top, 14, Math.max(14, height - estimate - 14))
+    const rect = { x: left, y: top, w: CARD_W, h: estimate }
+    // Being pushed back inside the frame is itself a cost: a clamped
+    // candidate is no longer beside the milestone it belongs to.
+    const shoved = Math.abs(left - c.left) + Math.abs(top - c.top)
+    let covered = 0
+    all.forEach((other, i) => {
+      if (!overlaps(rect, other)) return
+      covered += i === index ? 100 : 1
+    })
+    // Order breaks ties, so the right-hand side stays the default and the
+    // card does not hop about between neighbouring milestones.
+    const score = covered * 1000 + shoved + order
+    if (!best || score < best.score) best = { left, top, score }
+  })
+  return { left: best.left, top: best.top }
 }
+
+const overlaps = (a, b) =>
+  a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
 
 /**
  * Points spaced evenly along the trail, so the figure walks at a steady
