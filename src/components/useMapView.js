@@ -84,7 +84,16 @@ export function useMapView(width, height) {
       // Left button only, and never on a milestone: those are buttons.
       if (e.button !== 0 || e.target.closest('button')) return
       drag.current = { px: e.clientX, py: e.clientY, x: view.x, y: view.y }
-      e.currentTarget.setPointerCapture?.(e.pointerId)
+      // Capture keeps the drag alive when the pointer leaves the map, but
+      // it throws if the pointer has already gone: a pen lifted mid-press,
+      // a synthetic event, a touch the browser has taken for a gesture.
+      // Losing capture makes the drag worse, not broken, so it must never
+      // be the thing that stops it.
+      try {
+        e.currentTarget.setPointerCapture?.(e.pointerId)
+      } catch {
+        /* dragging still works, it just ends at the edge */
+      }
     },
     [view],
   )
@@ -106,7 +115,11 @@ export function useMapView(width, height) {
 
   const onPointerUp = useCallback((e) => {
     drag.current = null
-    e.currentTarget.releasePointerCapture?.(e.pointerId)
+    try {
+      e.currentTarget.releasePointerCapture?.(e.pointerId)
+    } catch {
+      /* nothing to release: the pointer is already gone */
+    }
   }, [])
 
   const onDoubleClick = useCallback(
