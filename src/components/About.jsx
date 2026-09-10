@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
 import Reveal from './Reveal'
 import { profile } from '../data/content'
+import { sectionGlow, EMBER } from '../lib/sectionGlow'
 
 /**
  * About as a two-column editorial spread: a direction line on the left,
@@ -28,7 +29,7 @@ export default function About() {
       className="relative px-6 py-24 md:px-16 md:py-32"
       style={{
         background:
-          'linear-gradient(180deg, rgba(244,85,42,0.085) 0%, rgba(244,85,42,0.012) 26%, rgba(244,244,245,0.014) 100%)',
+          sectionGlow(EMBER, 0.085),
       }}
     >
       <div className="mx-auto w-full max-w-[1600px]">

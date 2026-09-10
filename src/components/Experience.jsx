@@ -6,6 +6,7 @@ import Reveal from './Reveal'
 import JourneyMap from './JourneyMap'
 import { MAP_H, MAP_W, PLACES, SECTIONS, TRAIL } from '../data/journeyMap'
 import { useMapView } from './useMapView'
+import { sectionGlow, AMBER } from '../lib/sectionGlow'
 
 /**
  * The journey, as a map.
@@ -198,7 +199,7 @@ export default function Experience() {
     <section
       id="experience"
       className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background: 'linear-gradient(180deg, rgba(10,15,22,0) 0%, rgba(10,15,22,0.5) 100%)' }}
+      style={{ background: sectionGlow(AMBER, 0.05) }}
     >
       <div className="mx-auto w-full max-w-[1600px]">
         <Reveal>

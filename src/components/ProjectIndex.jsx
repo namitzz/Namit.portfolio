@@ -8,6 +8,7 @@ import {
 import { projects } from '../data/content'
 import { mockups } from './mockups'
 import Reveal from './Reveal'
+import { sectionGlow, AMBER } from '../lib/sectionGlow'
 
 /**
  * Work index as an editorial list that opens up under the cursor.
@@ -48,7 +49,7 @@ export default function ProjectIndex() {
       className="relative px-6 py-24 md:px-16 md:py-32"
       style={{
         background:
-          'linear-gradient(180deg, rgba(245,180,71,0.075) 0%, rgba(245,180,71,0.010) 26%, rgba(244,244,245,0.038) 100%)',
+          sectionGlow(AMBER, 0.075),
       }}
     >
       <div className="mx-auto w-full max-w-[1600px]">

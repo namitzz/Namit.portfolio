@@ -1,12 +1,17 @@
 import { useState } from 'react'
 import { writing } from '../data/content'
 import Reveal from './Reveal'
+import { sectionGlow, EMBER } from '../lib/sectionGlow'
 
 /**
- * Writing section. Gives published work its own proper spread rather
- * than burying it as a one-line link inside About. Each entry is a
- * wide editorial row: role + publisher meta, big serif title, summary,
- * tags, and a read link.
+ * Writing. Published work gets its own spread rather than being buried as
+ * a one-line link inside About.
+ *
+ * Built for one piece rather than for a list. It was a repeating row, and
+ * a repeating row with a single entry in it reads as an empty list — the
+ * layout kept promising a second item that never came. The summary is now
+ * set as a lead rather than as body copy, so the section has something at
+ * the top the size of the claim it is making.
  */
 export default function Writing() {
   if (!writing?.length) return null
@@ -15,12 +20,11 @@ export default function Writing() {
     <section
       id="writing"
       className="relative px-6 py-24 md:px-16 md:py-32"
-      style={{ background:
-          'linear-gradient(180deg, rgba(244,85,42,0.080) 0%, rgba(244,85,42,0.012) 26%, rgba(244,244,245,0.048) 100%)' }}
+      style={{ background: sectionGlow(EMBER, 0.08) }}
     >
       <div className="mx-auto w-full max-w-[1600px]">
         <div
-          className="mb-14 border-b pb-6"
+          className="mb-14 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
           style={{ borderColor: 'var(--hairline)' }}
         >
           <div>
@@ -32,6 +36,10 @@ export default function Writing() {
               Published work<span style={{ color: 'var(--accent)' }}>.</span>
             </h2>
           </div>
+          <p className="mono-label" style={{ color: 'var(--muted)' }}>
+            {String(writing.length).padStart(2, '0')}{' '}
+            {writing.length === 1 ? 'piece' : 'pieces'}
+          </p>
         </div>
 
         {writing.map((item, i) => (
@@ -41,17 +49,23 @@ export default function Writing() {
             y={16}
             duration={0.5}
             delay={i * 0.06}
-            className="grid grid-cols-1 gap-8 border-b py-10 md:grid-cols-12 md:gap-12"
-            style={{ borderColor: 'var(--hairline)' }}
+            className="grid grid-cols-1 gap-8 py-4 md:grid-cols-12 md:gap-12"
           >
-            {/* Left: meta */}
+            {/* Left: meta. Sticky, so the publisher and the role stay
+                beside the piece while a long read scrolls past them. */}
             <div className="md:col-span-4">
-              <p className="mono-label" style={{ color: 'var(--accent)' }}>
-                {item.publisher}
-              </p>
-              <p className="mono-label mt-2" style={{ color: 'var(--muted)' }}>
-                {item.role}
-              </p>
+              <div className="md:sticky md:top-24">
+                <span
+                  aria-hidden="true"
+                  className="mb-5 block h-px w-10"
+                  style={{ background: 'var(--accent)' }}
+                />
+                <p className="mono-label" style={{ color: 'var(--accent)' }}>
+                  {item.publisher}
+                </p>
+                <p className="mono-label mt-2" style={{ color: 'var(--muted)' }}>
+                  {item.role}
+                </p>
 
               <div className="mt-6 flex flex-wrap gap-1.5">
                 {item.tags?.map((t) => (
@@ -66,6 +80,7 @@ export default function Writing() {
                     {t}
                   </span>
                 ))}
+                </div>
               </div>
             </div>
 
@@ -79,16 +94,20 @@ export default function Writing() {
               </h3>
 
               <p
-                className="mt-5 max-w-3xl text-[16px] leading-relaxed"
-                style={{ color: 'var(--ink-soft)' }}
+                className="serif mt-6 max-w-3xl text-[clamp(1.05rem,1.7vw,1.35rem)] leading-[1.45]"
+                style={{ color: 'var(--ink)' }}
               >
                 {item.summary}
               </p>
 
               {item.description && (
                 <p
-                  className="mt-4 max-w-3xl text-[14.5px] leading-relaxed"
-                  style={{ color: 'var(--muted)' }}
+                  className="mt-5 max-w-3xl border-l pl-5 text-[15px] leading-relaxed"
+                  style={{
+                    color: 'var(--muted)',
+                    borderColor:
+                      'color-mix(in srgb, var(--accent) 30%, transparent)',
+                  }}
                 >
                   {item.description}
                 </p>
