@@ -8,6 +8,7 @@ import {
   TILE,
   hash2,
   loadTileset,
+  nightPixel,
 } from '../lib/tileset'
 
 /**
@@ -179,6 +180,84 @@ function paint(canvas, sheet, d, width, height, plots) {
       blit(SPRITES.tree, c * TILE - 8, r * TILE - 14)
     }
   }
+
+  night(ctx, aw, ah)
+  lantern(ctx, route, marks)
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * Dusk, and then the lights.
+ *
+ * The grade runs over every pixel once, which is one pass over a quarter
+ * of a million pixels and costs a couple of milliseconds at the size the
+ * map is drawn. Doing it as a translucent dark rectangle over the top
+ * would have been cheaper and wrong: a scrim flattens the art towards
+ * one colour, where a grade keeps the relationships between colours and
+ * only moves where they sit.
+ */
+function night(ctx, aw, ah) {
+  const data = ctx.getImageData(0, 0, aw, ah)
+  const p = data.data
+  for (let i = 0; i < p.length; i += 4) {
+    const [r, g, b] = nightPixel(p[i], p[i + 1], p[i + 2])
+    p[i] = r
+    p[i + 1] = g
+    p[i + 2] = b
+  }
+  ctx.putImageData(data, 0, 0)
+
+  // The frame falls away into the dark, so the eye goes to the road
+  // rather than to the corners.
+  const vignette = ctx.createRadialGradient(
+    aw / 2,
+    ah / 2,
+    Math.min(aw, ah) * 0.32,
+    aw / 2,
+    ah / 2,
+    Math.max(aw, ah) * 0.68,
+  )
+  vignette.addColorStop(0, 'rgba(3,7,14,0)')
+  vignette.addColorStop(1, 'rgba(3,7,14,0.86)')
+  ctx.fillStyle = vignette
+  ctx.fillRect(0, 0, aw, ah)
+}
+
+/**
+ * Warm light, added rather than laid over.
+ *
+ * `lighter` adds the light to what is already there, which is what
+ * light does. Painting the same amber at partial alpha would wash the
+ * ground towards orange instead, and the map would look tinted rather
+ * than lit.
+ */
+function lantern(ctx, route, marks) {
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+
+  const pool = (x, y, radius, alpha) => {
+    ctx.save()
+    ctx.translate(x, y)
+    // Squashed, because a pool of light on the ground is an ellipse seen
+    // from this angle, not a circle.
+    ctx.scale(1, 0.68)
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, radius)
+    g.addColorStop(0, `rgba(255,186,104,${alpha})`)
+    g.addColorStop(0.45, `rgba(214,132,58,${alpha * 0.42})`)
+    g.addColorStop(1, 'rgba(120,64,20,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.arc(0, 0, radius, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  }
+
+  // Every twelfth sample is roughly a lamp every twelve pixels of road.
+  for (let i = 0; i < route.length; i += 12) pool(route[i].x, route[i].y, 24, 0.2)
+  for (const m of marks) pool(m.x, m.y, 62, 0.42)
+
+  ctx.restore()
 }
 
 /* ------------------------------------------------------------------ */

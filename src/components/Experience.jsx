@@ -18,7 +18,7 @@ import { SCALE, TILE as ART_TILE } from '../lib/tileset'
 // The map is a town, not a band. Tall enough for three streets, with room
 // between them for a structure, the label hanging under it, and the
 // stagger that stops the streets reading as ruled lines.
-const TRACK_H = 900
+const TRACK_H = 980
 // Everything on the map is snapped to this, so roads meet buildings
 // squarely and corners land on tile boundaries rather than between them.
 // One tile of art, at the scale the art is shown.
@@ -26,17 +26,21 @@ const TILE = ART_TILE * SCALE
 const CARD_W = 340
 const CARD_H = 280
 const CARD_GAP = 78
-// Half the widest structure plus the treeline, so the outermost stop on
-// each street stands on open ground rather than in the wood.
-const EDGE = 190
+// Half the widest structure, the treeline, and the width of the chrome
+// pinned down each side, so the outermost stop on each street stands on
+// open ground and never behind a caption.
+const EDGE = 215
 
 // The three streets, and how far every other stop steps off its street.
-// Solved rather than guessed: with eleven structures of eleven different
-// sizes, the numbers that stagger the rows without any building, label
-// or frame colliding are a narrow set, and they have to hold at every
-// plate width the page can reach.
-const ROWS = [0.2, 0.52, 0.84]
-const STAGGER = 0.06
+//
+// Solved rather than guessed, against every box on the map at once:
+// eleven structures of eleven different sizes, their labels, and the six
+// pieces of chrome pinned to the frame. The combinations that collide
+// with none of them at any plate width the page can reach are a narrow
+// set. The top row in particular is held down far enough that the
+// gatehouse, which is the tallest thing here, clears the title block.
+const ROWS = [0.26, 0.55, 0.84]
+const STAGGER = 0.05
 
 export default function Experience() {
   const reduce = useReducedMotion()
@@ -435,7 +439,7 @@ export default function Experience() {
             borderColor:
               'rgba(244,244,245,0.10)',
             background:
-              '#4E7B45',
+              '#0A1119',
             boxShadow:
               '0 40px 100px -55px rgba(0,0,0,0.9)',
           }}
@@ -471,6 +475,16 @@ export default function Experience() {
                   <feGaussianBlur
                     stdDeviation="6"
                   />
+                </filter>
+
+                <filter
+                  id="journeyLamps"
+                  x="-120%"
+                  y="-120%"
+                  width="340%"
+                  height="340%"
+                >
+                  <feGaussianBlur stdDeviation="3.4" />
                 </filter>
 
                 <linearGradient
@@ -511,11 +525,26 @@ export default function Experience() {
               <path
                 d={d}
                 fill="none"
-                stroke="#F7E8C9"
-                strokeWidth="7"
+                stroke="#FFDCA8"
+                strokeWidth="6"
                 strokeLinecap="round"
                 strokeDasharray="2 13"
-                opacity="0.95"
+                opacity="1"
+                filter="url(#journeyLamps)"
+              />
+
+              {/* The lit trail. Warm, and always on: at night the road is
+                  the brightest thing on the map, and the travelled
+                  section brightens over it rather than being the only
+                  thing that shows. */}
+              <path
+                d={d}
+                fill="none"
+                stroke="#FFE6BC"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+                strokeDasharray="2 13"
+                opacity="0.96"
               />
 
               {/* orange centre */}
@@ -551,12 +580,31 @@ export default function Experience() {
                 ref={pathRef}
                 d={d}
                 fill="none"
-                stroke="#A83B20"
+                stroke="#8A5A2A"
                 strokeWidth="1.5"
                 strokeDasharray="5 10"
                 strokeLinecap="round"
-                opacity="0.8"
+                opacity="0.55"
               />
+
+              {/* A lamp burning at every milestone. */}
+              {points.map((pt, i) => (
+                <g key={`lamp-${i}`}>
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={active === i ? 11 : 8}
+                    fill="#FFC873"
+                    opacity="0.5"
+                    filter="url(#journeyLamps)"
+                    style={{
+                      transition: reduce ? 'none' : 'r 220ms ease',
+                    }}
+                  />
+                  <circle cx={pt.x} cy={pt.y} r="4.2" fill="#FFE6BC" />
+                  <circle cx={pt.x} cy={pt.y} r="2" fill="#FFFDF4" />
+                </g>
+              ))}
 
               {/* ---------------------------------------------------
                   TRAVELLER
@@ -652,28 +700,10 @@ export default function Experience() {
           )}
 
           {/* -------------------------------------------------------
-              MAP LABEL
+              CHROME
              ------------------------------------------------------- */}
 
-          <div
-            className="pointer-events-none absolute bottom-5 left-6 z-[6] rounded-full border px-3 py-1.5 backdrop-blur-sm"
-            style={{
-              borderColor:
-                'rgba(244,244,245,0.12)',
-              background:
-                'rgba(10,14,12,0.48)',
-            }}
-          >
-            <span
-              className="font-mono text-[9px] uppercase tracking-[0.16em]"
-              style={{
-                color:
-                  'rgba(244,244,245,0.55)',
-              }}
-            >
-              Interactive journey map
-            </span>
-          </div>
+          <Chrome />
 
           <Compass />
         </div>
@@ -801,10 +831,118 @@ function Traveller({ x, y, rotation = 0, length = 0, reduce }) {
    COMPASS
    ================================================================== */
 
+/**
+ * The map's furniture: the title it is filed under, how to use it, and
+ * the words down the sides.
+ *
+ * All of it is `pointer-events-none` and pinned to the frame, because
+ * none of it is a control and none of it may take a click meant for a
+ * building. The side columns sit inside the 190px margin the outermost
+ * stop is held back from, so they never land on a roof.
+ */
+function Chrome() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-[7] select-none"
+      style={{ color: 'rgba(226,236,246,0.62)' }}
+    >
+      {/* Filed under */}
+      <div className="absolute left-7 top-6">
+        <p
+          className="font-mono text-[12px] tracking-[0.02em]"
+          style={{ color: 'rgba(245,248,252,0.94)' }}
+        >
+          Namit Singh Sarna
+        </p>
+        <p className="mt-1.5 font-mono text-[8.5px] uppercase tracking-[0.22em]">
+          Journey map · 2023 – present
+        </p>
+        <p
+          className="mt-0.5 font-mono text-[8.5px] uppercase tracking-[0.22em]"
+          style={{ color: 'rgba(226,236,246,0.4)' }}
+        >
+          AI · Software · Impact
+        </p>
+      </div>
+
+      {/* How to use it */}
+      <div
+        className="absolute right-7 top-6 rounded-[4px] border px-3 py-2 text-right"
+        style={{
+          borderColor: 'rgba(180,200,220,0.16)',
+          background: 'rgba(10,15,22,0.7)',
+        }}
+      >
+        <p className="font-mono text-[8.5px] uppercase tracking-[0.2em]">
+          Explore ›
+        </p>
+        <p
+          className="font-mono text-[8.5px] uppercase tracking-[0.2em]"
+          style={{ color: 'rgba(245,248,252,0.86)' }}
+        >
+          My journey
+        </p>
+        <p
+          className="font-mono text-[8.5px] uppercase tracking-[0.2em]"
+          style={{ color: '#D79A4E' }}
+        >
+          Click a milestone
+        </p>
+      </div>
+
+      {/* What the road is for, down one side */}
+      <Column
+        className="left-7 top-1/2 -translate-y-1/2 text-left"
+        items={['Learn', 'Build', 'Compete', 'Contribute', 'Graduate', 'Go further']}
+      />
+      <Column
+        className="right-7 top-[28%] text-right"
+        items={['Ideas', 'Skills', 'Experience', 'Impact']}
+      />
+
+      {/* Beside the compass, not in the far corner: the last stop on the
+          road is bottom right, and its label was already standing there. */}
+      <div className="absolute bottom-6 left-[108px]">
+        <p
+          className="font-mono text-[8.5px] uppercase tracking-[0.2em]"
+          style={{ color: 'rgba(226,236,246,0.4)' }}
+        >
+          Same person
+        </p>
+        <p className="font-mono text-[8.5px] uppercase tracking-[0.2em]">
+          More to explore ›
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function Column({ className, items }) {
+  return (
+    <div className={`absolute ${className}`}>
+      <p className="font-mono text-[9px]" style={{ color: 'rgba(226,236,246,0.3)' }}>
+        ›
+      </p>
+      {items.map((item) => (
+        <p
+          key={item}
+          className="font-mono text-[8.5px] uppercase leading-[1.9] tracking-[0.2em]"
+        >
+          {item}
+        </p>
+      ))}
+      <p className="font-mono text-[9px]" style={{ color: 'rgba(226,236,246,0.3)' }}>
+        ›
+      </p>
+    </div>
+  )
+}
+
 function Compass() {
   return (
     <div
-      className="pointer-events-none absolute bottom-5 right-6 z-[6] flex h-16 w-16 items-center justify-center rounded-full border"
+      className="pointer-events-none absolute bottom-6 left-7 z-[6] flex h-16 w-16 items-center justify-center rounded-full border"
       style={{
         borderColor:
           'rgba(244,235,217,0.24)',
@@ -1463,41 +1601,49 @@ function MobileMark({ entry }) {
 
 function StopLabel({ entry, active }) {
   return (
-    <span className="mt-2 flex flex-col items-center">
-      <span
-        className="rounded-full border px-2.5 py-1 font-mono text-[9px] tracking-[0.12em] shadow-sm"
-        style={{
-          color: '#332A1E',
-          borderColor:
-            'rgba(74,54,33,0.18)',
-          background:
-            'rgba(246,232,201,0.94)',
-        }}
-      >
-        {entry.year}
-      </span>
-
-      <span
-        className="mt-1 max-w-[170px] whitespace-nowrap rounded bg-[#F3E5C5]/90 px-2 py-1 text-center text-[10.5px] font-medium leading-tight shadow-sm"
-        style={{
-          color: '#30291F',
-          opacity:
-            active ? 1 : 0.88,
-        }}
-      >
-        {entry.short ||
-          entry.title}
-      </span>
-
-      {entry.id ===
-        'aston' && (
+    <span
+      className="mt-3 block whitespace-nowrap rounded-[5px] border px-2.5 py-1.5 text-left backdrop-blur-[2px]"
+      style={{
+        borderColor: active
+          ? 'rgba(255,200,120,0.42)'
+          : 'rgba(180,200,220,0.16)',
+        background: active
+          ? 'rgba(14,20,28,0.92)'
+          : 'rgba(10,15,22,0.84)',
+        boxShadow: active
+          ? '0 0 20px rgba(255,180,90,0.28), 0 6px 16px rgba(0,0,0,0.6)'
+          : '0 6px 16px rgba(0,0,0,0.55)',
+      }}
+    >
+      <span className="flex items-center gap-1.5">
+        {/* The diamond is the map's own bullet: it marks a place rather
+            than starting a list. */}
         <span
-          className="mt-1 rounded-full px-2 py-0.5 font-mono text-[7px] uppercase tracking-[0.16em]"
-          style={{
-            color: '#FFF4E5',
-            background:
-              '#F4552A',
-          }}
+          aria-hidden="true"
+          className="text-[7px] leading-none"
+          style={{ color: active ? '#FFC873' : '#D79A4E' }}
+        >
+          ◆
+        </span>
+        <span
+          className="font-mono text-[9px] uppercase tracking-[0.14em]"
+          style={{ color: active ? '#FFD79A' : '#C79A62' }}
+        >
+          {entry.year}
+        </span>
+      </span>
+
+      <span
+        className="mt-0.5 block text-[11px] font-medium leading-tight"
+        style={{ color: active ? '#FFFFFF' : 'rgba(238,242,247,0.9)' }}
+      >
+        {entry.short || entry.title}
+      </span>
+
+      {entry.id === 'aston' && (
+        <span
+          className="mt-1 inline-block rounded-full px-1.5 py-0.5 font-mono text-[7px] uppercase tracking-[0.16em]"
+          style={{ color: '#0A1119', background: '#FFC873' }}
         >
           Now
         </span>

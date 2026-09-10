@@ -138,7 +138,8 @@ export function tintSprite(img, [sx, sy, sw, sh], look = {}) {
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
   ctx.imageSmoothingEnabled = false
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh)
-  if (!rot && sat === 1 && lift === 1 && !floor) return canvas
+  // No early return for an untinted sprite: everything still has to be
+  // taken to night, or it stands in daylight on a dark map.
 
   const data = ctx.getImageData(0, 0, sw, sh)
   const p = data.data
@@ -167,9 +168,10 @@ export function tintSprite(img, [sx, sy, sw, sh], look = {}) {
       Math.max(0, Math.min(1, ss)),
       Math.min(1, l * lift),
     )
-    p[i] = r
-    p[i + 1] = g
-    p[i + 2] = b
+    const [nr, ng, nb] = nightPixel(r, g, b)
+    p[i] = nr
+    p[i + 1] = ng
+    p[i + 2] = nb
   }
   ctx.putImageData(data, 0, 0)
   return canvas
@@ -211,6 +213,31 @@ function hslToRgb(h, s, l) {
     Math.round(c(h + 1 / 3) * 255),
     Math.round(c(h) * 255),
     Math.round(c(h - 1 / 3) * 255),
+  ]
+}
+
+/* ---------------------------------------------------------------- */
+/* Night                                                             */
+
+/**
+ * One pixel, taken from daylight to night.
+ *
+ * Not a dimmer. Turning the brightness down gives you a grey daytime
+ * map; night is a change of hue as well as level, because at low light
+ * the eye loses red first and blue last. So red is cut hardest, blue
+ * kept, and a little of the pixel's own luminance is folded back in so
+ * that what was bright stays relatively bright and the art keeps its
+ * modelling instead of flattening into silhouette.
+ *
+ * Terrain and structures both run through this, or the buildings would
+ * stand in daylight on a map that had gone dark.
+ */
+export function nightPixel(r, g, b) {
+  const l = r * 0.3 + g * 0.59 + b * 0.11
+  return [
+    r * 0.19 + l * 0.1 + 3,
+    g * 0.27 + l * 0.06 + 7,
+    Math.min(255, b * 0.44 + l * 0.1 + 22),
   ]
 }
 
