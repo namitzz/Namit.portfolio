@@ -47,6 +47,7 @@ export default function Experience() {
   // the card over the milestone it belongs to.
   const [cardH, setCardH] = useState(280)
   const cardRef = useRef(null)
+  const hotspotRefs = useRef([])
   const [walker, setWalker] = useState({
     at: 0,
     facing: 0,
@@ -202,6 +203,49 @@ export default function Experience() {
 
   const walkerAt = path[Math.round(walker.at)] || path[0]
 
+  /* --- keyboard: the card reads as if it sat right after its milestone --- */
+
+  // The card is rendered after all eleven milestones, so in plain tab
+  // order a Tab from a milestone lands on the next milestone, which swaps
+  // the card before its link can be reached. Only the last milestone's
+  // link was ever reachable from a keyboard. These put the card back
+  // where it belongs in the order: a milestone, then its card, then the
+  // next milestone. Escape goes back to the milestone.
+  const cardStops = () =>
+    cardRef.current
+      ? [...cardRef.current.querySelectorAll('a[href], button:not([disabled])')]
+      : []
+
+  const intoCard = (event, index) => {
+    if (event.key !== 'Tab' || event.shiftKey || active !== index) return
+    const stops = cardStops()
+    if (!stops.length) return
+    event.preventDefault()
+    stops[0].focus()
+  }
+
+  const cardKeys = (event) => {
+    const home = hotspotRefs.current[active]
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      home?.focus()
+      return
+    }
+    if (event.key !== 'Tab') return
+    const stops = cardStops()
+    const at = stops.indexOf(document.activeElement)
+    if (event.shiftKey && at === 0) {
+      event.preventDefault()
+      home?.focus()
+    } else if (!event.shiftKey && at === stops.length - 1) {
+      const next = hotspotRefs.current[active + 1]
+      if (next) {
+        event.preventDefault()
+        next.focus()
+      }
+    }
+  }
+
   /**
    * Jump to the milestone's own section further down the page.
    *
@@ -285,6 +329,10 @@ export default function Experience() {
               entries.map((entry, index) => (
                 <Hotspot
                   key={entry.id}
+                  buttonRef={(el) => {
+                    hotspotRefs.current[index] = el
+                  }}
+                  onKeyDown={(event) => intoCard(event, index)}
                   entry={entry}
                   hit={PLACES[entry.id].hit}
                   width={box.w}
@@ -320,6 +368,7 @@ export default function Experience() {
             <div
               id="route-card"
               ref={cardRef}
+              onKeyDown={cardKeys}
               className="absolute z-30 overflow-y-auto overscroll-contain rounded-xl border p-4"
               style={{
                 left: map.project(card.left, card.top).x,
@@ -409,22 +458,34 @@ export default function Experience() {
  * Its accessible name carries the text the artwork shows, so the map is
  * navigable without seeing it.
  */
-function Hotspot({ entry, hit, width, height, active, onEnter, onClick, onOpen }) {
+function Hotspot({
+  entry,
+  hit,
+  width,
+  height,
+  active,
+  onEnter,
+  onClick,
+  onOpen,
+  onKeyDown,
+  buttonRef,
+}) {
   const [fx, fy, fw, fh] = hit
   const section = SECTIONS[entry.id]
   return (
     <button
+      ref={buttonRef}
       type="button"
+      onKeyDown={onKeyDown}
       onMouseEnter={onEnter}
       onFocus={onEnter}
       onClick={onClick}
       onDoubleClick={section ? onOpen : undefined}
       aria-describedby={active ? 'route-card' : undefined}
-      aria-label={
-        section
-          ? `${entry.year} — ${entry.short || entry.title}. Double-click to open its section.`
-          : `${entry.year} — ${entry.short || entry.title}`
-      }
+      // Double-click is a pointer shortcut; the card's own button does the
+      // same thing and is reachable from here, so the label does not ask a
+      // keyboard to do something it cannot.
+      aria-label={`${entry.year}, ${entry.short || entry.title}`}
       className="absolute rounded-lg border transition-all duration-200"
       style={{
         left: fx * width,

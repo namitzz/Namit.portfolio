@@ -74,14 +74,40 @@ export default function JourneyMap({ width, height, activeAt }) {
     draw(0)
     if (reduce) return undefined
 
+    // Only while it can be seen. The loop redraws the whole plate on every
+    // frame, and it used to carry on for the rest of the page: a reader on
+    // Contact was still paying for a light on a road three screens up. It
+    // starts running and the observer stops it, so anywhere the observer
+    // never reports, the map simply animates as it always did.
     let raf = 0
+    let running = false
     const started = performance.now()
     const tick = (now) => {
       draw(now - started)
       raf = requestAnimationFrame(tick)
     }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
+    const start = () => {
+      if (running) return
+      running = true
+      raf = requestAnimationFrame(tick)
+    }
+    const stop = () => {
+      running = false
+      cancelAnimationFrame(raf)
+    }
+    start()
+
+    const watcher =
+      typeof IntersectionObserver === 'function'
+        ? new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop()), {
+            rootMargin: '200px 0px',
+          })
+        : null
+    watcher?.observe(canvas)
+    return () => {
+      watcher?.disconnect()
+      stop()
+    }
   }, [width, height, path, reduce])
 
   return (
