@@ -7,7 +7,7 @@ import { MAP_H, MAP_SRC, MAP_W, TRAIL } from '../data/journeyMap'
  * drawn over it.
  *
  * Everything before this built the world out of tiles. This does not,
- * because it does not have to: the artwork exists, it is his, and no
+ * because it does not have to: the artwork exists, it is Namit's, and no
  * tileset was ever going to reach it. What the code adds is the part a
  * picture cannot do on its own — a light that travels the road, and the
  * milestones answering when you point at them.

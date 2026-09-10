@@ -47,7 +47,12 @@ export default function Experience() {
   // the card over the milestone it belongs to.
   const [cardH, setCardH] = useState(280)
   const cardRef = useRef(null)
-  const [walker, setWalker] = useState({ at: 0, facing: 0, visible: false })
+  const [walker, setWalker] = useState({
+    at: 0,
+    facing: 0,
+    visible: false,
+    frame: 0,
+  })
 
   // The plate keeps the artwork's proportions, so the map is never
   // stretched and the hotspots never drift off what they cover.
@@ -150,19 +155,35 @@ export default function Experience() {
     // becoming a wait, and a hop to the next milestone still reads as a
     // walk rather than a jump.
     const duration = reduce ? 0 : Math.min(7000, Math.max(1300, distance * 18))
+    // Steady pace with a short ramp at each end, rather than an ease-out.
+    // An ease-out starts at three times the average speed, which is fine
+    // for a thing sliding and wrong for a thing with legs: the feet would
+    // open at a sprint and spend the rest of the trip slowing down.
+    const ramp = duration ? Math.min(0.25, 320 / duration) : 0
+    // Pixels of road per beat of the walk. Sized from the cruising speed so
+    // the cadence stays near seven beats a second whatever the distance,
+    // and bounded by the figure's own size so a long trip lengthens the
+    // stride instead of blurring the legs.
+    const figure = WALKER_W * box.w
+    const cruise = duration ? (distance * PATH_STEP) / ((duration / 1000) * (1 - ramp)) : 0
+    const stride = clamp(cruise / 7, figure * 0.45, figure * 1.1)
     const started = performance.now()
 
     const tick = (now) => {
       const raw = duration === 0 ? 1 : Math.min(1, (now - started) / duration)
-      const eased = 1 - (1 - raw) ** 3
-      const at = from + (target - from) * eased
+      const at = from + (target - from) * trapezoid(raw, ramp)
       const here = path[Math.round(at)]
       const ahead = path[Math.round(at) + (target >= from ? 2 : -2)] || here
+      // The beat comes from ground covered, not from the clock, so the feet
+      // slow as the figure slows and never skate. It opens on a step, so
+      // the legs move the moment the figure does.
+      const beat = Math.floor((Math.abs(at - from) * PATH_STEP) / stride) + 1
       if (here) {
         setWalker({
           at,
           facing: Math.atan2(ahead.y - here.y, ahead.x - here.x) * (180 / Math.PI),
           visible: true,
+          frame: raw < 1 ? STRIDE[beat % STRIDE.length] : 0,
         })
       }
       if (raw < 1) animationRef.current = requestAnimationFrame(tick)
@@ -171,12 +192,12 @@ export default function Experience() {
     tick(performance.now())
   }
 
-  // He stands at the first milestone from the start. The artwork used to
-  // have him painted in at both ends; now there is one of him and he is
-  // the live one, so the map should not begin empty.
+  // The figure stands at the first milestone from the start. The artwork
+  // used to have one painted in at each end; now there is a single live
+  // one, so the map should not begin empty.
   useLayoutEffect(() => {
     if (walker.visible || !stations.length || !path.length) return
-    setWalker({ at: stations[0], facing: 0, visible: true })
+    setWalker({ at: stations[0], facing: 0, visible: true, frame: 0 })
   }, [stations, path, walker.visible])
 
   const walkerAt = path[Math.round(walker.at)] || path[0]
@@ -280,8 +301,7 @@ export default function Experience() {
                 x={walkerAt.x}
                 y={walkerAt.y}
                 rotation={walker.facing}
-                length={walker.at * 3}
-                reduce={reduce}
+                frame={reduce ? 0 : walker.frame}
                 width={box.w}
               />
             )}
@@ -490,7 +510,24 @@ const overlaps = (a, b) =>
  * pace instead of hurrying through the corners where the traced points
  * bunch up.
  */
-function walkPath(points, step = 3) {
+/** Pixels between points on the walking path. */
+const PATH_STEP = 3
+
+/**
+ * Progress along a walk at time t (both 0 to 1): speed rises over the
+ * first `ramp` of the time, holds, and falls over the last `ramp`. The
+ * area under that trapezoid is the distance, so the middle speed is
+ * 1 / (1 - ramp) and the three pieces meet without a jump.
+ */
+function trapezoid(t, ramp) {
+  if (ramp <= 0) return t
+  const top = 1 / (1 - ramp)
+  if (t < ramp) return (top * t * t) / (2 * ramp)
+  if (t > 1 - ramp) return 1 - (top * (1 - t) ** 2) / (2 * ramp)
+  return top * (t - ramp / 2)
+}
+
+function walkPath(points, step = PATH_STEP) {
   if (points.length < 2) return points
   const out = [points[0]]
   let carry = 0
@@ -513,31 +550,47 @@ function walkPath(points, step = 3) {
 /**
  * The figure that walks the road.
  *
- * It is Namit's own character, lifted out of his artwork rather than
- * borrowed from a tileset, so the person on the map and the person in the
- * map are the same person. Keyed out by flooding in from the edges of a
- * crop until the fill met his outline, which works because the artwork
- * outlines him in near-black and outlines nothing else nearby.
+ * Namit's own character, lifted out of the artwork rather than borrowed
+ * from a tileset, so the person on the map and the person in the map are
+ * the same person. Keyed out by flooding in from the edges of a crop until
+ * the fill met the figure's outline, which works because the artwork
+ * outlines it in near-black and outlines nothing else nearby.
  *
- * One frame, so there is no walk cycle to run. What sells the walking is
- * the bob: a small vertical rise and fall while he is moving, which is
- * what a walk looks like from this far up. He turns to face the way he is
- * going by flipping, because a single frame has only two directions.
+ * The artwork only ever had it standing, so the walk is built from that
+ * one pose. The sprite is cut at the hip and the legs are split down the
+ * gap between them; a step lifts one foot and tucks it in, plants the
+ * other, raises the body a pixel over the planted leg and swings the arms
+ * against the legs. Stand, left, stand, right is the four-beat walk every
+ * top-down RPG uses, and it needs only three drawings to do it.
+ *
+ * Front-facing only, so the figure turns by flipping. From this far up a
+ * figure facing you while it walks sideways reads as walking; one that
+ * slides with its legs still does not.
  */
 
 /** The figure's size on the artwork, as a fraction of the map's width. */
 const WALKER_W = 48 / 1536
 const WALKER_H = 59 / 1536
 
-function Traveller({ x, y, rotation = 0, length = 0, reduce, width }) {
+/**
+ * The walk sheet: stand, step on the left, step on the right, left to
+ * right with a two-pixel gutter between them so a scaled background never
+ * samples the neighbouring pose.
+ */
+const SHEET = '/traveller-walk.png'
+const CELL_W = 48
+const CELL_GUTTER = 2
+const SHEET_W = 3 * CELL_W + 2 * CELL_GUTTER
+
+/** Stand, left, stand, right, as indices into the sheet. */
+const STRIDE = [0, 1, 0, 2]
+
+function Traveller({ x, y, rotation = 0, frame = 0, width }) {
   const w = WALKER_W * width
   const h = WALKER_H * width
+  const scale = w / CELL_W
   // Facing right covers everything from due north through to due south.
   const facingLeft = Math.abs(rotation) > 90
-  // The bob is driven by distance covered rather than by a clock, so he
-  // is still when he is still and steps in time with the ground when he
-  // is not.
-  const bob = reduce ? 0 : Math.abs(Math.sin(length * 0.11)) * (h * 0.06)
 
   return (
     <div
@@ -548,9 +601,9 @@ function Traveller({ x, y, rotation = 0, length = 0, reduce, width }) {
         top: y,
         width: w,
         height: h,
-        // Anchored at the feet, so he stands on the road rather than
-        // hovering over it.
-        transform: `translate(-50%, calc(-100% + ${h * 0.12 - bob}px)) scaleX(${facingLeft ? -1 : 1})`,
+        // Anchored at the feet, so the figure stands on the road rather
+        // than hovering over it.
+        transform: `translate(-50%, calc(-100% + ${h * 0.12}px)) scaleX(${facingLeft ? -1 : 1})`,
         // No CSS transition on the position. The walk already sets `left`
         // and `top` on every frame, and a transition on top of that is a
         // second animation chasing the first: it lags the figure behind
@@ -559,12 +612,15 @@ function Traveller({ x, y, rotation = 0, length = 0, reduce, width }) {
         filter: 'drop-shadow(0 3px 4px rgba(4,10,18,0.7)) drop-shadow(0 0 12px rgba(255,190,110,0.55))',
       }}
     >
-      <img
-        src="/traveller.png"
-        alt=""
-        draggable="false"
-        className="h-full w-full select-none"
-        style={{ imageRendering: 'pixelated' }}
+      <div
+        className="h-full w-full"
+        style={{
+          backgroundImage: `url(${SHEET})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: `${SHEET_W * scale}px ${h}px`,
+          backgroundPosition: `${-frame * (CELL_W + CELL_GUTTER) * scale}px 0`,
+          imageRendering: 'pixelated',
+        }}
       />
     </div>
   )
