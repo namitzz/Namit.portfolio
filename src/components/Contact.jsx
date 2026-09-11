@@ -23,17 +23,20 @@ export default function Contact() {
     },
     {
       label: 'GitHub',
-      value: profile.links.github.replace('https://', ''),
+      value: bare(profile.links.github),
       href: profile.links.github,
     },
     {
       label: 'LinkedIn',
-      value: profile.links.linkedin.replace('https://www.', ''),
+      value: bare(profile.links.linkedin),
       href: profile.links.linkedin,
     },
+    // The CV is a file on this site, so its link is this site's address
+    // plus the path. It used to show the bare file name, which is not a
+    // link anyone can type.
     profile.links.cv && {
       label: 'CV',
-      value: profile.links.cv.replace(/^\//, ''),
+      value: bare(new URL(profile.links.cv, window.location.href).href),
       href: profile.links.cv,
     },
   ].filter(Boolean)
@@ -110,11 +113,17 @@ export default function Contact() {
                     >
                       {r.label}
                     </span>
+                    {/* The whole link, never cut short. This used to
+                        truncate, which on a phone turned the LinkedIn
+                        address into "linkedin.com/in/namit-si..." and made
+                        the one thing the row is for unreadable. It now
+                        wraps, and only at the slashes and dots, so it
+                        breaks where a reader expects a link to break. */}
                     <span
-                      className="serif truncate text-[19px] tracking-tight"
+                      className="serif min-w-0 text-[19px] leading-snug tracking-tight [overflow-wrap:anywhere]"
                       style={{ color: 'var(--ink)' }}
                     >
-                      {r.value}
+                      {breakable(r.value)}
                     </span>
                     <span
                       className="serif text-right text-[24px] leading-none opacity-40 transition-all group-hover:translate-x-1 group-hover:opacity-100"
@@ -146,6 +155,33 @@ export default function Contact() {
   )
 }
 
+
+/* ------------------------------------------------------------------ */
+
+/** A link as a reader writes it: no scheme, no "www.", no trailing slash. */
+function bare(url) {
+  return url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
+}
+
+/**
+ * The text with a break opportunity after every slash, dot and @.
+ *
+ * `<wbr>` rather than a zero-width space: a zero-width space is a real
+ * character, and it would ride along into the clipboard of anyone who
+ * selects the address to copy it.
+ */
+function breakable(text) {
+  return text.split(/([\/.@])/).map((part, i) =>
+    /^[\/.@]$/.test(part) ? (
+      <span key={i}>
+        {part}
+        <wbr />
+      </span>
+    ) : (
+      part
+    ),
+  )
+}
 
 /* ------------------------------------------------------------------ */
 
