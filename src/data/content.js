@@ -193,7 +193,7 @@ export const projects = [
     themeKey: 'crime',
     index: '05',
     domain: 'Data Science',
-    year: '2024',
+    year: '2026',
     title: 'Crime Prediction Dashboard',
     tagline:
       'Coursework project on Metropolitan Police records, with modelling and clustering at the LSOA level.',
@@ -223,7 +223,7 @@ export const projects = [
     themeKey: 'course',
     index: '06',
     domain: 'Spring Boot · MySQL',
-    year: '2024',
+    year: '2025',
     title: 'Course Companion Web App',
     tagline:
       'A Spring Boot and MySQL coursework project for managing and searching course-related content.',

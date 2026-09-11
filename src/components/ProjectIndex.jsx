@@ -67,7 +67,7 @@ export default function ProjectIndex() {
             </h2>
           </div>
           <p className="mono-label" style={{ color: 'var(--muted)' }}>
-            {projects.length} · 2024–2026
+            {projects.length} · {yearSpan(projects)}
           </p>
         </Reveal>
 
@@ -421,4 +421,16 @@ function useMediaQuery(query) {
   }, [query])
 
   return matches
+}
+
+/**
+ * The years the projects cover, read from the projects themselves. It
+ * was typed in by hand and went stale the moment a year was corrected.
+ */
+function yearSpan(list) {
+  const years = list.map((p) => Number.parseInt(p.year, 10)).filter(Number.isFinite)
+  if (!years.length) return ''
+  const from = Math.min(...years)
+  const to = Math.max(...years)
+  return from === to ? String(from) : `${from}–${to}`
 }
