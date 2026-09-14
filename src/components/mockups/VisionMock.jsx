@@ -14,7 +14,7 @@ export default function VisionMock() {
         <span className="flex items-center gap-3">
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 animate-pulseDot rounded-full bg-red-400" />
-            REC · set 2 · 00:00:18
+            LIVE · set 2 · 00:00:18
           </span>
           <span style={{ color: 'var(--accent)' }}>squat</span>
         </span>
@@ -92,7 +92,7 @@ export default function VisionMock() {
 
             {/* Top-left chips */}
             <div className="absolute left-3 top-3 flex flex-col gap-1">
-              <HudChip label="src" value="webcam · 0" />
+              <HudChip label="src" value="camera · on-device" />
               <HudChip label="res" value="1280×720" />
               <HudChip label="latency" value="29 ms" />
             </div>
@@ -101,14 +101,14 @@ export default function VisionMock() {
             <div className="absolute right-3 top-3 flex flex-col items-end gap-1">
               <HudChip label="exercise" value="squat" />
               <HudChip label="reps" value="6 / 10" />
-              <HudChip label="frame skip" value="2" />
+              <HudChip label="upload" value="none" />
             </div>
 
             {/* Bottom telemetry */}
             <div className="absolute inset-x-3 bottom-3 grid grid-cols-3 items-center gap-2 rounded-md border border-white/10 bg-black/40 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-white/55 backdrop-blur">
               <span>squat depth · good</span>
               <span className="text-center" style={{ color: 'var(--accent)' }}>
-                form 0.87
+                rep 87 / 100
               </span>
               <span className="text-right">knees · tracking ok</span>
             </div>
@@ -129,7 +129,7 @@ export default function VisionMock() {
                   34
                 </p>
                 <p className="text-[10px] uppercase tracking-wider text-white/40">
-                  budget 30+
+                  on-device
                 </p>
               </div>
             </div>
@@ -189,7 +189,7 @@ export default function VisionMock() {
           { l: 'Rep count', v: '6 / 10', d: 'set 2' },
           { l: 'Squat depth', v: 'Good', d: '0.87' },
           { l: 'Knee tracking', v: 'Ok', d: 'within line' },
-          { l: 'Posture score', v: '0.86', d: 'torso 38°' },
+          { l: 'Rep score', v: '86 / 100', d: 'torso 38°' },
         ].map((c, i) => (
           <motion.div
             key={c.l}
@@ -227,7 +227,7 @@ export default function VisionMock() {
           className="text-[10px] font-semibold uppercase tracking-[0.18em]"
           style={{ color: 'var(--accent)' }}
         >
-          AI coaching summary
+          AI coaching summary · Claude
         </p>
         <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/85">
           Good depth on 5 of 6 reps. Rep 5 was a partial, so slow the descent

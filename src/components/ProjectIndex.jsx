@@ -193,10 +193,10 @@ function PointerRow({ project, index, active, dimmed, onEnter }) {
         {project.domain || '—'}
       </span>
       <span
-        className="mono-label transition-colors duration-300"
+        className="mono-label whitespace-nowrap transition-colors duration-300"
         style={{ color: active ? 'var(--ink-soft)' : 'var(--muted)' }}
       >
-        {project.year || '—'}
+        {shortYear(project.year) || '—'}
       </span>
 
       {/* The arrow hands the affordance over to the panel: there is not
@@ -433,4 +433,15 @@ function yearSpan(list) {
   const from = Math.min(...years)
   const to = Math.max(...years)
   return from === to ? String(from) : `${from}–${to}`
+}
+
+/**
+ * A year range short enough for the index's year column: "2025 – 2026"
+ * becomes "2025–26". The full range wrapped onto two lines in a column
+ * sized for a single year, and pushed that one row out of line.
+ */
+function shortYear(year) {
+  const m = /^(\d{4})\s*[–-]\s*(\d{4})$/.exec(year || '')
+  if (!m) return year
+  return m[1].slice(0, 2) === m[2].slice(0, 2) ? `${m[1]}–${m[2].slice(2)}` : `${m[1]}–${m[2]}`
 }

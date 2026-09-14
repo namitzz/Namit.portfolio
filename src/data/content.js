@@ -146,35 +146,37 @@ export const projects = [
     id: 'vision',
     themeKey: 'vision',
     index: '04',
-    domain: 'Computer Vision',
-    year: '2025',
+    domain: 'Computer Vision · On-device AI',
+    year: '2025 – 2026',
     title: 'Posture AI',
-    status: 'Prototype · In development',
+    status: 'v2.0 · In development',
     tagline:
-      'An AI-assisted computer vision prototype, currently in development, exploring gym form feedback, rep tracking, and coaching summaries.',
+      'A phone web app that coaches gym form in real time from the camera, with pose tracking that runs entirely on the device.',
     problem:
-      'Form mistakes in the gym can increase injury risk and slow progress, but personal trainers are expensive and most form-check apps are static, post-hoc, or vague. Getting live, specific feedback during a set is still difficult without a coach watching.',
+      'Form mistakes in the gym can increase injury risk and slow progress, but personal trainers are expensive and most form-check apps are static, post-hoc, or vague. Getting live, specific feedback during a set is still difficult without a coach watching. And a camera pointed at you mid-set has to earn that trust first.',
     solution:
-      'A modular MediaPipe-based pose pipeline that tracks squat depth, knee tracking, and torso angle in real time, counts reps, scores form against reference landmarks, and produces a short LLM-generated coaching summary at the end of a set.',
+      'An installable web app that runs MediaPipe pose estimation in the browser, so camera frames never leave the phone. It counts reps from joint angles for twelve camera-tracked exercises, from squat variants and lunges to push-ups, shoulder presses and curls, and scores every rep from 0 to 100 with live voice and visual cues. After a set, an optional AI coach turns the numbers, never the video, into a short summary through a serverless function that calls Claude. A manual mode logs the movements the camera cannot track.',
     stack: [
-      'Python',
-      'OpenCV',
-      'MediaPipe',
-      'NumPy',
-      'Pose landmark math',
-      'Audio cues',
-      'LLM summary',
+      'JavaScript PWA',
+      'MediaPipe Tasks Vision',
+      'WebAssembly',
+      'Web Speech API',
+      'Service worker',
+      'Vercel serverless',
+      'Claude API',
+      'Kotlin (Android)',
     ],
     features: [
-      'Live pose landmark tracking with per-joint confidence.',
-      'Squat depth, knee tracking, and torso-angle scoring against a reference skeleton.',
-      'Rep counting with state-machine logic for clean reps vs. partials.',
-      'Form-feedback overlay and audio cues during the set.',
-      'Frame-skipping and per-stage budgets to keep the pipeline at interactive FPS.',
-      'End-of-set AI coaching summary describing what to fix next.',
+      'Pose estimation on the device: MediaPipe runs in the browser through WebAssembly, and camera video is never recorded or uploaded.',
+      'Twelve camera-tracked exercises, each counted from the joint that matters (knee angle for squats and lunges, hip angle for bridges and deadlifts, elbow angle for push-ups, presses and curls), with every rep scored from 0 to 100 and live voice cues.',
+      'Optional AI coaching after each set (Claude Haiku 4.5) and a weekly digest (Claude Sonnet 4.6). Only workout numbers leave the phone, through a rate-limited serverless proxy that keeps the API key server-side.',
+      'Manual mode for movements the camera cannot track, with a freeform Quick Log and a muscle-group picker, sharing one streak with camera workouts.',
+      'Squat reps count through a standing, descending, ascending cycle with knee-angle thresholds, so a rep that never reaches depth does not count.',
+      'The coaching endpoint caps request sizes and strips control characters from input to blunt prompt injection.',
+      'Installable and offline-capable through a service worker, with streaks, achievements, history and analytics stored locally, plus a Kotlin wrapper for Android.',
     ],
     impact:
-      'Working on this taught me a lot about how real-time vision prototypes are actually put together. Pose tracking is the easy part to demo. Getting frame budgets, feedback timing, and overlay state to behave is where the real work lives. It also pushed me to be more careful about reviewing AI-assisted code, since shipping something a model wrote without reading it line by line is a fast way to introduce bugs you cannot explain later.',
+      'Moving this from a Python desktop pipeline to a web app on the phone changed what mattered. Running pose estimation in the browser settled the privacy question by design: the video never leaves the device, so there is nothing to protect on a server. What was left were the unglamorous problems: rep thresholds that behave across different squat variants, voice cues that do not step on each other mid-set, and a coaching endpoint that is safe to expose to the open internet. It also made me stricter about reviewing AI-assisted code, because shipping something a model wrote without reading it line by line is a fast way to introduce bugs you cannot explain later.',
     cta: {
       caseStudy: null,
       // Repo is private for now. To make public later, set:
@@ -183,8 +185,10 @@ export const projects = [
       github: null,
       githubPrivate: {
         reason:
-          'Repository is private for now while the prototype is being cleaned up. Happy to share access or walk through the code on request.',
+          'Repository is private while v2 is prepared for testers. Happy to share access or walk through the code on request.',
       },
+      // The v2 deployment (posture-dusky.vercel.app) returned 404 when
+      // checked on 2026-09-11, so no demo button until it is back up.
       demo: null,
     },
   },
