@@ -150,8 +150,35 @@ export default function Contact() {
             </ul>
           </div>
         </div>
+
+        <SiteFooter />
       </div>
     </section>
+  )
+}
+
+/**
+ * The last line of the page: whose site it is, and where the privacy
+ * notice lives. `/privacy` is a static page rather than a section of this
+ * one, so it is a plain link that leaves the app, not a scroll target.
+ */
+function SiteFooter() {
+  return (
+    <footer
+      className="mt-24 flex flex-wrap items-center justify-between gap-4 border-t pt-6"
+      style={{ borderColor: 'var(--hairline)' }}
+    >
+      <p className="mono-label" style={{ color: 'var(--muted)' }}>
+        &copy; {new Date().getFullYear()} Namit Singh Sarna
+      </p>
+      <a
+        href="/privacy"
+        className="mono-label underline-offset-4 transition-colors hover:underline focus-visible:underline"
+        style={{ color: 'var(--muted)' }}
+      >
+        Privacy and cookies
+      </a>
+    </footer>
   )
 }
 

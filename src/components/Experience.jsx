@@ -407,7 +407,7 @@ export default function Experience() {
 
         <p
           className="mono-label mt-4 hidden text-right lg:block"
-          style={{ color: 'rgba(244,244,245,0.34)' }}
+          style={{ color: 'rgba(244,244,245,0.55)' }}
         >
           Map illustration by Namit Singh Sarna
         </p>

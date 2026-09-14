@@ -117,6 +117,8 @@ export default function JourneyMap({ width, height, activeAt }) {
         alt="An illustrated map of the journey from Leicester to Aston, with a lit road connecting eleven milestones."
         width={MAP_W}
         height={MAP_H}
+        loading="lazy"
+        decoding="async"
         draggable="false"
         className="pointer-events-none absolute inset-0 h-full w-full select-none"
         style={{ imageRendering: 'pixelated' }}
