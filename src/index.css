@@ -13,6 +13,9 @@
   --hairline: rgba(244, 244, 245, 0.10);
   --accent: #f4552a;
   --accent-2: #f5b447;
+  /* Dark native controls and scrollbars, so nothing the browser draws
+     itself turns up light on a black page. */
+  color-scheme: dark;
 }
 
 html {
@@ -38,12 +41,16 @@ body {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+/* Visible enough to find: at 8% the thumb disappeared into the page. */
 ::-webkit-scrollbar-thumb {
-  background: rgba(244, 244, 245, 0.08);
+  background: rgba(244, 244, 245, 0.18);
   border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(244, 244, 245, 0.20);
+  background: rgba(244, 244, 245, 0.34);
+}
+html {
+  scrollbar-color: rgba(244, 244, 245, 0.22) transparent;
 }
 
 .text-outline-strong {
@@ -72,6 +79,12 @@ body {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
   letter-spacing: -0.02em;
+}
+
+/* An SVG shape scales about the canvas origin unless told otherwise. */
+.animate-hotspot-ring {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .mono-label {

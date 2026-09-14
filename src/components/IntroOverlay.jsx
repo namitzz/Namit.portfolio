@@ -15,6 +15,11 @@ const SESSION_KEY = 'namitss_intro_played_v1'
 export default function IntroOverlay() {
   const [show, setShow] = useState(() => {
     if (typeof window === 'undefined') return false
+    // Not for anyone who asked for less motion, and not for anyone who
+    // arrived on a link to a section: they came for that section, and a
+    // curtain in front of it, then a jump, is the wrong way round.
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false
+    if (window.location.hash.length > 1) return false
     try {
       return !sessionStorage.getItem(SESSION_KEY)
     } catch {
@@ -26,7 +31,8 @@ export default function IntroOverlay() {
   useEffect(() => {
     if (!show) return
 
-    // Lock scroll while intro is visible.
+    // Lock scroll while intro is visible, and put back whatever was there.
+    const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
     const dismiss = () => setShow(false)
@@ -39,7 +45,7 @@ export default function IntroOverlay() {
     return () => {
       clearTimeout(t)
       window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
+      document.body.style.overflow = previous
     }
   }, [show])
 
@@ -109,7 +115,7 @@ export default function IntroOverlay() {
             transition={{ duration: 0.4, delay: 0.65 }}
             className="absolute bottom-6 left-6 font-mono text-[10px] uppercase tracking-[0.22em] text-white/60 md:bottom-10 md:left-10"
           >
-            Software · AI · full-stack
+            AI · Transformation · Software
           </motion.p>
 
           {/* Bottom-right loading meter */}

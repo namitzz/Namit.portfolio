@@ -239,6 +239,26 @@ export default function HeroField() {
       render(performance.now())
     })
 
+    // Only animate while the hero can be seen. Scrolled past, the loop
+    // used to keep redrawing a canvas nobody could see for as long as the
+    // page stayed open.
+    let onScreen = true
+    const watcher =
+      !reduced && typeof IntersectionObserver === 'function'
+        ? new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting && !onScreen) {
+              onScreen = true
+              running = true
+              frame = requestAnimationFrame(loop)
+            } else if (!entry.isIntersecting && onScreen) {
+              onScreen = false
+              running = false
+              cancelAnimationFrame(frame)
+            }
+          })
+        : null
+    watcher?.observe(canvas)
+
     if (!reduced) frame = requestAnimationFrame(loop)
 
     // No pointer wiring on touch, and none under reduced motion either:
@@ -253,6 +273,7 @@ export default function HeroField() {
       running = false
       cancelled = true
       cancelAnimationFrame(frame)
+      watcher?.disconnect()
       ro.disconnect()
       window.removeEventListener('pointermove', onPointerMove)
       document.removeEventListener('pointerleave', onPointerLeave)

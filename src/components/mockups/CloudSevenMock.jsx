@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 export default function CloudSevenMock() {
   return (
     <div className="relative">
-      <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-white/40">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[10px] uppercase tracking-[0.16em] text-white/40 sm:tracking-[0.25em]">
         <span>Cloud Seven Realty · Live site</span>
         <a
           href="https://www.cloudsevenrealty.com/"

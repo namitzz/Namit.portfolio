@@ -18,7 +18,7 @@ export default function CourseCompanionMock() {
   const reduce = useReducedMotion()
   return (
     <div className="relative">
-      <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-white/40">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[10px] uppercase tracking-[0.16em] text-white/40 sm:tracking-[0.25em]">
         <span>Course Companion · Group coursework · CO2302</span>
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 animate-pulseDot rounded-full bg-emerald-400" />

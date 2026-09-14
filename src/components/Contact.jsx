@@ -1,45 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import { profile } from '../data/content'
 import Reveal from './Reveal'
+import { EditorialLink } from './About'
 import { sectionGlow, EMBER } from '../lib/sectionGlow'
 
 /**
  * Contact as an editorial closing block: the pitch on the left, the ways
  * to reach me on the right.
  *
- * The email row copies as well as opening a mail client. A bare `mailto:`
- * assumes the reader has one configured and does nothing visible when
- * they do not, which is the worst outcome for the most important link on
- * the page. Copying always works, and the row still opens mail for anyone
- * who wants that.
+ * Buttons and one address, not a list of URLs. The address is the one
+ * thing worth reading off the page, so it is set large, opens mail, and
+ * has a copy button beside it: a bare `mailto:` does nothing visible for
+ * anyone without a mail client configured, and copying always works.
  */
 export default function Contact() {
-  const rows = [
-    {
-      label: 'Email',
-      value: profile.email,
-      href: `mailto:${profile.email}`,
-      copy: profile.email,
-    },
-    {
-      label: 'GitHub',
-      value: bare(profile.links.github),
-      href: profile.links.github,
-    },
-    {
-      label: 'LinkedIn',
-      value: bare(profile.links.linkedin),
-      href: profile.links.linkedin,
-    },
-    // The CV is a file on this site, so its link is this site's address
-    // plus the path. It used to show the bare file name, which is not a
-    // link anyone can type.
-    profile.links.cv && {
-      label: 'CV',
-      value: bare(new URL(profile.links.cv, window.location.href).href),
-      href: profile.links.cv,
-    },
-  ].filter(Boolean)
+  const reduce = useReducedMotion()
 
   return (
     <section id="contact" className="relative px-6 py-24 md:px-16 md:py-32"
@@ -73,83 +49,78 @@ export default function Contact() {
               className="text-[19px] leading-relaxed"
               style={{ color: 'var(--ink)' }}
             >
-              Open to graduate roles in AI, machine learning, and software
-              engineering.
+              Open to graduate roles in AI, software engineering, data and
+              technology consulting.
             </p>
             <p
               className="mt-4 text-[15px] leading-relaxed"
               style={{ color: 'var(--muted)' }}
             >
-              Applied AI, backend, data pipelines, or a frontend that has to
-              feel right. Happy to talk about any of it.
+              Helping an organisation adopt AI, building the system it adopts,
+              or a frontend that has to feel right. Happy to talk about any of
+              it.
             </p>
           </div>
 
-          {/* Right column: channels */}
+          {/* Right column: the address, then everything else as buttons */}
           <div className="md:col-span-7">
-            <ul
-              className="border-t"
-              style={{ borderColor: 'var(--hairline)' }}
-            >
-              {rows.map((r) => (
-                <Reveal
-                  as="li"
-                  key={r.label}
-                  x={-6}
-                  y={0}
-                  duration={0.4}
-                  className="group relative border-b"
-                  style={{ borderColor: 'var(--hairline)' }}
+            <Reveal x={-6} y={0} duration={0.4}>
+              <p className="mono-label" style={{ color: 'var(--muted)' }}>
+                Email
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <a
+                  href={`mailto:${profile.email}`}
+                  className="serif group relative text-[clamp(1.7rem,3.4vw,2.8rem)] leading-none tracking-[-0.02em]"
+                  style={{ color: 'var(--ink)' }}
                 >
-                  <a
-                    href={r.href}
-                    target={r.href.startsWith('http') ? '_blank' : undefined}
-                    rel={r.href.startsWith('http') ? 'noreferrer' : undefined}
-                    className="grid grid-cols-[6rem_1fr_auto] items-center gap-4 py-5 pr-2 transition-colors hover:bg-white/[0.03]"
-                  >
-                    <span
-                      className="mono-label"
-                      style={{ color: 'var(--muted)' }}
-                    >
-                      {r.label}
-                    </span>
-                    {/* The whole link, never cut short. This used to
-                        truncate, which on a phone turned the LinkedIn
-                        address into "linkedin.com/in/namit-si..." and made
-                        the one thing the row is for unreadable. It now
-                        wraps, and only at the slashes and dots, so it
-                        breaks where a reader expects a link to break. */}
-                    <span
-                      className="serif min-w-0 text-[19px] leading-snug tracking-tight [overflow-wrap:anywhere]"
-                      style={{ color: 'var(--ink)' }}
-                    >
-                      {breakable(r.value)}
-                    </span>
-                    <span
-                      className="serif text-right text-[24px] leading-none opacity-40 transition-all group-hover:translate-x-1 group-hover:opacity-100"
-                      aria-hidden="true"
-                      style={{ color: 'var(--accent)' }}
-                    >
-                      {r.href.startsWith('http') ? '\u2197' : '\u2192'}
-                    </span>
-                  </a>
-
-                  {/* A rule that draws in from the left under the row it
-                      belongs to, so the list answers the pointer without
-                      anything moving. Scale rather than width, so it runs
-                      on the compositor instead of relaying out the row. */}
+                  {profile.email}
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute bottom-[-1px] left-0 h-px w-full origin-left scale-x-0 transition-transform duration-500 ease-out group-hover:scale-x-100"
+                    className="absolute -bottom-1.5 left-0 h-px w-full origin-left scale-x-0 transition-transform duration-500 ease-out group-hover:scale-x-100"
                     style={{ background: 'var(--accent)' }}
                   />
+                </a>
+                <CopyButton value={profile.email} />
+              </div>
+            </Reveal>
 
-                  {r.copy && <CopyButton value={r.copy} />}
-                </Reveal>
-              ))}
-            </ul>
+            <Reveal delay={0.08}>
+              <div
+                className="mt-10 flex flex-wrap gap-3 border-t pt-10"
+                style={{ borderColor: 'var(--hairline)' }}
+              >
+                <EditorialLink href={profile.links.linkedin} label="LinkedIn" reduce={reduce} />
+                <EditorialLink href={profile.links.github} label="GitHub" reduce={reduce} />
+                {profile.links.cv && (
+                  <EditorialLink href={profile.links.cv} label="Download CV" reduce={reduce} icon={'\u2193'} />
+                )}
+              </div>
+            </Reveal>
           </div>
         </div>
+
+        {/* A closing note, because this is where the page ends and a
+            reader who got here has read all of it. */}
+        <Reveal delay={0.1}>
+          <div className="mt-24 max-w-2xl">
+            <span
+              aria-hidden="true"
+              className="block h-px w-10"
+              style={{ background: 'var(--accent)' }}
+            />
+            <p
+              className="serif mt-6 text-[clamp(1.25rem,2vw,1.6rem)] italic leading-[1.4]"
+              style={{ color: 'var(--ink-soft)' }}
+            >
+              Thanks for reading this far. If a role, a project or a question
+              brought you here, I would be glad to hear about it.
+            </p>
+            <p className="mono-label mt-4" style={{ color: 'var(--muted)' }}>
+              Namit
+            </p>
+          </div>
+        </Reveal>
 
         <SiteFooter />
       </div>
@@ -182,33 +153,6 @@ function SiteFooter() {
   )
 }
 
-
-/* ------------------------------------------------------------------ */
-
-/** A link as a reader writes it: no scheme, no "www.", no trailing slash. */
-function bare(url) {
-  return url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
-}
-
-/**
- * The text with a break opportunity after every slash, dot and @.
- *
- * `<wbr>` rather than a zero-width space: a zero-width space is a real
- * character, and it would ride along into the clipboard of anyone who
- * selects the address to copy it.
- */
-function breakable(text) {
-  return text.split(/([\/.@])/).map((part, i) =>
-    /^[\/.@]$/.test(part) ? (
-      <span key={i}>
-        {part}
-        <wbr />
-      </span>
-    ) : (
-      part
-    ),
-  )
-}
 
 /* ------------------------------------------------------------------ */
 
@@ -249,9 +193,9 @@ function Available() {
 /**
  * Copies an address to the clipboard and says so.
  *
- * It sits over its row rather than inside the link, because a button
- * nested inside an anchor is not valid HTML and browsers disagree about
- * which of the two owns the click.
+ * Beside the address rather than inside its link, because a button nested
+ * inside an anchor is not valid HTML and browsers disagree about which of
+ * the two owns the click. Always visible: there is no hover on a phone.
  */
 function CopyButton({ value }) {
   const [copied, setCopied] = useState(false)
@@ -264,8 +208,8 @@ function CopyButton({ value }) {
       await navigator.clipboard.writeText(value)
     } catch {
       // Clipboard access can be refused outright: an insecure origin, or a
-      // browser that wants a permission first. The row is still a mailto
-      // link and the address is still on screen to be read off.
+      // browser that wants a permission first. The address is still a
+      // mailto link and still on screen to be read off.
       return
     }
     setCopied(true)
@@ -278,7 +222,7 @@ function CopyButton({ value }) {
       type="button"
       onClick={copy}
       aria-label={copied ? 'Email address copied' : 'Copy email address'}
-      className="absolute right-11 top-1/2 -translate-y-1/2 rounded-sm border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.1em] opacity-0 transition-opacity duration-200 focus-visible:opacity-100 group-hover:opacity-100"
+      className="rounded-sm border px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] transition-colors duration-200 hover:border-[color:var(--accent)] hover:text-[color:var(--ink)]"
       style={{
         borderColor: copied ? 'var(--accent)' : 'var(--hairline)',
         color: copied ? 'var(--accent)' : 'var(--muted)',

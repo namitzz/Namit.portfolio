@@ -74,16 +74,19 @@ export default function Skills() {
               </span>
 
               {/* Top strip: what the group holds, not a decorative label */}
-              <div className="mb-6 flex items-baseline justify-between">
-                <span className="mono-label" style={{ color: 'var(--muted)' }}>
-                  {String(s.items.length).padStart(2, '0')} tools
-                </span>
+              {/* The mark leads the count rather than sitting at the right,
+                  where it landed on top of the ghost numeral and read as
+                  "0✦1". */}
+              <div className="mb-6 flex items-baseline gap-2.5">
                 <span
                   aria-hidden="true"
-                  className="serif text-[1.1rem] leading-none opacity-30 transition-all duration-500 group-hover:rotate-90 group-hover:opacity-100"
+                  className="serif inline-block text-[1.1rem] leading-none opacity-30 transition-all duration-500 group-hover:rotate-90 group-hover:opacity-100"
                   style={{ color: 'var(--accent)' }}
                 >
                   ✦
+                </span>
+                <span className="mono-label" style={{ color: 'var(--muted)' }}>
+                  {String(s.items.length).padStart(2, '0')} tools
                 </span>
               </div>
 

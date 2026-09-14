@@ -20,10 +20,22 @@ export default {
           '0%,100%': { opacity: 0.6, transform: 'scale(1)' },
           '50%': { opacity: 1, transform: 'scale(1.4)' },
         },
+        // The hero's scroll cue: a tick falling through its hairline.
+        'scroll-cue': {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(280%)' },
+        },
+        // The crime map's hotspot: a ring that widens and fades.
+        'hotspot-ring': {
+          '0%': { opacity: 0.8, transform: 'scale(0.4)' },
+          '100%': { opacity: 0, transform: 'scale(1.6)' },
+        },
       },
       animation: {
         scan: 'scan 3.5s linear infinite',
         pulseDot: 'pulseDot 1.6s ease-in-out infinite',
+        'scroll-cue': 'scroll-cue 2.6s cubic-bezier(0.55, 0, 0.45, 1) infinite',
+        'hotspot-ring': 'hotspot-ring 2s ease-out infinite',
       },
     },
   },

@@ -23,7 +23,10 @@ export default function ProjectSection({ project, onActivate, mockup }) {
     <section
       id={project.id}
       ref={ref}
-      className="relative z-10 py-14 md:py-20"
+      // Room for the fixed header when a link lands here: project sections
+      // have less top padding than the rest, and a jump to #cloud on a phone
+      // tucked the title under the bar.
+      className="relative z-10 scroll-mt-8 py-14 md:scroll-mt-6 md:py-20"
     >
       {/* Full-viewport picture: the mockup takes the stage first. */}
       <div className="relative mx-auto flex w-full max-w-[1600px] flex-col items-center px-6 md:px-16">
@@ -41,12 +44,14 @@ export default function ProjectSection({ project, onActivate, mockup }) {
             >
               {project.index}
             </span>
-            <span
+            {/* A real heading, so the project can be found by anyone
+                navigating by headings; it looks exactly as the span did. */}
+            <h2
               className="serif text-[clamp(1.4rem,2.4vw,2rem)] leading-none"
               style={{ color: '#fff' }}
             >
               {project.title}
-            </span>
+            </h2>
             {/* Status now sits inline here rather than as its own row */}
             {project.status && (
               <span

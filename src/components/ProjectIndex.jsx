@@ -158,7 +158,7 @@ function PointerRow({ project, index, active, dimmed, onEnter }) {
 
   const body = (
     <div
-      className="grid grid-cols-[4rem_1fr_10rem_5rem_2.5rem] items-baseline gap-6 py-10 transition-opacity duration-300"
+      className="grid grid-cols-[4rem_1fr_10rem_5rem_2.5rem] items-baseline gap-6 py-10 transition-opacity duration-300 xl:grid-cols-[4rem_1fr_15rem_5rem_2.5rem]"
       style={{ opacity: dimmed ? 0.4 : 1 }}
     >
       <span

@@ -9,7 +9,7 @@ import { grow } from '../Reveal'
 export default function CrimeMock() {
   return (
     <div className="relative">
-      <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-[0.25em] text-white/40">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[10px] uppercase tracking-[0.16em] text-white/40 sm:tracking-[0.25em]">
         <span>Met Police · Crime panel · stylised view</span>
         <span className="flex items-center gap-3">
           <span style={{ color: 'var(--accent-2)' }}>k-means · k=4</span>
@@ -270,16 +270,16 @@ function LondonMap() {
             fill="#FF4FA2"
             {...grow(reduce, { scale: 0 }, { scale: 1 }, { delay: 0.6 })}
           />
-          <motion.circle
+          {/* CSS, not Framer: a looping scale in Framer is a JavaScript
+              frame loop that never stops, even off screen. */}
+          <circle
             cx="270"
             cy="175"
             r="12"
             fill="none"
             stroke="#FF4FA2"
             strokeWidth="1"
-            initial={{ opacity: 0.8, scale: 0.4 }}
-            animate={{ opacity: 0, scale: 1.6 }}
-            transition={{ repeat: Infinity, duration: 2 }}
+            className="animate-hotspot-ring"
           />
         </g>
       </svg>

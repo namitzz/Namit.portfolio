@@ -38,6 +38,28 @@ export default function App() {
   // :root red and the project palettes only ever tinted the backdrop.
   const theme = themes[themeKey] || themes.base
 
+  // Arriving on a link to a section (/#skills, or the 404 page's project
+  // links). The browser tries to scroll to the fragment while it parses the
+  // page, before React has rendered anything with that id, so it found
+  // nothing and left the reader at the top. Once the fonts have settled the
+  // layout, go there.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1))
+    if (!id) return undefined
+    let cancelled = false
+    const go = () => {
+      const el = document.getElementById(id)
+      if (cancelled || !el) return
+      // scrollIntoView, not scrollTo, so the section's scroll-margin keeps
+      // its heading clear of the fixed header.
+      el.scrollIntoView({ block: 'start', behavior: 'instant' })
+    }
+    ;(document.fonts?.ready ?? Promise.resolve()).then(() => setTimeout(go, 0))
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <div
       className="relative min-h-screen"

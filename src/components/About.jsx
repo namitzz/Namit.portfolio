@@ -85,6 +85,14 @@ export default function About() {
                   <p key={line}>{line}</p>
                 ))}
               </div>
+              {/* The ask, set apart from the story so it can be found at a
+                  glance rather than read for. */}
+              <p
+                className="mt-8 max-w-[42ch] border-l-2 pl-5 text-[clamp(1.02rem,1.32vw,1.28rem)] leading-[1.55]"
+                style={{ color: 'var(--ink)', borderColor: 'var(--accent)', letterSpacing: '-0.008em' }}
+              >
+                {profile.lookingFor}
+              </p>
             </Reveal>
 
             <Reveal delay={0.22}>
@@ -99,6 +107,13 @@ export default function About() {
                   label="LinkedIn"
                   reduce={reduce}
                 />
+                {profile.links.cv && (
+                  <EditorialLink
+                    href={profile.links.cv}
+                    label="CV"
+                    reduce={reduce}
+                  />
+                )}
               </div>
             </Reveal>
           </div>
@@ -122,7 +137,7 @@ const clamp = (v, max) => Math.max(-max, Math.min(max, v))
  * Colour changes are Tailwind hover states; only the lean is scripted, so
  * the link still responds normally if the motion never runs.
  */
-function EditorialLink({ href, label, reduce }) {
+export function EditorialLink({ href, label, reduce, icon = '\u2197', external = true }) {
   const ref = useRef(null)
   const mx = useMotionValue(0)
   const my = useMotionValue(0)
@@ -147,8 +162,8 @@ function EditorialLink({ href, label, reduce }) {
     <motion.a
       ref={ref}
       href={href}
-      target="_blank"
-      rel="noreferrer"
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noreferrer' : undefined}
       style={{ x, y }}
       onMouseMove={onMove}
       onMouseLeave={release}
@@ -160,7 +175,7 @@ function EditorialLink({ href, label, reduce }) {
         aria-hidden="true"
         className="text-[color:var(--muted)] transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[color:var(--accent)]"
       >
-        ↗
+        {icon}
       </span>
     </motion.a>
   )

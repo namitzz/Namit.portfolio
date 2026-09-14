@@ -20,6 +20,12 @@ export const profile = {
     'I build practical AI and software systems that turn real problems into useful products.',
   'With a background in Computer Science and an MSc in AI for Business Transformation, I am interested in where technology, data and business meet.',
   ],
+
+  // What a recruiter should consider me for, said once in plain words. The
+  // hero carries the short form; About and Contact carry the sentence.
+  lookingFor:
+    'Currently looking for graduate opportunities across AI, software engineering, data and technology consulting.',
+  roles: ['AI', 'software engineering', 'data', 'technology consulting'],
 }
 
 export const projects = [

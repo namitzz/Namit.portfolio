@@ -7,6 +7,7 @@ import {
   useTransform,
 } from 'framer-motion'
 import HeroField from './HeroField'
+import { profile } from '../data/content'
 
 /**
  * Editorial landing hero: masthead metadata, the name, a caption.
@@ -114,7 +115,7 @@ export default function Hero() {
         </MetaBlock>
 
         <MetaBlock align="right" className="hidden md:flex">
-          <MetaLine primary>AI · Full-stack · Data</MetaLine>
+          <MetaLine primary>AI · Transformation · Software</MetaLine>
           {/* The dot hangs outside the text column so both lines keep a
               clean right edge against the margin. */}
           <MetaLine className="relative pr-0">
@@ -184,6 +185,24 @@ export default function Hero() {
               }}
             >
               Applied AI, and how organisations actually adopt it.
+            </p>
+            {/* What to consider me for, in the first screen. The caption
+                says what I care about; this says what I am looking for, so
+                a recruiter does not have to piece it together from the
+                sections below. */}
+            <p
+              data-field-guard
+              className="mt-2.5 text-[clamp(0.9rem,1.02vw,1rem)] leading-[1.5] md:max-w-[40rem]"
+              style={{ color: 'rgba(244,244,245,0.62)' }}
+            >
+              Looking for graduate roles in{' '}
+              {profile.roles.map((role, i) => (
+                <span key={role}>
+                  {i > 0 && (i === profile.roles.length - 1 ? ' and ' : ', ')}
+                  <span style={{ color: 'rgba(244,244,245,0.92)' }}>{role}</span>
+                </span>
+              ))}
+              .
             </p>
 
             {/* The standfirst: what the caption is currently grounded in.
@@ -366,15 +385,14 @@ function ScrollCue({ reduce }) {
         className="relative block h-7 w-px overflow-hidden"
         style={{ background: 'var(--hairline)' }}
       >
-        <motion.span
-          className="absolute left-0 top-0 block h-2.5 w-px"
+        {/* A CSS animation rather than a Framer loop. Framer drives a
+            looping transform from JavaScript, which kept a frame callback
+            running for as long as the page was open, however far below the
+            hero the reader had gone. CSS runs it off the main thread, and
+            the global reduced-motion rule stops it. */}
+        <span
+          className={`absolute left-0 top-0 block h-2.5 w-px ${reduce ? '' : 'animate-scroll-cue'}`}
           style={{ background: 'var(--accent)' }}
-          animate={reduce ? undefined : { y: ['-100%', '280%'] }}
-          transition={{
-            duration: 2.6,
-            repeat: Infinity,
-            ease: [0.55, 0, 0.45, 1],
-          }}
         />
       </span>
     </a>
